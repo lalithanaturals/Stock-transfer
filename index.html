@@ -73,9 +73,14 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-2.5 items-center">
-                    <div>
+                    <div class="relative">
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="staffNameInput" placeholder="Required..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
+                        <div class="relative flex items-center">
+                            <input type="text" id="staffNameInput" placeholder="Required..." onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
+                            <button onclick="toggleStaffDropdown(event)" class="absolute right-2.5 text-slate-400 text-xs"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
+                        <!-- Staff Name Dropdown List -->
+                        <div id="staffDropdownList" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-40 overflow-y-auto p-1 space-y-0.5"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
@@ -145,7 +150,7 @@
             <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
                 <i class="fa-solid fa-eye text-sm"></i> Staff Check
             </button>
-            <button onclick="dispatchTransitSheet()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+            <button onclick="confirmAndDispatchTransit()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
                 <i class="fa-solid fa-paper-plane text-sm"></i> Confirm & Dispatch
             </button>
         </div>
@@ -458,6 +463,7 @@
         let activeMobilePayload = null;
         let codeReader = null;
         let scannerTargetMode = 'search';
+        let editingTransitId = null;
 
         function initApp() {
             updateClock();
@@ -486,7 +492,7 @@
                 document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
                 document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
                 bottomBar.classList.remove('hidden');
-                activeMobilePayload = null;
+                if(!editingTransitId) activeMobilePayload = null;
             } else {
                 document.getElementById('auditViewSection').classList.add('hidden');
                 document.getElementById('packingViewSection').classList.remove('hidden');
@@ -507,6 +513,50 @@
                 document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
             }
             renderItems(document.getElementById('searchBox').value);
+        }
+
+        // --- STAFF NAME DROPDOWN MANAGEMENT ---
+        function getSavedStaffNames() {
+            return JSON.parse(localStorage.getItem('lalitha_staff_names')) || [];
+        }
+
+        function saveStaffName(name) {
+            if(!name) return;
+            let list = getSavedStaffNames();
+            const formatted = name.charAt(0).toUpperCase() + name.slice(1);
+            if(!list.includes(formatted)) {
+                list.unshift(formatted);
+                localStorage.setItem('lalitha_staff_names', JSON.stringify(list));
+            }
+        }
+
+        function toggleStaffDropdown(show) {
+            const dropdown = document.getElementById('staffDropdownList');
+            const list = getSavedStaffNames();
+            if (list.length === 0 || show === false) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            dropdown.innerHTML = list.map(name => `
+                <div class="flex justify-between items-center px-3 py-2 hover:bg-slate-100 rounded-lg cursor-pointer text-xs font-bold text-slate-700">
+                    <span onclick="selectStaffName('${name}')" class="flex-1">${name}</span>
+                    <button onclick="removeStaffName(event, '${name}')" class="text-red-500 hover:text-red-700 px-2 py-0.5 font-bold text-sm" title="Remove">&times;</button>
+                </div>
+            `).join('');
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectStaffName(name) {
+            document.getElementById('staffNameInput').value = name;
+            document.getElementById('staffDropdownList').classList.add('hidden');
+        }
+
+        function removeStaffName(event, name) {
+            event.stopPropagation();
+            let list = getSavedStaffNames().filter(n => n !== name);
+            localStorage.setItem('lalitha_staff_names', JSON.stringify(list));
+            toggleStaffDropdown(true);
         }
 
         function renderTabs() {
@@ -585,7 +635,6 @@
             current += change;
             if (current < 0) current = 0;
             
-            // In 'available' mode, cap the input value to the item's min requirement so it cannot exceed the Need value
             if (auditMode === 'available' && current > minLimit) {
                 current = minLimit;
             }
@@ -728,10 +777,12 @@
 
         function getGroupedShortages() {
             let grouped = {}, totalCount = 0;
-            if (activeMobilePayload) {
+            // If viewing an active payload (e.g. from View button or Edit mode), group its items directly
+            if (activeMobilePayload && activeMobilePayload.items && activeMobilePayload.items.length > 0) {
                 activeMobilePayload.items.forEach(item => {
-                    if (!grouped[item.cat]) grouped[item.cat] = [];
-                    grouped[item.cat].push(item);
+                    const cat = item.cat || 'Groceries';
+                    if (!grouped[cat]) grouped[cat] = [];
+                    grouped[cat].push(item);
                     totalCount++;
                 });
             } else {
@@ -783,7 +834,7 @@
 
         function closeScannerModal() { document.getElementById('scannerModal').classList.add('hidden'); if(codeReader) codeReader.reset(); }
 
-        async function dispatchTransitSheet() {
+        function confirmAndDispatchTransit() {
             const staffNameInput = document.getElementById('staffNameInput').value.trim();
             if (!staffNameInput) {
                 alert("Staff Name is mandatory! Please enter the staff name before dispatching.");
@@ -794,19 +845,39 @@
             const { grouped, totalCount } = getGroupedShortages();
             if (totalCount === 0) { alert("No items required to dispatch!"); return; }
 
+            const src = document.getElementById('sourceBranch').value;
+            const dst = document.getElementById('destBranch').value;
+            const staffName = staffNameInput.charAt(0).toUpperCase() + staffNameInput.slice(1);
+
+            let confirmMsg = `Please Confirm Submission:\n\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staffName}\nTotal Items Required: ${totalCount}\n\nDo you want to proceed and submit?`;
+            if (confirm(confirmMsg)) {
+                saveStaffName(staffName);
+                dispatchTransitSheet();
+            }
+        }
+
+        async function dispatchTransitSheet() {
+            const staffNameInput = document.getElementById('staffNameInput').value.trim();
+            const { grouped, totalCount } = getGroupedShortages();
+
             let itemsToSave = [];
             for (let cat in grouped) grouped[cat].forEach(i => itemsToSave.push(i));
 
             const staffName = staffNameInput.charAt(0).toUpperCase() + staffNameInput.slice(1);
             const notesVal = document.getElementById('transitNotesInput').value.trim();
             const now = new Date();
+            
+            const recordId = editingTransitId ? editingTransitId : ('transit_' + now.getTime());
+            const recordTime = now.getTime();
+
             const newTransit = {
-                id: 'transit_' + now.getTime(),
+                id: recordId,
                 src: document.getElementById('sourceBranch').value,
                 dst: document.getElementById('destBranch').value,
                 staff: staffName,
                 notes: notesVal,
-                time: now.getTime(),
+                auditMode: auditMode,
+                time: recordTime,
                 status: "In Transit",
                 items: itemsToSave
             };
@@ -820,10 +891,12 @@
                 });
                 
                 let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
+                cachedSheets = cachedSheets.filter(s => s.id !== recordId);
                 cachedSheets.unshift(newTransit);
                 localStorage.setItem('lalitha_cached_sheets', JSON.stringify(cachedSheets));
 
                 activeMobilePayload = newTransit;
+                editingTransitId = null; 
                 document.getElementById('syncLoadingOverlay').classList.add('hidden');
                 document.getElementById('successModal').classList.remove('hidden');
             } catch (err) {
@@ -842,6 +915,37 @@
             document.getElementById('successModal').classList.add('hidden'); 
             switchMode('packing'); 
             loadTransitSheets(false); 
+        }
+
+        function editTransitRecord(id) {
+            loadTransitPayload(id);
+            if(!activeMobilePayload) return;
+
+            editingTransitId = activeMobilePayload.id;
+            document.getElementById('sourceBranch').value = activeMobilePayload.src;
+            document.getElementById('destBranch').value = activeMobilePayload.dst;
+            document.getElementById('staffNameInput').value = activeMobilePayload.staff || '';
+            document.getElementById('transitNotesInput').value = activeMobilePayload.notes || '';
+
+            if(activeMobilePayload.auditMode) {
+                setAuditMode(activeMobilePayload.auditMode);
+            } else {
+                setAuditMode('available');
+            }
+
+            for(let k in shelfStock) delete shelfStock[k];
+            
+            activeMobilePayload.items.forEach(item => {
+                const key = `${item.cat}_${item.code}_${item.uom}`;
+                if(item.stock !== undefined) {
+                    shelfStock[key] = item.stock;
+                }
+            });
+
+            activeMobilePayload = null; // Clear active payload so it audits fresh inputs for re-submission
+            switchMode('audit');
+            renderItems('');
+            alert("Loaded record for editing. Make your changes and press 'Confirm & Dispatch'.");
         }
 
         async function loadTransitSheets(forceSync = false) {
@@ -869,7 +973,9 @@
 
         function renderTransitList(sheets, targetDateStr) {
             const container = document.getElementById('transitSheetsFeed');
-            const filtered = sheets.filter(s => new Date(s.time).toISOString().split('T')[0] === targetDateStr);
+            const filtered = sheets.filter(s => new Date(s.time).toISOString().split('T')[0] === targetDateStr)
+                                   .sort((a, b) => b.time - a.time);
+                                   
             document.getElementById('mobileSheetCount').innerText = `${filtered.length} records`;
 
             if (filtered.length === 0) {
@@ -878,41 +984,58 @@
                 return;
             }
 
-            container.innerHTML = filtered.map((s, idx) => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-xs">
-                    <div class="flex justify-between font-bold text-sm">
-                        <span>#${idx + 1} &bull; ${s.src} &rarr; ${s.dst}</span>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
-                    </div>
-                    <p class="text-slate-500 text-[11px]">Time: ${new Date(s.time).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} | Staff: ${s.staff || 'Staff'} | <strong>${s.items.length} items</strong></p>
-                    ${s.notes ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${s.notes}</p>` : ''}
-                    
-                    <div class="flex items-center gap-2 pt-1 relative">
-                        <button onclick="loadTransitPayload('${s.id}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
+            container.innerHTML = filtered.map((s, idx) => {
+                const sheetDateObj = new Date(s.time);
+                const dateStr = sheetDateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = sheetDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const staffName = s.staff || 'Staff';
+
+                return `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-xs">
+                        <div class="flex justify-between font-bold text-sm">
+                            <span>#${idx + 1} &bull; ${s.src} &rarr; ${s.dst}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
+                        </div>
+                        <p class="text-slate-500 text-[11px]">Date: ${dateStr} | Time: ${timeStr} | Staff: ${staffName} | <strong>${s.items.length} items</strong></p>
+                        ${s.notes ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${s.notes}</p>` : ''}
                         
-                        <!-- Print & Share Dropdown Toggle -->
-                        <div class="relative flex-1">
-                            <button onclick="toggleActionDropdown(event, '${s.id}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-print text-sm"></i> Print & Share <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                            </button>
-                            <!-- Dropdown Menu -->
-                            <div id="dropdown_${s.id}" class="hidden absolute left-0 bottom-full mb-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
-                                <button onclick="loadTransitPayload('${s.id}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Download PDF</button>
-                                <button onclick="loadTransitPayload('${s.id}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
-                                <button onclick="loadTransitPayload('${s.id}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
+                        <div class="flex items-center gap-2 pt-1 relative">
+                            <button onclick="loadTransitPayload('${s.id}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
+                            
+                            <!-- Print & Share Dropdown Toggle -->
+                            <div class="relative flex-1">
+                                <button onclick="toggleActionDropdown(event, 'print_${s.id}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="fa-solid fa-print text-sm"></i> Print & Share <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </button>
+                                <!-- Dropdown Menu -->
+                                <div id="dropdown_print_${s.id}" class="hidden absolute left-0 bottom-full mb-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
+                                    <button onclick="loadTransitPayload('${s.id}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Download PDF</button>
+                                    <button onclick="loadTransitPayload('${s.id}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
+                                    <button onclick="loadTransitPayload('${s.id}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
+                                </div>
+                            </div>
+
+                            <!-- Actions Dropdown (Edit & Delete) -->
+                            <div class="relative">
+                                <button onclick="toggleActionDropdown(event, 'actions_${s.id}')" class="py-2.5 px-3 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+                                </button>
+                                <!-- Dropdown Menu -->
+                                <div id="dropdown_actions_${s.id}" class="hidden absolute right-0 bottom-full mb-1.5 w-36 bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
+                                    <button onclick="editTransitRecord('${s.id}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2"><i class="fa-solid fa-pen-to-square w-4"></i> Edit</button>
+                                    <button onclick="deleteCloudTransit('${s.id}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"><i class="fa-solid fa-trash w-4"></i> Delete</button>
+                                </div>
                             </div>
                         </div>
-
-                        <button onclick="deleteCloudTransit('${s.id}')" class="px-3.5 py-2.5 bg-red-600 text-white rounded-xl text-xs font-bold shadow-sm" title="Delete"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             window._latestCloudSheets = filtered;
         }
 
-        function toggleActionDropdown(event, id) {
+        function toggleActionDropdown(event, prefixId) {
             event.stopPropagation();
-            const dropdown = document.getElementById(`dropdown_${id}`);
+            const dropdown = document.getElementById(`dropdown_${prefixId}`);
             const isHidden = dropdown.classList.contains('hidden');
             closeAllDropdowns();
             if (isHidden) {
@@ -922,6 +1045,7 @@
 
         function closeAllDropdowns(event) {
             document.querySelectorAll('[id^="dropdown_"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('staffDropdownList')?.classList.add('hidden');
         }
 
         function loadTransitPayload(id) { 
@@ -980,19 +1104,13 @@
 
         function preparePrintData() {
             const staffInputVal = document.getElementById('staffNameInput').value.trim();
-            const staff = activeMobilePayload ? (activeMobilePayload.staff || 'Staff') : (staffInputVal ? staffInputVal.charAt(0).toUpperCase() + staffInputVal.slice(1) : '');
+            const staff = activeMobilePayload && activeMobilePayload.staff ? activeMobilePayload.staff : (staffInputVal ? staffInputVal.charAt(0).toUpperCase() + staffInputVal.slice(1) : 'Staff');
             const notes = activeMobilePayload ? (activeMobilePayload.notes || '') : document.getElementById('transitNotesInput').value.trim();
             
-            if (!staff && !activeMobilePayload) {
-                alert("Please enter the Staff Name before proceeding!");
-                document.getElementById('staffNameInput').focus();
-                return false;
-            }
-
             const { grouped, totalCount } = getGroupedShortages();
             if (totalCount === 0) { alert("No items required."); return false; }
 
-            const timeStr = activeMobilePayload ? new Date(activeMobilePayload.time).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
+            const dateTimeStr = activeMobilePayload ? new Date(activeMobilePayload.time).toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'}) : new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
             const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
             const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
 
@@ -1049,7 +1167,7 @@
                         </div>
                         <div style="font-size:8px;color:#334155;text-align:right;line-height:1.2;">
                             <div><strong>From:</strong> ${src} &rarr; <strong>To:</strong> ${dst} | <strong>Staff:</strong> <span style="color:#047857;font-weight:bold;">${staff}</span></div>
-                            <div><strong>Date:</strong> ${timeStr}</div>
+                            <div><strong>Date & Time:</strong> ${dateTimeStr}</div>
                         </div>
                     </div>
                     <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
@@ -1088,7 +1206,7 @@
                 <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:3px;">
                     <h3 style="font-size:10px;font-weight:bold;margin:0;">LALITHA NATURALS</h3>
                     <p style="font-size:8px;margin:1px 0;">${src} &rarr; ${dst} | Staff: ${staff}</p>
-                    <p style="font-size:7px;margin:0;">${timeStr}</p>
+                    <p style="font-size:7px;margin:0;">${dateTimeStr}</p>
                     ${notes ? `<p style="font-size:8px;margin:2px 0;text-align:left;"><strong>Note:</strong> ${notes}</p>` : ''}
                 </div>
                 ${thermHtml}
