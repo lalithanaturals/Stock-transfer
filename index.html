@@ -13,6 +13,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* Fixes touch screen zoom/double-tap delay on mobile buttons and inputs */
+        button, input, select { touch-action: manipulation; }
         .capitalize-first { text-transform: capitalize; }
         @media print {
             @page { size: A4; margin: 4mm; }
@@ -21,7 +23,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 pb-28">
+<body class="bg-slate-100 text-slate-900 pb-28" onclick="closeAllDropdowns(event)">
 
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-2.5 flex justify-between items-center">
@@ -84,6 +86,12 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Staff Remarks / Notes Input -->
+                <div>
+                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Staff Remarks / Notes (Optional)</label>
+                    <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-semibold outline-none">
+                </div>
             </div>
 
             <!-- Search & Actions Bar -->
@@ -132,11 +140,11 @@
 
     </main>
 
-    <!-- Bottom Action Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2.5 shadow-2xl z-40">
+    <!-- Bottom Action Bar (Only visible/active on Audit View) -->
+    <div id="bottomActionBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2.5 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
-            <button onclick="openPrintPreview()" class="bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-eye"></i> Staff Check (View)
+            <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-eye"></i> Staff Check
             </button>
             <button onclick="dispatchTransitSheet()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-paper-plane"></i> Confirm & Dispatch
@@ -158,20 +166,17 @@
             </div>
             <div>
                 <h3 class="font-bold text-sm text-slate-900">Successfully Dispatched!</h3>
-                <p class="text-[11px] text-slate-500 mt-0.5">Recorded to Google Sheets. Use print options freely:</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Recorded to Google Sheets. Use options below:</p>
             </div>
             <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="triggerSuccessAction('a4')" class="py-2 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-file-pdf"></i> A4 PDF
-                </button>
-                <button onclick="triggerSuccessAction('share')" class="py-2 bg-indigo-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-share-nodes"></i> Share PDF
-                </button>
-                <button onclick="triggerSuccessAction('thermal')" class="py-2 bg-amber-700 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-receipt"></i> Thermal
+                <button onclick="triggerSuccessAction('pdf')" class="py-2 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF
                 </button>
                 <button onclick="triggerSuccessAction('whatsapp')" class="py-2 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
                     <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </button>
+                <button onclick="triggerSuccessAction('thermal')" class="py-2 bg-amber-700 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 col-span-2">
+                    <i class="fa-solid fa-receipt"></i> Thermal Receipt
                 </button>
             </div>
             <button onclick="closeSuccessModalManually()" class="w-full py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">
@@ -259,19 +264,18 @@
         </div>
     </div>
 
-    <!-- Staff Check Preview Modal -->
+    <!-- Staff Check (View Only) Modal -->
     <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-slate-800 text-white px-4 py-2.5 flex justify-between items-center">
                 <h3 class="font-bold text-xs"><i class="fa-solid fa-eye text-emerald-400 mr-1"></i> Staff Check Preview</h3>
-                <button onclick="closePrintPreview()" class="text-white text-lg font-bold px-2">&times;</button>
+                <button onclick="closeStaffCheckModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
                 <div id="previewPaper" class="bg-white shadow p-3 w-full text-slate-900 rounded border border-slate-300"></div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-2.5 flex justify-between items-center">
-                <button onclick="triggerDirectPrint()" class="px-4 py-2 bg-emerald-700 text-white font-bold rounded-xl text-xs shadow"><i class="fa-solid fa-print mr-1"></i> Print A4</button>
-                <button onclick="closePrintPreview()" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
+            <div class="bg-white border-t border-slate-200 p-2.5 flex justify-end">
+                <button onclick="closeStaffCheckModal()" class="px-5 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
             </div>
         </div>
     </div>
@@ -476,17 +480,20 @@
         }
 
         function switchMode(mode) {
+            const bottomBar = document.getElementById('bottomActionBar');
             if(mode === 'audit') {
                 document.getElementById('auditViewSection').classList.remove('hidden');
                 document.getElementById('packingViewSection').classList.add('hidden');
                 document.getElementById('tabAuditBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
                 document.getElementById('tabPackingBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1";
+                bottomBar.classList.remove('hidden');
                 activeMobilePayload = null;
             } else {
                 document.getElementById('auditViewSection').classList.add('hidden');
                 document.getElementById('packingViewSection').classList.remove('hidden');
                 document.getElementById('tabPackingBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
                 document.getElementById('tabAuditBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1";
+                bottomBar.classList.add('hidden');
                 loadTransitSheets(false);
             }
         }
@@ -779,12 +786,14 @@
             for (let cat in grouped) grouped[cat].forEach(i => itemsToSave.push(i));
 
             const staffName = staffNameInput.charAt(0).toUpperCase() + staffNameInput.slice(1);
+            const notesVal = document.getElementById('transitNotesInput').value.trim();
             const now = new Date();
             const newTransit = {
                 id: 'transit_' + now.getTime(),
                 src: document.getElementById('sourceBranch').value,
                 dst: document.getElementById('destBranch').value,
                 staff: staffName,
+                notes: notesVal,
                 time: now.getTime(),
                 status: "In Transit",
                 items: itemsToSave
@@ -812,10 +821,9 @@
         }
 
         function triggerSuccessAction(action) {
-            if(action === 'a4') openPrintPreview();
-            else if(action === 'share') sharePdfFile();
-            else if(action === 'thermal') openThermalPreview();
+            if(action === 'pdf') downloadPdfFile();
             else if(action === 'whatsapp') shareToWhatsApp();
+            else if(action === 'thermal') openThermalPreview();
         }
 
         function closeSuccessModalManually() { 
@@ -865,17 +873,43 @@
                         <span class="px-2 py-0.5 rounded text-[9px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
                     </div>
                     <p class="text-slate-500 text-[10px]">Time: ${new Date(s.time).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} | Staff: ${s.staff || 'Staff'} | <strong>${s.items.length} items</strong></p>
+                    ${s.notes ? `<p class="text-[11px] text-slate-700 bg-slate-50 p-1.5 rounded border border-slate-200"><strong>Note:</strong> ${s.notes}</p>` : ''}
                     
-                    <div class="grid grid-cols-5 gap-1 pt-1">
-                        <button onclick="loadTransitPayload('${s.id}'); openPrintPreview();" class="py-1.5 bg-slate-800 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-eye"></i> View</button>
-                        <button onclick="loadTransitPayload('${s.id}'); triggerDirectPrint();" class="py-1.5 bg-emerald-700 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-file-pdf"></i> A4</button>
-                        <button onclick="loadTransitPayload('${s.id}'); sharePdfFile();" class="py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-share-nodes"></i> Share</button>
-                        <button onclick="loadTransitPayload('${s.id}'); openThermalPreview();" class="py-1.5 bg-amber-700 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-receipt"></i> Thermal</button>
-                        <button onclick="deleteCloudTransit('${s.id}')" class="py-1.5 bg-red-600 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex items-center gap-1.5 pt-1 relative">
+                        <button onclick="loadTransitPayload('${s.id}'); openStaffCheckModal();" class="py-1.5 px-3 bg-slate-800 text-white rounded text-[10px] font-bold shadow-sm flex items-center gap-1"><i class="fa-solid fa-eye"></i> View</button>
+                        
+                        <!-- Print & Share Dropdown Toggle -->
+                        <div class="relative flex-1">
+                            <button onclick="toggleActionDropdown(event, '${s.id}')" class="w-full py-1.5 bg-emerald-700 text-white rounded text-[10px] font-bold flex items-center justify-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-print"></i> Print & Share <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="dropdown_${s.id}" class="hidden absolute left-0 bottom-full mb-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-30 overflow-hidden py-1">
+                                <button onclick="loadTransitPayload('${s.id}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2"><i class="fa-solid fa-file-pdf text-slate-800 w-3"></i> Download PDF</button>
+                                <button onclick="loadTransitPayload('${s.id}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2"><i class="fa-solid fa-receipt text-amber-700 w-3"></i> Thermal Receipt</button>
+                                <button onclick="loadTransitPayload('${s.id}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2"><i class="fa-brands fa-whatsapp text-emerald-600 w-3"></i> WhatsApp</button>
+                            </div>
+                        </div>
+
+                        <button onclick="deleteCloudTransit('${s.id}')" class="px-3 py-1.5 bg-red-600 text-white rounded text-[10px] font-bold shadow-sm" title="Delete"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
             window._latestCloudSheets = filtered;
+        }
+
+        function toggleActionDropdown(event, id) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(`dropdown_${id}`);
+            const isHidden = dropdown.classList.contains('hidden');
+            closeAllDropdowns();
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+            }
+        }
+
+        function closeAllDropdowns(event) {
+            document.querySelectorAll('[id^="dropdown_"]').forEach(el => el.classList.add('hidden'));
         }
 
         function loadTransitPayload(id) { 
@@ -905,8 +939,11 @@
             const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
             const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
             const staff = activeMobilePayload ? (activeMobilePayload.staff || 'Staff') : (document.getElementById('staffNameInput').value.trim() || 'Staff');
+            const notes = activeMobilePayload ? (activeMobilePayload.notes || '') : document.getElementById('transitNotesInput').value.trim();
             
-            let msg = `*LALITHA NATURALS - TRANSIT*\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staff}\nItems: ${totalCount}\n\n`;
+            let msg = `*LALITHA NATURALS - TRANSIT*\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staff}\nItems: ${totalCount}\n`;
+            if (notes) msg += `Notes: ${notes}\n`;
+            msg += `\n`;
             for(let cat in grouped) {
                 msg += `*[ ${cat.toUpperCase()} ]*\n`;
                 grouped[cat].forEach(i => { msg += `• ${i.name} (${i.uom}) [${i.code}] - *Req: ${i.reqQty}*\n`; });
@@ -915,22 +952,27 @@
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        async function sharePdfFile() {
+        function downloadPdfFile() {
             if (!preparePrintData()) return;
-            const html = `<!DOCTYPE html><html><head><title>Transit</title><style>body{font-family:Inter,sans-serif;padding:0;margin:0;}</style></head><body>` + document.getElementById('pdfTemplateContainer').innerHTML + `</body></html>`;
-            const file = new File([new Blob([html], { type: 'text/html' })], "Transit_Sheet.html", { type: 'text/html' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try { await navigator.share({ title: 'Transit Sheet', files: [file] }); return; } catch(e){}
-            }
-            triggerDirectPrint();
+            const htmlContent = `<!DOCTYPE html><html><head><title>Transit Sheet</title><style>@page{size:A4;margin:4mm;}body{font-family:Inter,sans-serif;margin:0;padding:0;}</style></head><body>` + document.getElementById('pdfTemplateContainer').innerHTML + `</body></html>`;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Lalitha_Naturals_Transit_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function preparePrintData() {
             const staffInputVal = document.getElementById('staffNameInput').value.trim();
             const staff = activeMobilePayload ? (activeMobilePayload.staff || 'Staff') : (staffInputVal ? staffInputVal.charAt(0).toUpperCase() + staffInputVal.slice(1) : '');
+            const notes = activeMobilePayload ? (activeMobilePayload.notes || '') : document.getElementById('transitNotesInput').value.trim();
             
             if (!staff && !activeMobilePayload) {
-                alert("Please enter the Staff Name before printing or viewing!");
+                alert("Please enter the Staff Name before proceeding!");
                 document.getElementById('staffNameInput').focus();
                 return false;
             }
@@ -942,7 +984,6 @@
             const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
             const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
 
-            // Define fixed category slots in desired order
             const allCategories = ["Groceries", "Karam", "Flours", "Millets", "Ravva", "Dry Fruits", "Spices"];
             let categoryBlocks = [];
 
@@ -951,7 +992,6 @@
                 let rows = ""; 
                 let idx = 1;
                 
-                // Populate actual items
                 items.forEach(item => {
                     rows += `<tr style="border-bottom:1px solid #cbd5e1; height:18px;">
                         <td style="padding:1px 3px;text-align:center;font-size:9px;font-weight:bold;color:#475569;">${idx++}</td>
@@ -961,7 +1001,6 @@
                     </tr>`;
                 });
 
-                // Fill remaining empty rows to maintain fixed allocated vertical space for this category box
                 const minPaddingRows = 6; 
                 for (let i = items.length; i < minPaddingRows; i++) {
                     rows += `<tr style="border-bottom:1px solid #e2e8f0; height:18px;">
@@ -990,7 +1029,6 @@
                 `);
             });
 
-            // Group category blocks into 3 columns using a fixed CSS Table structure to prevent mobile browser reflow errors
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:198mm;">
                     <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-end;">
@@ -1019,6 +1057,9 @@
                             </td>
                         </tr>
                     </table>
+                    <div style="margin-top:6px; border:1px solid #cbd5e1; border-radius:3px; padding:4px 6px; background:#f8fafc; font-size:9px;">
+                        <strong>Staff Remarks / Notes:</strong> <span style="color:#334155;">${notes ? notes : '__________________________________________________________________________________________'}</span>
+                    </div>
                 </div>
             `;
 
@@ -1036,27 +1077,21 @@
                     <h3 style="font-size:10px;font-weight:bold;margin:0;">LALITHA NATURALS</h3>
                     <p style="font-size:8px;margin:1px 0;">${src} &rarr; ${dst} | Staff: ${staff}</p>
                     <p style="font-size:7px;margin:0;">${timeStr}</p>
+                    ${notes ? `<p style="font-size:8px;margin:2px 0;text-align:left;"><strong>Note:</strong> ${notes}</p>` : ''}
                 </div>
                 ${thermHtml}
             `;
             return true;
         }
 
-        function openPrintPreview() { 
+        function openStaffCheckModal() { 
             if (preparePrintData()) { 
                 document.getElementById('previewPaper').innerHTML = document.getElementById('pdfTemplateContainer').innerHTML; 
                 document.getElementById('previewModal').classList.remove('hidden'); 
             } 
         }
-        function closePrintPreview() { document.getElementById('previewModal').classList.add('hidden'); }
+        function closeStaffCheckModal() { document.getElementById('previewModal').classList.add('hidden'); }
         
-        function triggerDirectPrint() {
-            if (!preparePrintData()) return;
-            const win = window.open('', '', 'height=800,width=700');
-            win.document.write('<html><head><title>Lalitha Naturals - Transit Sheet</title><style>@page{size:A4;margin:4mm;}body{font-family:Inter,sans-serif;margin:0;padding:0;}</style></head><body>' + document.getElementById('pdfTemplateContainer').innerHTML + '</body></html>');
-            win.document.close(); win.focus(); setTimeout(() => { win.print(); win.close(); }, 300);
-        }
-
         function openThermalPreview() { if (preparePrintData()) { document.getElementById('thermalPaper').innerHTML = document.getElementById('thermalTemplateContainer').innerHTML; document.getElementById('thermalModal').classList.remove('hidden'); } }
         function closeThermalPreview() { document.getElementById('thermalModal').classList.add('hidden'); }
         
