@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lalitha Naturals - Operations Hub</title>
+    
+    <!-- Browser Tab Favicon & PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1NiIgZmlsbD0nI2VjYTgzMScvPjxyZWN0IHg9JzQ5LjM0JyB5PScxMzYuOTQnIHdpZHRoPScyNDguNjcnIGhlaWdodD0nMTg2LjUnIHJ4PScxOCcgZmlsbD0nI2ZmZicvPjxyZWN0IHg9JzMwNC4xOCcgeT0nMTc2Ljk0JyB3aWR0aD0nNzYuODMnIGhlaWdodD0nMTMyLjUnIHJ4PScxMicgZmlsbD0nI2ZmZicvPjxwYXRoIGQ9J00zODEuMDEgMjIxLjk0aDM1LjkxYzExLjA1IDAgMjAgOC45NSAyMCAyMHY0OC4VaC01NS45MXYtNjguNXonIGZpbGw9J2ZmZicvPjxwYXRoIGQ9J00xMjAgMTgwIGMzMCAwIDUwIDMwIDQwIDYwIGMtMTAgMzAgLTQwIDUwIC02MCAzMCBjLTEwIC0xMCAtNSAtMzAgMTAgNDAgYzEwIC0xMCAyMCAtMjAgMjAgLTMwIGMwIC0xMCAtMTAgLTE1IC0yMCAtMTAgLUMxNSA1IC0yNSAyMCAtMzAgMzUnIGZpbGw9J25vbmUnIHN0cm9rZT0nI2RjMjYyNicgc3Ryb2tlLXdpZHRoPScxMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9zdmc+">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1NiIgZmlsbD0nI2VjYTgzMScvPjxyZWN0IHg9JzQ5LjM0JyB5PScxMzYuOTQnIHdpZHRoPScyNDguNjcnIGhlaWdodD0nMTg2LjUnIHJ4PScxOCcgZmlsbD0nI2ZmZicvPjxyZWN0IHg9JzMwNC4xOCcgeT0nMTc2Ljk0JyB3aWR0aD0nNzYuODMnIGhlaWdodD0nMTMyLjUnIHJ4PScxMicgZmlsbD0nI2ZmZicvPjxwYXRoIGQ9J00zODEuMDEgMjIxLjk0aDM1LjkxYzExLjA1IDAgMjAgOC45NSAyMCAyMHY0OC4VaC01NS45MXYtNjguNXonIGZpbGw9J2ZmZicvPjxwYXRoIGQ9J00xMjAgMTgwIGMzMCAwIDUwIDMwIDQwIDYwIGMtMTAgMzAgLTQwIDUwIC02MCAzMCBjLTEwIC0xMCAtNSAtMzAgMTAgNDAgYzEwIC0xMCAyMCAtMjAgMjAgLTMwIGMwIC0xMCAtMTAgLTE1IC-yMCAtMTAgLUMxNSA1IC0yNSAyMCAtMzAgMzUnIGZpbGw9J25vbmUnIHN0cm9rZT0nI2RjMjYyNicgc3Ryb2tlLXdpZHRoPScxMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9zdmc+">
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Lalitha%20Naturals%20Hub%22%2C%22short_name%22%3A%22Lalitha%20Naturals%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23047857%22%2C%22theme_color%22%3A%22%23047857%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1NiIgZmlsbD0nI2VjYTgzMScvPjxwYXRoIGQ9J000OS4zNCAxOTYuOTRjMC0xMS4wNSA4Ljk1LTIwIDIwLTIwaDIyOC42N2MwIDExLjA1LTguOTUgMjAtMjAtMjBIMjkuMzR6Jz48L3BhdGg%2BcGF0aCBkPSdNNDkuMzQgMTM2Ljk0Yz0tMTEuMDUgOC45NS0yMCAyMC0yMGgyMjguNjdjMCAxMS4wNS04Ljk1IDIwLTIwIDIwSDI5LjM0dgtgcmVjdCB4PSI0OS4zNCIgeT0iMTM2Ljk0IiB3aWR0aD0iMjQ4LjY3IiBoZWlnaHQ9IjE4Ni41IiByeD0iMTgiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMzMwLjY4IDE3Ni45NGgyNi4xNWMxMS4wNSA5LjQ4IDE4LjQxIDIzLjc5IDIwLjM1IDM2.$y00tLWotNWMtMTEuMDUgMC0yMCA4Ljk1LTIwIDIwdi0xNi41aC0yMS41di00MHoiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMzMwLjY4IDE3Ni45NGgtNXY2OgpoNXYtNjBaIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzA0LjE4IiB5PSIxNzYuOTQiIHdpZHRoPSI3Ni44MyIgaGVpZ2h0PSIxMzIuNSIgcng9IjEyIiBmaWxsPSIjZmZmIi8%2BcGF0aCBkPSJNMzgxLjAxIDIyMS45NGgzNS45MWMxMS4wNSAwIDIwIDguOTUgMjAgMjB2NDguNWgtNTUuOTF2LTY4LjV6IiBmaWxsPSIjZmZmIi8%2BcGF0aCBkPSJNMTIwIDE4MGMzMCAwIDUwIDMwIDQwIDYwIGMtMTAgMzAgLTQwIDUwIC02MCAzMCBjLTEwIC0xMCAtNSAtMzAgMTAgNDAgYzEwIC0xMCAyMCAtMjAgMjAgLTMwIGMwIC0xMCAtMTAgLTE1IC0yMCAtMTAgLUMxNSA1IC0yNSAyMCAtMzAgMzUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2RjMjYyNiIgc3Ryb2tlLXdpZHRoPSIxMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8%2+PC9zdmc%2B%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -26,11 +32,28 @@
 
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
-        <div>
-            <h1 class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
-            <p class="text-[10px] text-emerald-100">Operations Hub</p>
+        <div class="flex items-center gap-2">
+            <!-- Custom Truck & 4L Logo Icon Embedded -->
+            <div class="w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center p-1 shadow-inner shrink-0 overflow-hidden cursor-pointer" onclick="downloadAppIconPNG()" title="Click to Download App Icon PNG">
+                <svg viewBox="0 0 512 512" class="w-full h-full fill-white">
+                    <rect x="49.34" y="136.94" width="248.67" height="186.5" rx="18" fill="#fff"/>
+                    <rect x="304.18" y="176.94" width="76.83" height="132.5" rx="12" fill="#fff"/>
+                    <path d="M381.01 221.94h35.91c11.05 0 20 8.95 20 20v48.5h-55.91v-68.5z" fill="#fff"/>
+                    <circle cx="178" cy="333" r="30" fill="#eca831"/>
+                    <circle cx="342" cy="333" r="30" fill="#eca831"/>
+                    <!-- 4L Logo Integrated on Truck Side -->
+                    <path d="M120 180 c30 0 50 30 40 60 c-10 30 -40 50 -60 30 c-10 -10 -5 -30 10 -40 c10 -10 20 -20 20 -30 c0 -10 -10 -15 -20 -10 c-15 5 -25 20 -30 35" fill="none" stroke="#dc2626" stroke-width="12" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
+                <p class="text-[10px] text-emerald-100">Operations Hub</p>
+            </div>
         </div>
         <div class="flex items-center gap-2">
+            <button onclick="downloadAppIconPNG()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-600 flex items-center gap-1 font-semibold" title="Download App Icon PNG">
+                <i class="fa-solid fa-download text-[10px]"></i> Icon PNG
+            </button>
             <div id="liveTime" class="text-[11px] font-medium text-emerald-100"></div>
             <button onclick="window.location.reload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-600" title="Refresh">
                 <i class="fa-solid fa-arrows-rotate"></i>
@@ -479,6 +502,62 @@
             });
         }
 
+        // --- APP ICON PNG DOWNLOAD GENERATOR ---
+        function downloadAppIconPNG() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Draw orange circle background
+            ctx.fillStyle = '#eca831';
+            ctx.beginPath();
+            ctx.arc(256, 256, 256, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw Truck Body (White rounded rect)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect(49.34, 136.94, 248.67, 186.5, 18);
+            ctx.fill();
+
+            // Draw Truck Cab
+            ctx.beginPath();
+            ctx.roundRect(304.18, 176.94, 76.83, 132.5, 12);
+            ctx.fill();
+            ctx.fillRect(381.01, 221.94, 35.91, 68.5);
+
+            // Draw Wheels
+            ctx.fillStyle = '#eca831';
+            ctx.beginPath();
+            ctx.arc(178, 333, 30, 0, Math.PI * 2);
+            ctx.arc(342, 333, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw Red 4L Logo on Truck Side
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(120, 180);
+            ctx.bezierCurveTo(150, 180, 170, 210, 160, 240);
+            ctx.bezierCurveTo(150, 270, 120, 290, 100, 270);
+            ctx.bezierCurveTo(90, 260, 95, 240, 110, 230);
+            ctx.bezierCurveTo(120, 220, 130, 200, 130, 190);
+            ctx.bezierCurveTo(130, 180, 120, 175, 110, 180);
+            ctx.bezierCurveTo(95, 185, 85, 200, 80, 215);
+            ctx.stroke();
+
+            // Trigger PNG download
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'Lalitha_Naturals_App_Icon.png';
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function updateClock() {
             const now = new Date();
             document.getElementById('liveTime').innerText = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -777,7 +856,6 @@
 
         function getGroupedShortages() {
             let grouped = {}, totalCount = 0;
-            // If viewing an active payload (e.g. from View button or Edit mode), group its items directly
             if (activeMobilePayload && activeMobilePayload.items && activeMobilePayload.items.length > 0) {
                 activeMobilePayload.items.forEach(item => {
                     const cat = item.cat || 'Groceries';
@@ -942,7 +1020,7 @@
                 }
             });
 
-            activeMobilePayload = null; // Clear active payload so it audits fresh inputs for re-submission
+            activeMobilePayload = null; 
             switchMode('audit');
             renderItems('');
             alert("Loaded record for editing. Make your changes and press 'Confirm & Dispatch'.");
