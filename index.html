@@ -953,8 +953,8 @@
                     </tr>`;
                 });
                 categoryBlocks.push(`
-                    <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 8px; background: #fff; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; display: inline-block; width: 100%;">
-                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 3px 5px; text-transform: uppercase;">${cat}</div>
+                    <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; background: #fff; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; width: 100%;">
+                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${cat}</div>
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #f1f5f9; color: #334155; border-bottom: 1px solid #cbd5e1;">
@@ -970,10 +970,10 @@
                 `);
             }
 
-            // Using CSS multi-columns layout (column-count: 3) to achieve side-by-side category boxes matching the exact requested view
+            // Using native CSS multi-columns layout (`column-count: 3`) which allows columns to fill smoothly from top to bottom without large empty gaps across pages
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:100%;">
-                    <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-end;">
+                    <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-end;">
                         <div>
                             <h2 style="font-size:13px;font-weight:900;color:#047857;margin:0;">LALITHA NATURALS - TRANSIT SHEET</h2>
                         </div>
@@ -982,7 +982,7 @@
                             <div><strong>Date:</strong> ${timeStr}</div>
                         </div>
                     </div>
-                    <div style="column-count: 3; column-gap: 8px; width: 100%; margin: 0; padding: 0;">
+                    <div style="column-count: 3; column-gap: 6px; width: 100%; margin: 0; padding: 0;">
                         ${categoryBlocks.join('')}
                     </div>
                 </div>
