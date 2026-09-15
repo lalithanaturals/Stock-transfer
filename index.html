@@ -13,7 +13,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        /* Fixes touch screen zoom/double-tap delay on mobile buttons and inputs */
         button, input, select { touch-action: manipulation; }
         .capitalize-first { text-transform: capitalize; }
         @media print {
@@ -26,114 +25,114 @@
 <body class="bg-slate-100 text-slate-900 pb-28" onclick="closeAllDropdowns(event)">
 
     <!-- Header -->
-    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-2.5 flex justify-between items-center">
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
         <div>
             <h1 class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
-            <p class="text-[9px] text-emerald-100">Operations Hub</p>
+            <p class="text-[10px] text-emerald-100">Operations Hub</p>
         </div>
         <div class="flex items-center gap-2">
-            <div id="liveTime" class="text-[10px] font-medium text-emerald-100"></div>
-            <button onclick="window.location.reload()" class="bg-emerald-800 text-emerald-100 px-2 py-1 rounded text-xs border border-emerald-600" title="Refresh">
+            <div id="liveTime" class="text-[11px] font-medium text-emerald-100"></div>
+            <button onclick="window.location.reload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-600" title="Refresh">
                 <i class="fa-solid fa-arrows-rotate"></i>
             </button>
         </div>
     </header>
 
     <!-- Main Mobile Container -->
-    <main class="max-w-md mx-auto px-2.5 py-2.5 space-y-2.5">
+    <main class="max-w-md mx-auto px-3 py-3 space-y-3">
         
         <!-- Mode Switcher Tabs -->
-        <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1">
-            <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1">
-                <i class="fa-solid fa-clipboard-check"></i> Audit & Check
+        <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1.5">
+            <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-clipboard-check text-sm"></i> Audit & Check
             </button>
-            <button onclick="switchMode('packing')" id="tabPackingBtn" class="py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1">
-                <i class="fa-solid fa-truck-fast"></i> Ledger Sheets
+            <button onclick="switchMode('packing')" id="tabPackingBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-truck-fast text-sm"></i> Ledger Sheets
             </button>
         </div>
 
         <!-- AUDIT & INTELLIGENT STOCK CHECK VIEW -->
-        <div id="auditViewSection" class="space-y-2.5">
+        <div id="auditViewSection" class="space-y-3">
             <!-- Branch & Staff Card -->
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 space-y-2.5">
-                <div class="grid grid-cols-2 gap-2">
+            <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
+                <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Source</label>
-                        <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Source</label>
+                        <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                             <option value="Gajuwaka">Gajuwaka</option>
                             <option value="Kurmannapalem">Kurmannapalem</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Destination</label>
-                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Destination</label>
+                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                             <option value="Kurmannapalem Packing">Kurmannapalem Pkg</option>
                             <option value="Gajuwaka Packing">Gajuwaka Pkg</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 items-center">
+                <div class="grid grid-cols-2 gap-2.5 items-center">
                     <div>
-                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Staff Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="staffNameInput" placeholder="Required..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none capitalize-first">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="staffNameInput" placeholder="Required..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
                     </div>
                     <div>
-                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Audit Mode</label>
-                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-lg">
-                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-1.5 rounded text-[10px] font-bold transition bg-emerald-600 text-white">Avail</button>
-                            <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-1.5 rounded text-[10px] font-bold transition bg-transparent text-slate-600">Missing</button>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
+                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
+                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white">Avail</button>
+                            <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600">Missing</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Staff Remarks / Notes Input -->
                 <div>
-                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Staff Remarks / Notes (Optional)</label>
-                    <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-semibold outline-none">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Remarks / Notes (Optional)</label>
+                    <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
                 </div>
             </div>
 
             <!-- Search & Actions Bar -->
-            <div class="space-y-2">
-                <div class="flex gap-1.5">
+            <div class="space-y-2.5">
+                <div class="flex gap-2">
                     <div class="relative flex-1">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-xs">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-xs">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
                         <input type="text" id="searchBox" placeholder="Search item or code..." 
-                            class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
+                            class="w-full pl-10 pr-3 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
                     </div>
-                    <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode"></i></button>
-                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-3 py-2.5 rounded-xl text-xs shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear"></i></button>
+                    <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
+                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-4 py-3 rounded-xl text-xs shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear text-sm"></i></button>
                 </div>
 
                 <!-- Category Header -->
-                <div class="flex justify-between items-center bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+                <div class="flex justify-between items-center bg-white px-3.5 py-2 rounded-xl border border-slate-200">
                     <span id="activeCategoryTitle" class="text-xs font-bold text-slate-700 uppercase">Category</span>
-                    <button onclick="clearCurrentCategory()" class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">Clear Category</button>
+                    <button onclick="clearCurrentCategory()" class="text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">Clear Category</button>
                 </div>
                 <!-- Category Tabs -->
-                <div id="categoryTabs" class="flex overflow-x-auto gap-1 pb-1 scrollbar-none"></div>
+                <div id="categoryTabs" class="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none"></div>
             </div>
 
             <!-- Items List -->
-            <div id="itemsContainer" class="space-y-2"></div>
+            <div id="itemsContainer" class="space-y-2.5"></div>
         </div>
 
         <!-- TRANSIT & PACKING SHEETS VIEW -->
-        <div id="packingViewSection" class="hidden space-y-2.5">
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+        <div id="packingViewSection" class="hidden space-y-3">
+            <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <div>
-                    <label class="block text-[9px] font-bold uppercase text-slate-400">Ledger Date</label>
-                    <input type="date" id="lookupDateInput" onchange="loadTransitSheets(false)" class="bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-bold mt-0.5 outline-none">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400">Ledger Date</label>
+                    <input type="date" id="lookupDateInput" onchange="loadTransitSheets(false)" class="bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-bold mt-1 outline-none">
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="loadTransitSheets(true)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i> Sync</button>
-                    <div id="mobileSheetCount" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">0 records</div>
+                <div class="flex items-center gap-2.5">
+                    <button onclick="loadTransitSheets(true)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i> Sync</button>
+                    <div id="mobileSheetCount" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">0 records</div>
                 </div>
             </div>
-            <div id="transitSheetsFeed" class="space-y-2.5">
+            <div id="transitSheetsFeed" class="space-y-3">
                 <div class="text-center py-6 text-slate-400 text-xs font-semibold">Loading records...</div>
             </div>
         </div>
@@ -141,13 +140,13 @@
     </main>
 
     <!-- Bottom Action Bar (Only visible/active on Audit View) -->
-    <div id="bottomActionBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2.5 shadow-2xl z-40">
-        <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
-            <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-eye"></i> Staff Check
+    <div id="bottomActionBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
+        <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5">
+            <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+                <i class="fa-solid fa-eye text-sm"></i> Staff Check
             </button>
-            <button onclick="dispatchTransitSheet()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-paper-plane"></i> Confirm & Dispatch
+            <button onclick="dispatchTransitSheet()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane text-sm"></i> Confirm & Dispatch
             </button>
         </div>
     </div>
@@ -169,17 +168,17 @@
                 <p class="text-[11px] text-slate-500 mt-0.5">Recorded to Google Sheets. Use options below:</p>
             </div>
             <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="triggerSuccessAction('pdf')" class="py-2 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <button onclick="triggerSuccessAction('pdf')" class="py-2.5 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-file-pdf"></i> Download PDF
                 </button>
-                <button onclick="triggerSuccessAction('whatsapp')" class="py-2 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <button onclick="triggerSuccessAction('whatsapp')" class="py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
                     <i class="fa-brands fa-whatsapp"></i> WhatsApp
                 </button>
-                <button onclick="triggerSuccessAction('thermal')" class="py-2 bg-amber-700 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 col-span-2">
+                <button onclick="triggerSuccessAction('thermal')" class="py-2.5 bg-amber-700 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 col-span-2">
                     <i class="fa-solid fa-receipt"></i> Thermal Receipt
                 </button>
             </div>
-            <button onclick="closeSuccessModalManually()" class="w-full py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">
+            <button onclick="closeSuccessModalManually()" class="w-full py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">
                 Close & View Ledger
             </button>
         </div>
@@ -188,15 +187,15 @@
     <!-- Master Catalog Manager Modal -->
     <div id="catalogModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-2.5 flex justify-between items-center">
+            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
                 <h3 class="font-bold text-xs"><i class="fa-solid fa-gear text-emerald-400 mr-1"></i> Master Catalog Manager</h3>
                 <button onclick="closeCatalogModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
-            <div class="p-3 overflow-y-auto bg-slate-50 flex-1 space-y-3">
-                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
+            <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-3">
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
                     <h4 class="text-xs font-bold text-emerald-700"><i class="fa-solid fa-plus-circle mr-1"></i> Add Item</h4>
-                    <div class="grid grid-cols-2 gap-2">
-                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                             <option value="Groceries">Groceries</option>
                             <option value="Karam">Karam</option>
                             <option value="Flours">Flours</option>
@@ -205,29 +204,29 @@
                             <option value="Dry Fruits">Dry Fruits</option>
                             <option value="Spices">Spices</option>
                         </select>
-                        <div class="flex gap-1">
-                            <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
-                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-2.5 py-2 rounded-lg text-xs"><i class="fa-solid fa-barcode"></i></button>
+                        <div class="flex gap-1.5">
+                            <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-barcode"></i></button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <input type="text" id="newItemName" placeholder="Item Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
-                        <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <input type="text" id="newItemName" placeholder="Item Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                     </div>
-                    <div class="flex gap-2">
-                        <input type="number" id="newItemMin" placeholder="Min" class="w-1/2 bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
-                        <button onclick="addNewCatalogItem()" class="w-1/2 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs shadow">Save</button>
+                    <div class="flex gap-2.5">
+                        <input type="number" id="newItemMin" placeholder="Min" class="w-1/2 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <button onclick="addNewCatalogItem()" class="w-1/2 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow">Save</button>
                     </div>
                 </div>
                 <div class="space-y-2">
                     <h4 id="catalogCountHeader" class="text-xs font-bold text-slate-700">Existing Items</h4>
-                    <input type="text" id="catalogSearch" placeholder="Filter items..." oninput="renderCatalogEditorList()" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold outline-none">
+                    <input type="text" id="catalogSearch" placeholder="Filter items..." oninput="renderCatalogEditorList()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
                     <div id="catalogEditorList" class="space-y-2 max-h-56 overflow-y-auto"></div>
                 </div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-2.5 flex justify-between items-center">
-                <button onclick="resetDefaultCatalog()" class="text-[10px] text-red-600 font-bold px-2 py-1 bg-red-50 rounded border border-red-200">Reset Default</button>
-                <button onclick="closeCatalogModal()" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Done</button>
+            <div class="bg-white border-t border-slate-200 p-3 flex justify-between items-center">
+                <button onclick="resetDefaultCatalog()" class="text-xs text-red-600 font-bold px-3 py-2 bg-red-50 rounded-xl border border-red-200">Reset Default</button>
+                <button onclick="closeCatalogModal()" class="px-5 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Done</button>
             </div>
         </div>
     </div>
@@ -243,23 +242,23 @@
                 <video id="interactive" class="w-full h-full object-cover"></video>
             </div>
             <p id="scanStatus" class="text-xs text-slate-600">Align barcode inside frame...</p>
-            <button onclick="closeScannerModal()" class="w-full py-2 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Close</button>
+            <button onclick="closeScannerModal()" class="w-full py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Close</button>
         </div>
     </div>
 
     <!-- Thermal Print Modal -->
     <div id="thermalModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="bg-amber-800 text-white px-4 py-2.5 flex justify-between items-center">
+            <div class="bg-amber-800 text-white px-4 py-3 flex justify-between items-center">
                 <h3 class="font-bold text-xs"><i class="fa-solid fa-receipt mr-1"></i> 80mm Receipt</h3>
                 <button onclick="closeThermalPreview()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
-            <div class="p-3 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
+            <div class="p-3.5 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
                 <div id="thermalPaper" class="bg-white shadow p-3 w-[270px] text-slate-900 font-mono text-[10px] leading-tight rounded border border-slate-300"></div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-2.5 flex gap-2">
-                <button onclick="closeThermalPreview()" class="flex-1 py-2 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Cancel</button>
-                <button onclick="triggerThermalPrint()" class="flex-1 py-2 bg-amber-800 text-white font-semibold rounded-xl text-xs shadow"><i class="fa-solid fa-print"></i> Print</button>
+            <div class="bg-white border-t border-slate-200 p-3 flex gap-2.5">
+                <button onclick="closeThermalPreview()" class="flex-1 py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Cancel</button>
+                <button onclick="triggerThermalPrint()" class="flex-1 py-2.5 bg-amber-800 text-white font-semibold rounded-xl text-xs shadow"><i class="fa-solid fa-print"></i> Print</button>
             </div>
         </div>
     </div>
@@ -267,15 +266,15 @@
     <!-- Staff Check (View Only) Modal -->
     <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-2.5 flex justify-between items-center">
+            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
                 <h3 class="font-bold text-xs"><i class="fa-solid fa-eye text-emerald-400 mr-1"></i> Staff Check Preview</h3>
                 <button onclick="closeStaffCheckModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
-            <div class="p-3 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
+            <div class="p-3.5 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
                 <div id="previewPaper" class="bg-white shadow p-3 w-full text-slate-900 rounded border border-slate-300"></div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-2.5 flex justify-end">
-                <button onclick="closeStaffCheckModal()" class="px-5 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
+            <div class="bg-white border-t border-slate-200 p-3 flex justify-end">
+                <button onclick="closeStaffCheckModal()" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
             </div>
         </div>
     </div>
@@ -484,15 +483,15 @@
             if(mode === 'audit') {
                 document.getElementById('auditViewSection').classList.remove('hidden');
                 document.getElementById('packingViewSection').classList.add('hidden');
-                document.getElementById('tabAuditBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
-                document.getElementById('tabPackingBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1";
+                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
                 bottomBar.classList.remove('hidden');
                 activeMobilePayload = null;
             } else {
                 document.getElementById('auditViewSection').classList.add('hidden');
                 document.getElementById('packingViewSection').classList.remove('hidden');
-                document.getElementById('tabPackingBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
-                document.getElementById('tabAuditBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1";
+                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
                 bottomBar.classList.add('hidden');
                 loadTransitSheets(false);
             }
@@ -501,11 +500,11 @@
         function setAuditMode(mode) {
             auditMode = mode;
             if(mode === 'available') {
-                document.getElementById('modeAvailBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-emerald-600 text-white";
-                document.getElementById('modeShortBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-transparent text-slate-600";
+                document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white";
+                document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
             } else {
-                document.getElementById('modeShortBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-amber-600 text-white";
-                document.getElementById('modeAvailBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-transparent text-slate-600";
+                document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-amber-600 text-white";
+                document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
             }
             renderItems(document.getElementById('searchBox').value);
         }
@@ -518,7 +517,7 @@
             }
             document.getElementById('activeCategoryTitle').innerText = activeCategory;
             container.innerHTML = categories.map(cat => `
-                <button onclick="switchCategory('${cat}')" class="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200'}">${cat}</button>
+                <button onclick="switchCategory('${cat}')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200'}">${cat}</button>
             `).join('');
         }
 
@@ -561,38 +560,51 @@
                 const inputDisplayVal = shelfStock[key] !== undefined ? shelfStock[key] : '';
 
                 return `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-800 rounded">${item.code}</span>
-                                <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Min: ${item.min}</span>
-                                <span class="text-[10px] font-extrabold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Need: ${reqQty}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${item.code}</span>
+                                <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                <span class="text-[10px] font-extrabold text-red-700 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">Need: ${reqQty}</span>
                             </div>
                             <h3 class="text-sm font-bold text-slate-900 leading-snug">${item.name}</h3>
                             <p class="text-xs text-slate-500 font-medium">${item.uom}</p>
                         </div>
-                        <div class="flex items-center gap-1 bg-slate-100 border border-slate-200 p-1 rounded-xl shrink-0">
-                            <button onclick="updateStock('${key}', -1)" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-300 rounded-lg text-slate-800 font-bold text-sm shadow-sm">-</button>
-                            <input type="number" id="stock_${key}" value="${inputDisplayVal}" placeholder="0" onchange="setStock('${key}', this.value)" class="w-10 text-center text-xs font-bold bg-transparent outline-none">
-                            <button onclick="updateStock('${key}', 1)" class="w-8 h-8 flex items-center justify-center bg-emerald-600 text-white rounded-lg font-bold text-sm shadow-sm">+</button>
+                        <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
+                            <button onclick="updateStock('${key}', -1, ${item.min}, '${item.category}')" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-base shadow-sm">-</button>
+                            <input type="number" id="stock_${key}" value="${inputDisplayVal}" placeholder="0" onchange="setStock('${key}', this.value, ${item.min})" class="w-11 text-center text-sm font-bold bg-transparent outline-none">
+                            <button onclick="updateStock('${key}', 1, ${item.min}, '${item.category}')" class="w-11 h-11 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-base shadow-sm">+</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function updateStock(key, change) {
+        function updateStock(key, change, minLimit) {
             let current = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) : 0;
             current += change;
             if (current < 0) current = 0;
+            
+            // In 'available' mode, cap the input value to the item's min requirement so it cannot exceed the Need value
+            if (auditMode === 'available' && current > minLimit) {
+                current = minLimit;
+            }
+
             shelfStock[key] = current;
             renderItems(document.getElementById('searchBox').value);
         }
 
-        function setStock(key, val) {
+        function setStock(key, val, minLimit) {
             const parsed = parseInt(val);
-            if (isNaN(parsed) || val === "") delete shelfStock[key];
-            else shelfStock[key] = parsed < 0 ? 0 : parsed;
+            if (isNaN(parsed) || val === "") {
+                delete shelfStock[key];
+            } else {
+                let clamped = parsed < 0 ? 0 : parsed;
+                if (auditMode === 'available' && clamped > minLimit) {
+                    clamped = minLimit;
+                }
+                shelfStock[key] = clamped;
+            }
             renderItems(document.getElementById('searchBox').value);
         }
 
@@ -611,35 +623,35 @@
                     if (filter && !item.name.toLowerCase().includes(filter) && !item.code.includes(filter)) return;
                     
                     html += `
-                        <div id="catalog_row_${cat}_${index}" class="bg-white p-2.5 rounded-xl border border-slate-200 text-xs space-y-2">
+                        <div id="catalog_row_${cat}_${index}" class="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2">
                             <div class="flex justify-between items-center font-bold text-slate-800">
-                                <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[9px]">${cat}</span>
-                                <div class="flex gap-1">
-                                    <button onclick="toggleEditItem('${cat}', ${index})" id="edit_btn_${cat}_${index}" class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
-                                    <button onclick="deleteCatalogItem('${cat}', ${index})" class="text-red-600 bg-red-50 px-2 py-0.5 rounded font-bold">Remove</button>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${cat}</span>
+                                <div class="flex gap-1.5">
+                                    <button onclick="toggleEditItem('${cat}', ${index})" id="edit_btn_${cat}_${index}" class="text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
+                                    <button onclick="deleteCatalogItem('${cat}', ${index})" class="text-red-600 bg-red-50 px-2.5 py-1 rounded-lg font-bold">Remove</button>
                                 </div>
                             </div>
                             <div id="view_mode_${cat}_${index}" class="py-0.5">
                                 <strong>${item.name}</strong> (${item.uom})
                                 <div class="text-[10px] text-slate-500">Code: ${item.code} | Min: ${item.min}</div>
                             </div>
-                            <div id="edit_mode_${cat}_${index}" class="hidden space-y-2 pt-1 border-t border-slate-100">
-                                <div class="grid grid-cols-4 gap-1.5">
+                            <div id="edit_mode_${cat}_${index}" class="hidden space-y-2.5 pt-1 border-t border-slate-100">
+                                <div class="grid grid-cols-4 gap-2">
                                     <div class="col-span-1 flex gap-1">
-                                        <input type="text" id="edit_code_${cat}_${index}" value="${item.code}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center text-xs">
-                                        <button onclick="openScannerModal('edit_${cat}_${index}')" class="bg-indigo-600 text-white px-2 py-1 rounded text-xs" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
+                                        <input type="text" id="edit_code_${cat}_${index}" value="${item.code}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
+                                        <button onclick="openScannerModal('edit_${cat}_${index}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-xs" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
                                     </div>
-                                    <input type="text" id="edit_name_${cat}_${index}" value="${item.name}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-xs">
-                                    <input type="text" id="edit_uom_${cat}_${index}" value="${item.uom}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center text-xs">
+                                    <input type="text" id="edit_name_${cat}_${index}" value="${item.name}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                    <input type="text" id="edit_uom_${cat}_${index}" value="${item.uom}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
                                 </div>
                                 <div class="flex justify-between items-center pt-1">
-                                    <div class="flex items-center gap-1">
+                                    <div class="flex items-center gap-1.5">
                                         <span class="text-[10px] text-slate-500 font-bold">Min:</span>
-                                        <input type="number" id="edit_min_${cat}_${index}" value="${item.min}" class="w-14 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center text-xs">
+                                        <input type="number" id="edit_min_${cat}_${index}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
                                     </div>
-                                    <div class="flex gap-1">
-                                        <button onclick="toggleEditItem('${cat}', ${index})" class="px-2.5 py-1 bg-slate-200 text-slate-700 font-bold rounded text-[11px]">Cancel</button>
-                                        <button onclick="saveCatalogItem('${cat}', ${index})" class="px-3 py-1 bg-emerald-600 text-white font-bold rounded shadow text-[11px]">Save</button>
+                                    <div class="flex gap-1.5">
+                                        <button onclick="toggleEditItem('${cat}', ${index})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Cancel</button>
+                                        <button onclick="saveCatalogItem('${cat}', ${index})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-xs">Save</button>
                                     </div>
                                 </div>
                             </div>
@@ -660,12 +672,12 @@
                 editDiv.classList.remove('hidden');
                 viewDiv.classList.add('hidden');
                 btn.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Close';
-                btn.className = "text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold";
+                btn.className = "text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg font-bold";
             } else {
                 editDiv.classList.add('hidden');
                 viewDiv.classList.remove('hidden');
                 btn.innerHTML = '<i class="fa-solid fa-pen-to-square mr-1"></i> Edit';
-                btn.className = "text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold";
+                btn.className = "text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg font-bold";
             }
         }
 
@@ -867,31 +879,31 @@
             }
 
             container.innerHTML = filtered.map((s, idx) => `
-                <div class="bg-white p-3 rounded-xl shadow-sm border space-y-2 text-xs">
-                    <div class="flex justify-between font-bold">
+                <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-xs">
+                    <div class="flex justify-between font-bold text-sm">
                         <span>#${idx + 1} &bull; ${s.src} &rarr; ${s.dst}</span>
-                        <span class="px-2 py-0.5 rounded text-[9px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
                     </div>
-                    <p class="text-slate-500 text-[10px]">Time: ${new Date(s.time).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} | Staff: ${s.staff || 'Staff'} | <strong>${s.items.length} items</strong></p>
-                    ${s.notes ? `<p class="text-[11px] text-slate-700 bg-slate-50 p-1.5 rounded border border-slate-200"><strong>Note:</strong> ${s.notes}</p>` : ''}
+                    <p class="text-slate-500 text-[11px]">Time: ${new Date(s.time).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} | Staff: ${s.staff || 'Staff'} | <strong>${s.items.length} items</strong></p>
+                    ${s.notes ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${s.notes}</p>` : ''}
                     
-                    <div class="flex items-center gap-1.5 pt-1 relative">
-                        <button onclick="loadTransitPayload('${s.id}'); openStaffCheckModal();" class="py-1.5 px-3 bg-slate-800 text-white rounded text-[10px] font-bold shadow-sm flex items-center gap-1"><i class="fa-solid fa-eye"></i> View</button>
+                    <div class="flex items-center gap-2 pt-1 relative">
+                        <button onclick="loadTransitPayload('${s.id}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
                         
                         <!-- Print & Share Dropdown Toggle -->
                         <div class="relative flex-1">
-                            <button onclick="toggleActionDropdown(event, '${s.id}')" class="w-full py-1.5 bg-emerald-700 text-white rounded text-[10px] font-bold flex items-center justify-center gap-1 shadow-sm">
-                                <i class="fa-solid fa-print"></i> Print & Share <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                            <button onclick="toggleActionDropdown(event, '${s.id}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-print text-sm"></i> Print & Share <i class="fa-solid fa-chevron-down text-[10px]"></i>
                             </button>
                             <!-- Dropdown Menu -->
-                            <div id="dropdown_${s.id}" class="hidden absolute left-0 bottom-full mb-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-30 overflow-hidden py-1">
-                                <button onclick="loadTransitPayload('${s.id}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2"><i class="fa-solid fa-file-pdf text-slate-800 w-3"></i> Download PDF</button>
-                                <button onclick="loadTransitPayload('${s.id}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2"><i class="fa-solid fa-receipt text-amber-700 w-3"></i> Thermal Receipt</button>
-                                <button onclick="loadTransitPayload('${s.id}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2"><i class="fa-brands fa-whatsapp text-emerald-600 w-3"></i> WhatsApp</button>
+                            <div id="dropdown_${s.id}" class="hidden absolute left-0 bottom-full mb-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
+                                <button onclick="loadTransitPayload('${s.id}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Download PDF</button>
+                                <button onclick="loadTransitPayload('${s.id}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
+                                <button onclick="loadTransitPayload('${s.id}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
                             </div>
                         </div>
 
-                        <button onclick="deleteCloudTransit('${s.id}')" class="px-3 py-1.5 bg-red-600 text-white rounded text-[10px] font-bold shadow-sm" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="deleteCloudTransit('${s.id}')" class="px-3.5 py-2.5 bg-red-600 text-white rounded-xl text-xs font-bold shadow-sm" title="Delete"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
                 </div>
             `).join('');
