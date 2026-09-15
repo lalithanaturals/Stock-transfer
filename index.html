@@ -16,7 +16,8 @@
         .capitalize-first { text-transform: capitalize; }
         @media print {
             @page { size: A4; margin: 4mm; }
-            body { margin: 0; padding: 0; background: #fff; }
+            body { margin: 0; padding: 0; background: #fff; width: 210mm; }
+            #pdfTemplateContainer { width: 100% !important; }
         }
     </style>
 </head>
@@ -960,7 +961,7 @@
                     </tr>`;
                 });
 
-                // Fill remaining empty rows (padding gaps) to maintain fixed allocated vertical space for this category
+                // Fill remaining empty rows to maintain fixed allocated vertical space for this category box
                 const minPaddingRows = 6; 
                 for (let i = items.length; i < minPaddingRows; i++) {
                     rows += `<tr style="border-bottom:1px solid #e2e8f0; height:18px;">
@@ -989,9 +990,9 @@
                 `);
             });
 
-            // Using CSS multi-columns with fixed slots so categories line up predictably across columns
+            // Group category blocks into 3 columns using a fixed CSS Table structure to prevent mobile browser reflow errors
             document.getElementById('pdfTemplateContainer').innerHTML = `
-                <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:100%;">
+                <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:198mm;">
                     <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-end;">
                         <div>
                             <h2 style="font-size:13px;font-weight:900;color:#047857;margin:0;">LALITHA NATURALS - TRANSIT SHEET</h2>
@@ -1001,9 +1002,23 @@
                             <div><strong>Date:</strong> ${timeStr}</div>
                         </div>
                     </div>
-                    <div style="column-count: 3; column-gap: 6px; width: 100%; margin: 0; padding: 0;">
-                        ${categoryBlocks.join('')}
-                    </div>
+                    <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
+                        <tr>
+                            <td style="width:33.33%; vertical-align:top; padding-right:3px;">
+                                ${categoryBlocks[0] || ''}
+                                ${categoryBlocks[1] || ''}
+                                ${categoryBlocks[2] || ''}
+                            </td>
+                            <td style="width:33.33%; vertical-align:top; padding-left:3px; padding-right:3px;">
+                                ${categoryBlocks[3] || ''}
+                                ${categoryBlocks[4] || ''}
+                            </td>
+                            <td style="width:33.33%; vertical-align:top; padding-left:3px;">
+                                ${categoryBlocks[5] || ''}
+                                ${categoryBlocks[6] || ''}
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             `;
 
