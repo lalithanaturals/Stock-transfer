@@ -941,17 +941,36 @@
             const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
             const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
 
+            // Define fixed category slots in desired order
+            const allCategories = ["Groceries", "Karam", "Flours", "Millets", "Ravva", "Dry Fruits", "Spices"];
             let categoryBlocks = [];
-            for (let cat in grouped) {
-                let rows = ""; let idx = 1;
-                grouped[cat].forEach(item => {
-                    rows += `<tr style="border-bottom:1px solid #cbd5e1;">
-                        <td style="padding:2px 4px;text-align:center;font-size:9px;font-weight:bold;color:#475569;">${idx++}</td>
-                        <td style="padding:2px 4px;font-size:10px;font-weight:600;color:#0f172a;">${item.name} <span style="font-size:8px;color:#64748b;">(${item.uom})</span></td>
-                        <td style="padding:2px 4px;text-align:center;font-family:monospace;font-size:9px;font-weight:bold;color:#334155;">${item.code}</td>
-                        <td style="padding:2px 4px;text-align:center;font-size:10px;font-weight:800;color:#047857;background:#f0fdf4;">${item.reqQty}</td>
+
+            allCategories.forEach(cat => {
+                let items = grouped[cat] || [];
+                let rows = ""; 
+                let idx = 1;
+                
+                // Populate actual items
+                items.forEach(item => {
+                    rows += `<tr style="border-bottom:1px solid #cbd5e1; height:18px;">
+                        <td style="padding:1px 3px;text-align:center;font-size:9px;font-weight:bold;color:#475569;">${idx++}</td>
+                        <td style="padding:1px 3px;font-size:10px;font-weight:600;color:#0f172a;">${item.name} <span style="font-size:8px;color:#64748b;">(${item.uom})</span></td>
+                        <td style="padding:1px 3px;text-align:center;font-family:monospace;font-size:9px;font-weight:bold;color:#334155;">${item.code}</td>
+                        <td style="padding:1px 3px;text-align:center;font-size:10px;font-weight:800;color:#047857;background:#f0fdf4;">${item.reqQty}</td>
                     </tr>`;
                 });
+
+                // Fill remaining empty rows (padding gaps) to maintain fixed allocated vertical space for this category
+                const minPaddingRows = 6; 
+                for (let i = items.length; i < minPaddingRows; i++) {
+                    rows += `<tr style="border-bottom:1px solid #e2e8f0; height:18px;">
+                        <td style="padding:1px 3px;text-align:center;font-size:9px;color:#cbd5e1;">${idx++}</td>
+                        <td style="padding:1px 3px;font-size:10px;color:transparent;">-</td>
+                        <td style="padding:1px 3px;text-align:center;font-size:9px;color:transparent;">-</td>
+                        <td style="padding:1px 3px;text-align:center;font-size:10px;color:transparent;">-</td>
+                    </tr>`;
+                }
+
                 categoryBlocks.push(`
                     <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; background: #fff; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; width: 100%;">
                         <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${cat}</div>
@@ -968,9 +987,9 @@
                         </table>
                     </div>
                 `);
-            }
+            });
 
-            // Using native CSS multi-columns layout (`column-count: 3`) which allows columns to fill smoothly from top to bottom without large empty gaps across pages
+            // Using CSS multi-columns with fixed slots so categories line up predictably across columns
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:100%;">
                     <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-end;">
@@ -989,11 +1008,14 @@
             `;
 
             let thermHtml = "";
-            for (let cat in grouped) {
-                thermHtml += `<div style="margin-bottom:4px;"><div style="font-weight:bold;background:#000;color:#fff;padding:1px;font-size:8px;">[ ${cat.toUpperCase()} ]</div><table style="width:100%;border-collapse:collapse;font-size:8px;">`;
-                grouped[cat].forEach(i => { thermHtml += `<tr><td style="border-bottom:1px dotted #ccc;padding:1px 0;">${i.name} (${i.uom})<br><span style="font-size:7px;">Code: ${i.code}</span></td><td style="border-bottom:1px dotted #ccc;text-align:right;font-weight:bold;font-size:10px;vertical-align:top;padding:1px 0;">${i.reqQty}</td></tr>`; });
-                thermHtml += `</table></div>`;
-            }
+            allCategories.forEach(cat => {
+                let items = grouped[cat] || [];
+                if(items.length > 0) {
+                    thermHtml += `<div style="margin-bottom:4px;"><div style="font-weight:bold;background:#000;color:#fff;padding:1px;font-size:8px;">[ ${cat.toUpperCase()} ]</div><table style="width:100%;border-collapse:collapse;font-size:8px;">`;
+                    items.forEach(i => { thermHtml += `<tr><td style="border-bottom:1px dotted #ccc;padding:1px 0;">${i.name} (${i.uom})<br><span style="font-size:7px;">Code: ${i.code}</span></td><td style="border-bottom:1px dotted #ccc;text-align:right;font-weight:bold;font-size:10px;vertical-align:top;padding:1px 0;">${i.reqQty}</td></tr>`; });
+                    thermHtml += `</table></div>`;
+                }
+            });
             document.getElementById('thermalTemplateContainer').innerHTML = `
                 <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:3px;">
                     <h3 style="font-size:10px;font-weight:bold;margin:0;">LALITHA NATURALS</h3>
