@@ -13,55 +13,79 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .capitalize-first { text-transform: capitalize; }
+        @media print {
+            @page { size: A4; margin: 4mm; }
+            body { margin: 0; padding: 0; background: #fff; }
+        }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 pb-32">
+<body class="bg-slate-100 text-slate-900 pb-28">
 
     <!-- Header -->
-    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-2.5 flex justify-between items-center">
         <div>
-            <h1 class="text-sm font-bold tracking-wide">LALITHA NATURALS</h1>
-            <p class="text-[10px] text-emerald-100">Stock & Transit Hub (Cloud Sync)</p>
+            <h1 class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
+            <p class="text-[9px] text-emerald-100">Operations Hub</p>
         </div>
-        <div id="liveTime" class="text-[11px] font-medium text-emerald-100"></div>
+        <div class="flex items-center gap-2">
+            <div id="liveTime" class="text-[10px] font-medium text-emerald-100"></div>
+            <button onclick="window.location.reload()" class="bg-emerald-800 text-emerald-100 px-2 py-1 rounded text-xs border border-emerald-600" title="Refresh">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+        </div>
     </header>
 
     <!-- Main Mobile Container -->
-    <main class="max-w-md mx-auto px-3 py-3 space-y-3">
+    <main class="max-w-md mx-auto px-2.5 py-2.5 space-y-2.5">
         
         <!-- Mode Switcher Tabs -->
-        <div class="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1">
-            <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-clipboard-check"></i> 1. Smart Audit
+        <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1">
+            <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1">
+                <i class="fa-solid fa-clipboard-check"></i> Audit & Check
             </button>
-            <button onclick="switchMode('packing')" id="tabPackingBtn" class="py-2.5 rounded-xl text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-truck-fast"></i> 2. Transit & Sheets
+            <button onclick="switchMode('packing')" id="tabPackingBtn" class="py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-truck-fast"></i> Ledger Sheets
             </button>
         </div>
 
         <!-- AUDIT & INTELLIGENT STOCK CHECK VIEW -->
-        <div id="auditViewSection" class="space-y-3">
-            <!-- Branch Selectors Card -->
-            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <div id="auditViewSection" class="space-y-2.5">
+            <!-- Branch & Staff Card -->
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 space-y-2.5">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Source Branch</label>
-                        <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Source</label>
+                        <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
                             <option value="Gajuwaka">Gajuwaka</option>
                             <option value="Kurmannapalem">Kurmannapalem</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Destination</label>
-                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Destination</label>
+                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
                             <option value="Kurmannapalem Packing">Kurmannapalem Pkg</option>
                             <option value="Gajuwaka Packing">Gajuwaka Pkg</option>
                         </select>
                     </div>
                 </div>
+
+                <div class="grid grid-cols-2 gap-2 items-center">
+                    <div>
+                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Staff Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="staffNameInput" placeholder="Required..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none capitalize-first">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Audit Mode</label>
+                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-lg">
+                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-1.5 rounded text-[10px] font-bold transition bg-emerald-600 text-white">Avail</button>
+                            <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-1.5 rounded text-[10px] font-bold transition bg-transparent text-slate-600">Missing</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Search, Scan & Catalog Editor Trigger -->
+            <!-- Search & Actions Bar -->
             <div class="space-y-2">
                 <div class="flex gap-1.5">
                     <div class="relative flex-1">
@@ -69,83 +93,102 @@
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
                         <input type="text" id="searchBox" placeholder="Search item or code..." 
-                            class="w-full pl-9 pr-3 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
+                            class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
                     </div>
-                    <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white font-semibold px-3 py-3 rounded-xl text-xs shadow-sm flex items-center gap-1">
-                        <i class="fa-solid fa-barcode"></i>
-                    </button>
-                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white font-semibold px-3 py-3 rounded-xl text-xs shadow-sm flex items-center gap-1" title="Manage Master Catalog">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
+                    <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode"></i></button>
+                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-3 py-2.5 rounded-xl text-xs shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear"></i></button>
                 </div>
-                <!-- Category Controls Header Bar -->
-                <div class="flex justify-between items-center bg-white px-3 py-2 rounded-xl border border-slate-200">
+
+                <!-- Category Header -->
+                <div class="flex justify-between items-center bg-white px-3 py-1.5 rounded-xl border border-slate-200">
                     <span id="activeCategoryTitle" class="text-xs font-bold text-slate-700 uppercase">Category</span>
-                    <button onclick="clearCurrentCategory()" class="text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200 active:bg-red-100 flex items-center gap-1">
-                        <i class="fa-solid fa-rotate-right"></i> Clear Category
-                    </button>
+                    <button onclick="clearCurrentCategory()" class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">Clear Category</button>
                 </div>
-                <!-- Category Horizontal Scroller -->
-                <div id="categoryTabs" class="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none"></div>
+                <!-- Category Tabs -->
+                <div id="categoryTabs" class="flex overflow-x-auto gap-1 pb-1 scrollbar-none"></div>
             </div>
 
-            <!-- Mobile Items List -->
-            <div id="itemsContainer" class="space-y-2.5"></div>
+            <!-- Items List -->
+            <div id="itemsContainer" class="space-y-2"></div>
         </div>
 
         <!-- TRANSIT & PACKING SHEETS VIEW -->
-        <div id="packingViewSection" class="hidden space-y-3">
-            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center gap-2">
+        <div id="packingViewSection" class="hidden space-y-2.5">
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-500">Ledger Date</label>
-                    <input type="date" id="lookupDateInput" onchange="loadTransitSheets()" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold mt-1 outline-none">
+                    <label class="block text-[9px] font-bold uppercase text-slate-400">Ledger Date</label>
+                    <input type="date" id="lookupDateInput" onchange="loadTransitSheets(false)" class="bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-bold mt-0.5 outline-none">
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="loadTransitSheets()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-rotate"></i> Sync</button>
-                    <div id="mobileSheetCount" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                        0 records
-                    </div>
+                    <button onclick="loadTransitSheets(true)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i> Sync</button>
+                    <div id="mobileSheetCount" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">0 records</div>
                 </div>
             </div>
-
-            <!-- Transit Feed Container -->
-            <div id="transitSheetsFeed" class="space-y-3">
-                <div class="text-center py-6 text-slate-400 text-xs font-semibold">Loading cloud records...</div>
+            <div id="transitSheetsFeed" class="space-y-2.5">
+                <div class="text-center py-6 text-slate-400 text-xs font-semibold">Loading records...</div>
             </div>
         </div>
 
     </main>
 
-    <!-- Sticky Mobile Bottom Action Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
-        <div class="max-w-md mx-auto grid grid-cols-4 gap-1">
-            <button onclick="openThermalPreview()" class="bg-amber-700 text-white font-semibold py-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1">
-                <i class="fa-solid fa-receipt"></i> 80mm
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2.5 shadow-2xl z-40">
+        <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
+            <button onclick="openPrintPreview()" class="bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-eye"></i> Staff Check (View)
             </button>
-            <button onclick="openPrintPreview()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1">
-                <i class="fa-solid fa-print"></i> A4
-            </button>
-            <button onclick="shareToWhatsApp()" class="bg-emerald-600 text-white font-semibold py-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1">
-                <i class="fa-brands fa-whatsapp"></i> WA
-            </button>
-            <button onclick="dispatchTransitSheet()" id="dispatchBtn" class="bg-indigo-600 text-white font-semibold py-3 rounded-xl text-xs shadow transition flex items-center justify-center gap-1">
-                <i class="fa-solid fa-paper-plane"></i> Dispatch
+            <button onclick="dispatchTransitSheet()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-paper-plane"></i> Confirm & Dispatch
             </button>
         </div>
     </div>
 
-    <!-- Master Catalog Manager Modal (Add / Edit / Remove) -->
+    <!-- Sync Loading Screen Overlay -->
+    <div id="syncLoadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4 space-y-3">
+        <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <div class="text-white text-xs font-bold tracking-wide">Syncing with Google Sheets...</div>
+    </div>
+
+    <!-- Post-Submission Success & Print/Share Options Modal -->
+    <div id="successModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden p-4 text-center space-y-3">
+            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-base font-bold">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-sm text-slate-900">Successfully Dispatched!</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">Recorded to Google Sheets. Use print options freely:</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="triggerSuccessAction('a4')" class="py-2 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-file-pdf"></i> A4 PDF
+                </button>
+                <button onclick="triggerSuccessAction('share')" class="py-2 bg-indigo-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-share-nodes"></i> Share PDF
+                </button>
+                <button onclick="triggerSuccessAction('thermal')" class="py-2 bg-amber-700 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-receipt"></i> Thermal
+                </button>
+                <button onclick="triggerSuccessAction('whatsapp')" class="py-2 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </button>
+            </div>
+            <button onclick="closeSuccessModalManually()" class="w-full py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">
+                Close & View Ledger
+            </button>
+        </div>
+    </div>
+
+    <!-- Master Catalog Manager Modal -->
     <div id="catalogModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-gear text-emerald-400"></i> Master Catalog Manager</h3>
+            <div class="bg-slate-800 text-white px-4 py-2.5 flex justify-between items-center">
+                <h3 class="font-bold text-xs"><i class="fa-solid fa-gear text-emerald-400 mr-1"></i> Master Catalog Manager</h3>
                 <button onclick="closeCatalogModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
-            
             <div class="p-3 overflow-y-auto bg-slate-50 flex-1 space-y-3">
-                <!-- Add New Item Card -->
                 <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                    <h4 class="text-xs font-bold text-emerald-700"><i class="fa-solid fa-plus-circle mr-1"></i> Add New Item</h4>
+                    <h4 class="text-xs font-bold text-emerald-700"><i class="fa-solid fa-plus-circle mr-1"></i> Add Item</h4>
                     <div class="grid grid-cols-2 gap-2">
                         <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
                             <option value="Groceries">Groceries</option>
@@ -158,31 +201,26 @@
                         </select>
                         <div class="flex gap-1">
                             <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
-                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-2.5 py-2 rounded-lg text-xs shadow-sm" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
+                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-2.5 py-2 rounded-lg text-xs"><i class="fa-solid fa-barcode"></i></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
                         <input type="text" id="newItemName" placeholder="Item Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
-                        <input type="text" id="newItemUom" placeholder="UOM (250g)" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
+                        <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
                     </div>
                     <div class="flex gap-2">
-                        <input type="number" id="newItemMin" placeholder="Min limit" class="w-1/2 bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
-                        <button onclick="addNewCatalogItem()" class="w-1/2 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs shadow">Save New Item</button>
+                        <input type="number" id="newItemMin" placeholder="Min" class="w-1/2 bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold outline-none">
+                        <button onclick="addNewCatalogItem()" class="w-1/2 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs shadow">Save</button>
                     </div>
                 </div>
-
-                <!-- Existing Items List -->
                 <div class="space-y-2">
                     <h4 id="catalogCountHeader" class="text-xs font-bold text-slate-700">Existing Items</h4>
-                    <div class="relative">
-                        <input type="text" id="catalogSearch" placeholder="Filter items..." oninput="renderCatalogEditorList()" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold outline-none">
-                    </div>
-                    <div id="catalogEditorList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                    <input type="text" id="catalogSearch" placeholder="Filter items..." oninput="renderCatalogEditorList()" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold outline-none">
+                    <div id="catalogEditorList" class="space-y-2 max-h-56 overflow-y-auto"></div>
                 </div>
             </div>
-
-            <div class="bg-white border-t border-slate-200 p-3 flex justify-between items-center">
-                <button onclick="resetDefaultCatalog()" class="text-[11px] text-red-600 font-bold px-2 py-1 bg-red-50 rounded border border-red-200">Reset Default</button>
+            <div class="bg-white border-t border-slate-200 p-2.5 flex justify-between items-center">
+                <button onclick="resetDefaultCatalog()" class="text-[10px] text-red-600 font-bold px-2 py-1 bg-red-50 rounded border border-red-200">Reset Default</button>
                 <button onclick="closeCatalogModal()" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Done</button>
             </div>
         </div>
@@ -192,50 +230,47 @@
     <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden p-4 space-y-3 text-center">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-xs text-slate-900"><i class="fa-solid fa-barcode mr-1"></i> Scan Item Barcode</h3>
+                <h3 class="font-bold text-xs text-slate-900"><i class="fa-solid fa-barcode mr-1"></i> Scan Barcode</h3>
                 <button onclick="closeScannerModal()" class="text-slate-600 text-lg font-bold">&times;</button>
             </div>
-            <div class="relative bg-black rounded-xl overflow-hidden h-64 flex items-center justify-center">
+            <div class="relative bg-black rounded-xl overflow-hidden h-56 flex items-center justify-center">
                 <video id="interactive" class="w-full h-full object-cover"></video>
-                <div class="absolute inset-0 border-2 border-emerald-500/50 pointer-events-none flex items-center justify-center">
-                    <span class="text-white text-[10px] bg-black/60 px-2 py-1 rounded">Align barcode inside frame</span>
-                </div>
             </div>
-            <p id="scanStatus" class="text-xs text-slate-600">Point camera at item barcode or QR...</p>
-            <button onclick="closeScannerModal()" class="w-full py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Close Scanner</button>
+            <p id="scanStatus" class="text-xs text-slate-600">Align barcode inside frame...</p>
+            <button onclick="closeScannerModal()" class="w-full py-2 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Close</button>
         </div>
     </div>
 
     <!-- Thermal Print Modal -->
     <div id="thermalModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="bg-amber-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-receipt"></i> 80mm Receipt</h3>
+            <div class="bg-amber-800 text-white px-4 py-2.5 flex justify-between items-center">
+                <h3 class="font-bold text-xs"><i class="fa-solid fa-receipt mr-1"></i> 80mm Receipt</h3>
                 <button onclick="closeThermalPreview()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
                 <div id="thermalPaper" class="bg-white shadow p-3 w-[270px] text-slate-900 font-mono text-[10px] leading-tight rounded border border-slate-300"></div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-3 flex gap-2">
-                <button onclick="closeThermalPreview()" class="flex-1 py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Cancel</button>
-                <button onclick="triggerThermalPrint()" class="flex-1 py-2.5 bg-amber-800 text-white font-semibold rounded-xl text-xs shadow"><i class="fa-solid fa-print"></i> Print</button>
+            <div class="bg-white border-t border-slate-200 p-2.5 flex gap-2">
+                <button onclick="closeThermalPreview()" class="flex-1 py-2 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Cancel</button>
+                <button onclick="triggerThermalPrint()" class="flex-1 py-2 bg-amber-800 text-white font-semibold rounded-xl text-xs shadow"><i class="fa-solid fa-print"></i> Print</button>
             </div>
         </div>
     </div>
 
-    <!-- A4 Print Preview Modal -->
+    <!-- Staff Check Preview Modal -->
     <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-file-lines text-emerald-400"></i> Optimized A4 Preview</h3>
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-800 text-white px-4 py-2.5 flex justify-between items-center">
+                <h3 class="font-bold text-xs"><i class="fa-solid fa-eye text-emerald-400 mr-1"></i> Staff Check Preview</h3>
                 <button onclick="closePrintPreview()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
-                <div id="previewPaper" class="bg-white shadow p-3 w-full text-slate-900 text-[11px] rounded border border-slate-300"></div>
+                <div id="previewPaper" class="bg-white shadow p-3 w-full text-slate-900 rounded border border-slate-300"></div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-3 flex gap-2">
-                <button onclick="closePrintPreview()" class="flex-1 py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Cancel</button>
-                <button onclick="triggerDirectPrint()" class="flex-1 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow"><i class="fa-solid fa-print"></i> Print</button>
+            <div class="bg-white border-t border-slate-200 p-2.5 flex justify-between items-center">
+                <button onclick="triggerDirectPrint()" class="px-4 py-2 bg-emerald-700 text-white font-bold rounded-xl text-xs shadow"><i class="fa-solid fa-print mr-1"></i> Print A4</button>
+                <button onclick="closePrintPreview()" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
             </div>
         </div>
     </div>
@@ -414,6 +449,7 @@
 
         let inventoryData = JSON.parse(localStorage.getItem('lalitha_master_inventory')) || defaultInventoryData;
         let activeCategory = "Groceries";
+        let auditMode = "available";
         const shelfStock = {};
         let activeMobilePayload = null;
         let codeReader = null;
@@ -442,16 +478,28 @@
             if(mode === 'audit') {
                 document.getElementById('auditViewSection').classList.remove('hidden');
                 document.getElementById('packingViewSection').classList.add('hidden');
-                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-xl text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
+                document.getElementById('tabAuditBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
+                document.getElementById('tabPackingBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1";
                 activeMobilePayload = null;
             } else {
                 document.getElementById('auditViewSection').classList.add('hidden');
                 document.getElementById('packingViewSection').classList.remove('hidden');
-                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-xl text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
-                loadTransitSheets();
+                document.getElementById('tabPackingBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1";
+                document.getElementById('tabAuditBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1";
+                loadTransitSheets(false);
             }
+        }
+
+        function setAuditMode(mode) {
+            auditMode = mode;
+            if(mode === 'available') {
+                document.getElementById('modeAvailBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-emerald-600 text-white";
+                document.getElementById('modeShortBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-transparent text-slate-600";
+            } else {
+                document.getElementById('modeShortBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-amber-600 text-white";
+                document.getElementById('modeAvailBtn').className = "py-1.5 rounded text-[10px] font-bold transition bg-transparent text-slate-600";
+            }
+            renderItems(document.getElementById('searchBox').value);
         }
 
         function renderTabs() {
@@ -462,7 +510,7 @@
             }
             document.getElementById('activeCategoryTitle').innerText = activeCategory;
             container.innerHTML = categories.map(cat => `
-                <button onclick="switchCategory('${cat}')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200'}">${cat}</button>
+                <button onclick="switchCategory('${cat}')" class="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200'}">${cat}</button>
             `).join('');
         }
 
@@ -475,10 +523,9 @@
 
         function clearCurrentCategory() {
             if(!inventoryData[activeCategory]) return;
-            if(confirm(`Are you sure you want to clear all audits for ${activeCategory}?`)) {
+            if(confirm(`Clear audits for ${activeCategory}?`)) {
                 inventoryData[activeCategory].forEach(item => {
-                    const key = `${activeCategory}_${item.code}_${item.uom}`;
-                    delete shelfStock[key];
+                    delete shelfStock[`${activeCategory}_${item.code}_${item.uom}`];
                 });
                 renderItems(document.getElementById('searchBox').value);
             }
@@ -501,24 +548,25 @@
 
             container.innerHTML = itemsToDisplay.map((item) => {
                 const key = `${item.category}_${item.code}_${item.uom}`;
-                const stockVal = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) : 0;
-                const shortage = item.min - stockVal;
+                const val = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) : 0;
+                let reqQty = auditMode === 'available' ? Math.max(0, item.min - val) : Math.max(0, val);
+                const inputDisplayVal = shelfStock[key] !== undefined ? shelfStock[key] : '';
 
                 return `
-                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-2">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2">
                         <div class="flex-1">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                <span class="text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded">${item.code}</span>
-                                <span class="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Min: ${item.min}</span>
-                                <span class="text-[11px] font-extrabold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200">Need: ${shortage > 0 ? shortage : item.min}</span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-800 rounded">${item.code}</span>
+                                <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Min: ${item.min}</span>
+                                <span class="text-[10px] font-extrabold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Need: ${reqQty}</span>
                             </div>
                             <h3 class="text-sm font-bold text-slate-900 leading-snug">${item.name}</h3>
-                            <p class="text-xs font-semibold text-slate-600 mt-0.5">UOM: <span class="text-slate-800">${item.uom}</span></p>
+                            <p class="text-xs text-slate-500 font-medium">${item.uom}</p>
                         </div>
-                        <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 p-1.5 rounded-xl shrink-0">
-                            <button onclick="updateStock('${key}', -1)" class="w-9 h-9 flex items-center justify-center bg-white border border-slate-300 rounded-lg text-slate-800 font-bold text-base shadow-sm active:bg-slate-200">-</button>
-                            <input type="number" id="stock_${key}" value="${shelfStock[key] !== undefined ? shelfStock[key] : ''}" placeholder="0" onchange="setStock('${key}', this.value)" class="w-12 text-center text-sm font-bold bg-transparent outline-none">
-                            <button onclick="updateStock('${key}', 1)" class="w-9 h-9 flex items-center justify-center bg-emerald-600 text-white rounded-lg font-bold text-base shadow-sm active:bg-emerald-700">+</button>
+                        <div class="flex items-center gap-1 bg-slate-100 border border-slate-200 p-1 rounded-xl shrink-0">
+                            <button onclick="updateStock('${key}', -1)" class="w-8 h-8 flex items-center justify-center bg-white border border-slate-300 rounded-lg text-slate-800 font-bold text-sm shadow-sm">-</button>
+                            <input type="number" id="stock_${key}" value="${inputDisplayVal}" placeholder="0" onchange="setStock('${key}', this.value)" class="w-10 text-center text-xs font-bold bg-transparent outline-none">
+                            <button onclick="updateStock('${key}', 1)" class="w-8 h-8 flex items-center justify-center bg-emerald-600 text-white rounded-lg font-bold text-sm shadow-sm">+</button>
                         </div>
                     </div>
                 `;
@@ -535,65 +583,51 @@
 
         function setStock(key, val) {
             const parsed = parseInt(val);
-            if (isNaN(parsed) || val === "") {
-                delete shelfStock[key];
-            } else {
-                shelfStock[key] = parsed < 0 ? 0 : parsed;
-            }
+            if (isNaN(parsed) || val === "") delete shelfStock[key];
+            else shelfStock[key] = parsed < 0 ? 0 : parsed;
             renderItems(document.getElementById('searchBox').value);
         }
 
-        // --- CATALOG MANAGEMENT FUNCTIONS ---
-        function openCatalogModal() {
-            document.getElementById('catalogModal').classList.remove('hidden');
-            renderCatalogEditorList();
-        }
-
-        function closeCatalogModal() {
-            document.getElementById('catalogModal').classList.add('hidden');
-            renderTabs();
-            renderItems(document.getElementById('searchBox').value);
-        }
+        // --- CATALOG MANAGEMENT & EDIT FUNCTIONS ---
+        function openCatalogModal() { document.getElementById('catalogModal').classList.remove('hidden'); renderCatalogEditorList(); }
+        function closeCatalogModal() { document.getElementById('catalogModal').classList.add('hidden'); renderTabs(); renderItems(document.getElementById('searchBox').value); }
 
         function renderCatalogEditorList() {
             const container = document.getElementById('catalogEditorList');
             const filter = (document.getElementById('catalogSearch').value || "").toLowerCase();
-            let html = "";
-            let totalItemsCount = 0;
+            let html = "", totalCount = 0;
 
             for (let cat in inventoryData) {
                 inventoryData[cat].forEach((item, index) => {
-                    totalItemsCount++;
+                    totalCount++;
                     if (filter && !item.name.toLowerCase().includes(filter) && !item.code.includes(filter)) return;
-
+                    
                     html += `
-                        <div id="catalog_row_${cat}_${index}" class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs">
+                        <div id="catalog_row_${cat}_${index}" class="bg-white p-2.5 rounded-xl border border-slate-200 text-xs space-y-2">
                             <div class="flex justify-between items-center font-bold text-slate-800">
-                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${cat}</span>
+                                <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[9px]">${cat}</span>
                                 <div class="flex gap-1">
-                                    <button onclick="toggleEditItem('${cat}', ${index})" id="edit_btn_${cat}_${index}" class="text-blue-600 hover:text-blue-800 px-2 py-0.5 bg-blue-50 rounded font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
-                                    <button onclick="deleteCatalogItem('${cat}', ${index})" class="text-red-600 hover:text-red-800 px-2 py-0.5 bg-red-50 rounded"><i class="fa-solid fa-trash mr-1"></i> Remove</button>
+                                    <button onclick="toggleEditItem('${cat}', ${index})" id="edit_btn_${cat}_${index}" class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
+                                    <button onclick="deleteCatalogItem('${cat}', ${index})" class="text-red-600 bg-red-50 px-2 py-0.5 rounded font-bold">Remove</button>
                                 </div>
                             </div>
-                            <div id="view_mode_${cat}_${index}" class="flex justify-between items-center py-1">
-                                <div>
-                                    <span class="font-bold text-slate-900">${item.name}</span> (${item.uom})
-                                    <div class="text-[10px] text-slate-500">Code: ${item.code} | Min: ${item.min}</div>
-                                </div>
+                            <div id="view_mode_${cat}_${index}" class="py-0.5">
+                                <strong>${item.name}</strong> (${item.uom})
+                                <div class="text-[10px] text-slate-500">Code: ${item.code} | Min: ${item.min}</div>
                             </div>
                             <div id="edit_mode_${cat}_${index}" class="hidden space-y-2 pt-1 border-t border-slate-100">
                                 <div class="grid grid-cols-4 gap-1.5">
                                     <div class="col-span-1 flex gap-1">
-                                        <input type="text" id="edit_code_${cat}_${index}" value="${item.code}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center">
-                                        <button onclick="openScannerModal('edit_${cat}_${index}')" class="bg-indigo-600 text-white px-2 py-1 rounded text-xs shadow-sm" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
+                                        <input type="text" id="edit_code_${cat}_${index}" value="${item.code}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center text-xs">
+                                        <button onclick="openScannerModal('edit_${cat}_${index}')" class="bg-indigo-600 text-white px-2 py-1 rounded text-xs" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
                                     </div>
-                                    <input type="text" id="edit_name_${cat}_${index}" value="${item.name}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded p-1 font-semibold">
-                                    <input type="text" id="edit_uom_${cat}_${index}" value="${item.uom}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center">
+                                    <input type="text" id="edit_name_${cat}_${index}" value="${item.name}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-xs">
+                                    <input type="text" id="edit_uom_${cat}_${index}" value="${item.uom}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center text-xs">
                                 </div>
                                 <div class="flex justify-between items-center pt-1">
                                     <div class="flex items-center gap-1">
                                         <span class="text-[10px] text-slate-500 font-bold">Min:</span>
-                                        <input type="number" id="edit_min_${cat}_${index}" value="${item.min}" class="w-14 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center">
+                                        <input type="number" id="edit_min_${cat}_${index}" value="${item.min}" class="w-14 bg-slate-50 border border-slate-300 rounded p-1 font-semibold text-center text-xs">
                                     </div>
                                     <div class="flex gap-1">
                                         <button onclick="toggleEditItem('${cat}', ${index})" class="px-2.5 py-1 bg-slate-200 text-slate-700 font-bold rounded text-[11px]">Cancel</button>
@@ -605,8 +639,8 @@
                     `;
                 });
             }
-            document.getElementById('catalogCountHeader').innerText = `Existing Items (${totalItemsCount})`;
-            container.innerHTML = html || `<p class="text-center text-slate-400 py-4">No matching items found.</p>`;
+            document.getElementById('catalogCountHeader').innerText = `Existing Items (${totalCount})`;
+            container.innerHTML = html || `<p class="text-center text-slate-400 py-3">No matching items.</p>`;
         }
 
         function toggleEditItem(cat, index) {
@@ -618,13 +652,27 @@
                 editDiv.classList.remove('hidden');
                 viewDiv.classList.add('hidden');
                 btn.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Close';
-                btn.className = "text-amber-700 hover:text-amber-900 px-2 py-0.5 bg-amber-50 rounded font-bold";
+                btn.className = "text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold";
             } else {
                 editDiv.classList.add('hidden');
                 viewDiv.classList.remove('hidden');
                 btn.innerHTML = '<i class="fa-solid fa-pen-to-square mr-1"></i> Edit';
-                btn.className = "text-blue-600 hover:text-blue-800 px-2 py-0.5 bg-blue-50 rounded font-bold";
+                btn.className = "text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold";
             }
+        }
+
+        function saveCatalogItem(cat, index) {
+            const code = document.getElementById(`edit_code_${cat}_${index}`).value.trim();
+            const name = document.getElementById(`edit_name_${cat}_${index}`).value.trim();
+            const uom = document.getElementById(`edit_uom_${cat}_${index}`).value.trim();
+            const min = parseInt(document.getElementById(`edit_min_${cat}_${index}`).value);
+
+            if(!code || !name || !uom || isNaN(min)) { alert("Please check your inputs!"); return; }
+
+            inventoryData[cat][index] = { ...inventoryData[cat][index], code, name, uom, min };
+            localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
+            renderCatalogEditorList();
+            alert("Item updated successfully!");
         }
 
         function addNewCatalogItem() {
@@ -634,43 +682,16 @@
             const uom = document.getElementById('newItemUom').value.trim();
             const min = parseInt(document.getElementById('newItemMin').value);
 
-            if(!code || !name || !uom || isNaN(min)) {
-                alert("Please fill in all fields correctly!");
-                return;
-            }
-
+            if(!code || !name || !uom || isNaN(min)) { alert("Fill all fields!"); return; }
             if(!inventoryData[cat]) inventoryData[cat] = [];
             inventoryData[cat].push({ id: Date.now(), name, uom, code, min });
             localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
-
-            document.getElementById('newItemCode').value = "";
-            document.getElementById('newItemName').value = "";
-            document.getElementById('newItemUom').value = "";
-            document.getElementById('newItemMin').value = "";
-
-            renderCatalogEditorList();
-            alert("Item added successfully!");
-        }
-
-        function saveCatalogItem(cat, index) {
-            const code = document.getElementById(`edit_code_${cat}_${index}`).value.trim();
-            const name = document.getElementById(`edit_name_${cat}_${index}`).value.trim();
-            const uom = document.getElementById(`edit_uom_${cat}_${index}`).value.trim();
-            const min = parseInt(document.getElementById(`edit_min_${cat}_${index}`).value);
-
-            if(!code || !name || !uom || isNaN(min)) {
-                alert("Please check your inputs!");
-                return;
-            }
-
-            inventoryData[cat][index] = { ...inventoryData[cat][index], code, name, uom, min };
-            localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
-            renderCatalogEditorList();
-            alert("Item updated successfully!");
+            document.getElementById('newItemCode').value = ""; document.getElementById('newItemName').value = ""; document.getElementById('newItemUom').value = ""; document.getElementById('newItemMin').value = "";
+            renderCatalogEditorList(); alert("Added successfully!");
         }
 
         function deleteCatalogItem(cat, index) {
-            if(confirm("Are you sure you want to remove this item?")) {
+            if(confirm("Remove item?")) {
                 inventoryData[cat].splice(index, 1);
                 localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
                 renderCatalogEditorList();
@@ -678,18 +699,15 @@
         }
 
         function resetDefaultCatalog() {
-            if(confirm("Reset entire catalog back to default PDF items?")) {
+            if(confirm("Reset catalog?")) {
                 localStorage.removeItem('lalitha_master_inventory');
                 inventoryData = JSON.parse(JSON.stringify(defaultInventoryData));
-                renderCatalogEditorList();
-                alert("Catalog reset to default.");
+                renderCatalogEditorList(); alert("Reset complete.");
             }
         }
 
         function getGroupedShortages() {
-            let grouped = {};
-            let totalCount = 0;
-
+            let grouped = {}, totalCount = 0;
             if (activeMobilePayload) {
                 activeMobilePayload.items.forEach(item => {
                     if (!grouped[item.cat]) grouped[item.cat] = [];
@@ -701,16 +719,10 @@
                     let catShortages = [];
                     inventoryData[cat].forEach(item => {
                         const key = `${cat}_${item.code}_${item.uom}`;
-                        const stockInputVal = shelfStock[key];
-                        
-                        const stockVal = (stockInputVal !== undefined && stockInputVal !== "") ? parseInt(stockInputVal) || 0 : 0;
-                        const reqQty = item.min - stockVal;
-
+                        const val = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) || 0 : 0;
+                        let reqQty = auditMode === 'available' ? Math.max(0, item.min - val) : Math.max(0, val);
                         if (reqQty > 0) {
-                            catShortages.push({ 
-                                cat: cat, name: item.name, uom: item.uom, code: item.code, 
-                                min: item.min, stock: stockVal, reqQty: reqQty 
-                            });
+                            catShortages.push({ cat: cat, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: val, reqQty: reqQty });
                             totalCount++;
                         }
                     });
@@ -724,202 +736,232 @@
             scannerTargetMode = mode;
             document.getElementById('scannerModal').classList.remove('hidden');
             codeReader = new ZXing.BrowserBarcodeReader();
-            
-            codeReader.decodeFromConstraints({
-                video: { facingMode: { exact: "environment" } }
-            }, 'interactive', (result, err) => {
-                handleScanResult(result);
+            codeReader.decodeFromConstraints({ video: { facingMode: { exact: "environment" } } }, 'interactive', (result) => {
+                if (result) {
+                    handleScanResult(result.text);
+                }
             }).catch(() => {
-                codeReader.decodeFromVideoDevice(null, 'interactive', (result, err) => {
-                    handleScanResult(result);
+                codeReader.decodeFromVideoDevice(null, 'interactive', (result) => {
+                    if (result) { handleScanResult(result.text); }
                 });
-            }).catch(err => {
-                console.error(err);
-                document.getElementById('scanStatus').innerText = "Camera permission error or not supported.";
             });
         }
 
-        function handleScanResult(result) {
-            if (result) {
-                const scannedCode = result.text;
-                document.getElementById('scanStatus').innerText = `Found Code: ${scannedCode}`;
-                
-                if (scannerTargetMode === 'newItem') {
-                    document.getElementById('newItemCode').value = scannedCode;
-                } else if (scannerTargetMode.startsWith('edit_')) {
-                    const fieldId = scannerTargetMode.replace('edit_', 'edit_code_');
-                    const inputEl = document.getElementById(fieldId);
-                    if (inputEl) inputEl.value = scannedCode;
-                } else {
-                    document.getElementById('searchBox').value = scannedCode;
-                    renderItems(scannedCode);
-                }
-                closeScannerModal();
+        function handleScanResult(scannedCode) {
+            if (scannerTargetMode === 'newItem') {
+                document.getElementById('newItemCode').value = scannedCode;
+            } else if (scannerTargetMode.startsWith('edit_')) {
+                const fieldId = scannerTargetMode.replace('edit_', 'edit_code_');
+                const inputEl = document.getElementById(fieldId);
+                if (inputEl) inputEl.value = scannedCode;
+            } else {
+                document.getElementById('searchBox').value = scannedCode;
+                renderItems(scannedCode);
             }
+            closeScannerModal();
         }
 
-        function closeScannerModal() {
-            document.getElementById('scannerModal').classList.add('hidden');
-            if (codeReader) {
-                codeReader.reset();
-            }
-        }
+        function closeScannerModal() { document.getElementById('scannerModal').classList.add('hidden'); if(codeReader) codeReader.reset(); }
 
-        // --- GOOGLE SHEETS CLOUD SYNC FUNCTIONS ---
         async function dispatchTransitSheet() {
+            const staffNameInput = document.getElementById('staffNameInput').value.trim();
+            if (!staffNameInput) {
+                alert("Staff Name is mandatory! Please enter the staff name before dispatching.");
+                document.getElementById('staffNameInput').focus();
+                return;
+            }
+
             const { grouped, totalCount } = getGroupedShortages();
-            if (totalCount === 0) { alert("No shortages to dispatch!"); return; }
+            if (totalCount === 0) { alert("No items required to dispatch!"); return; }
 
             let itemsToSave = [];
-            for (let cat in grouped) {
-                grouped[cat].forEach(i => itemsToSave.push(i));
-            }
+            for (let cat in grouped) grouped[cat].forEach(i => itemsToSave.push(i));
 
+            const staffName = staffNameInput.charAt(0).toUpperCase() + staffNameInput.slice(1);
             const now = new Date();
             const newTransit = {
                 id: 'transit_' + now.getTime(),
                 src: document.getElementById('sourceBranch').value,
                 dst: document.getElementById('destBranch').value,
+                staff: staffName,
                 time: now.getTime(),
                 status: "In Transit",
                 items: itemsToSave
             };
 
-            const btn = document.getElementById('dispatchBtn');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Syncing...`;
-            btn.disabled = true;
-
+            document.getElementById('syncLoadingOverlay').classList.remove('hidden');
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
+                    method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'transit', action: 'save_transit', transit: newTransit })
                 });
+                
+                let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
+                cachedSheets.unshift(newTransit);
+                localStorage.setItem('lalitha_cached_sheets', JSON.stringify(cachedSheets));
 
-                alert("Dispatched & Synced to Google Sheets!");
-                switchMode('packing');
-                loadTransitSheets();
+                activeMobilePayload = newTransit;
+                document.getElementById('syncLoadingOverlay').classList.add('hidden');
+                document.getElementById('successModal').classList.remove('hidden');
             } catch (err) {
-                console.error(err);
-                alert("Network error while syncing to Google Sheet. Please check your connection.");
-            } finally {
-                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Dispatch`;
-                btn.disabled = false;
+                document.getElementById('syncLoadingOverlay').classList.add('hidden');
+                alert("Cloud sync network error.");
             }
         }
 
-        async function loadTransitSheets() {
-            const container = document.getElementById('transitSheetsFeed');
-            container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Fetching from Google Sheet...</div>`;
+        function triggerSuccessAction(action) {
+            if(action === 'a4') openPrintPreview();
+            else if(action === 'share') sharePdfFile();
+            else if(action === 'thermal') openThermalPreview();
+            else if(action === 'whatsapp') shareToWhatsApp();
+        }
 
+        function closeSuccessModalManually() { 
+            document.getElementById('successModal').classList.add('hidden'); 
+            switchMode('packing'); 
+            loadTransitSheets(false); 
+        }
+
+        async function loadTransitSheets(forceSync = false) {
+            const container = document.getElementById('transitSheetsFeed');
             const targetDateStr = document.getElementById('lookupDateInput').value;
+
+            let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
+            if (!forceSync && cachedSheets.length > 0) {
+                renderTransitList(cachedSheets, targetDateStr);
+            } else {
+                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">Fetching from cloud...</div>`;
+            }
 
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const sheets = await response.json();
-
-                // Filter sheets by selected date
-                const filteredSheets = sheets.filter(s => {
-                    const sheetDate = new Date(s.time).toISOString().split('T')[0];
-                    return sheetDate === targetDateStr;
-                });
-
-                document.getElementById('mobileSheetCount').innerText = `${filteredSheets.length} records`;
-
-                if (filteredSheets.length === 0) {
-                    container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs font-semibold bg-white rounded-2xl border border-slate-200">No cloud transit records found for ${targetDateStr}.</div>`;
-                    return;
-                }
-
-                container.innerHTML = filteredSheets.map((s, idx) => {
-                    const timeStr = new Date(s.time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-                    const isReceived = s.status === "Received";
-
-                    return `
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2.5">
-                            <div class="flex justify-between items-center text-xs font-bold text-slate-900">
-                                <span>#${idx + 1} &bull; ${s.src} &rarr; ${s.dst}</span>
-                                <span class="px-2.5 py-0.5 rounded text-[10px] font-bold ${isReceived ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
-                            </div>
-                            <p class="text-xs text-slate-600 font-medium">Time: ${timeStr} &bull; <strong class="text-emerald-700">${s.items.length} items</strong></p>
-                            <div class="flex gap-2 pt-2 border-t border-slate-100">
-                                <button onclick="printCloudTransit('${s.id}', 'thermal')" class="flex-1 py-2 bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm">Thermal</button>
-                                <button onclick="printCloudTransit('${s.id}', 'a4')" class="flex-1 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-sm">A4 Print</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                window._latestCloudSheets = filteredSheets;
+                localStorage.setItem('lalitha_cached_sheets', JSON.stringify(sheets));
+                renderTransitList(sheets, targetDateStr);
             } catch (err) {
-                console.error(err);
-                container.innerHTML = `<div class="text-center py-6 text-red-500 text-xs font-semibold bg-white rounded-2xl border border-slate-200">Failed to load from Google Sheet. Check deployment URL.</div>`;
+                if (cachedSheets.length === 0) {
+                    container.innerHTML = `<div class="text-center py-6 text-red-500 text-xs">Failed to load records. Check connection.</div>`;
+                }
             }
         }
 
-        async function printCloudTransit(sheetId, type) {
-            if (!window._latestCloudSheets) return;
-            activeMobilePayload = window._latestCloudSheets.find(s => s.id === sheetId);
-            if (!activeMobilePayload) { alert("Record not found."); return; }
+        function renderTransitList(sheets, targetDateStr) {
+            const container = document.getElementById('transitSheetsFeed');
+            const filtered = sheets.filter(s => new Date(s.time).toISOString().split('T')[0] === targetDateStr);
+            document.getElementById('mobileSheetCount').innerText = `${filtered.length} records`;
 
-            if(type === 'thermal') openThermalPreview();
-            else openPrintPreview();
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs bg-white rounded-xl border">No records found for ${targetDateStr}.</div>`;
+                window._latestCloudSheets = [];
+                return;
+            }
+
+            container.innerHTML = filtered.map((s, idx) => `
+                <div class="bg-white p-3 rounded-xl shadow-sm border space-y-2 text-xs">
+                    <div class="flex justify-between font-bold">
+                        <span>#${idx + 1} &bull; ${s.src} &rarr; ${s.dst}</span>
+                        <span class="px-2 py-0.5 rounded text-[9px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
+                    </div>
+                    <p class="text-slate-500 text-[10px]">Time: ${new Date(s.time).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} | Staff: ${s.staff || 'Staff'} | <strong>${s.items.length} items</strong></p>
+                    
+                    <div class="grid grid-cols-5 gap-1 pt-1">
+                        <button onclick="loadTransitPayload('${s.id}'); openPrintPreview();" class="py-1.5 bg-slate-800 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                        <button onclick="loadTransitPayload('${s.id}'); triggerDirectPrint();" class="py-1.5 bg-emerald-700 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-file-pdf"></i> A4</button>
+                        <button onclick="loadTransitPayload('${s.id}'); sharePdfFile();" class="py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                        <button onclick="loadTransitPayload('${s.id}'); openThermalPreview();" class="py-1.5 bg-amber-700 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-receipt"></i> Thermal</button>
+                        <button onclick="deleteCloudTransit('${s.id}')" class="py-1.5 bg-red-600 text-white rounded text-[10px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            window._latestCloudSheets = filtered;
+        }
+
+        function loadTransitPayload(id) { 
+            let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
+            activeMobilePayload = cachedSheets.find(s => s.id === id) || (window._latestCloudSheets ? window._latestCloudSheets.find(s => s.id === id) : null); 
+        }
+
+        async function deleteCloudTransit(id) {
+            if (!confirm("Delete this entry permanently?")) return;
+            try {
+                let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
+                cachedSheets = cachedSheets.filter(s => s.id !== id);
+                localStorage.setItem('lalitha_cached_sheets', JSON.stringify(cachedSheets));
+                renderTransitList(cachedSheets, document.getElementById('lookupDateInput').value);
+
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'transit', action: 'delete_transit', transitId: id })
+                });
+            } catch (err) { alert("Error deleting record."); }
         }
 
         function shareToWhatsApp() {
             const { grouped, totalCount } = getGroupedShortages();
-            if (totalCount === 0) { alert("No shortages to share!"); return; }
-
-            const source = document.getElementById('sourceBranch').value;
-            const dest = document.getElementById('destBranch').value;
-            let msg = `*LALITHA NATURALS - PACKING ORDER*\nFrom: ${source} ➔ To: ${dest}\nTotal Items: ${totalCount}\n\n`;
-
+            if (totalCount === 0) return;
+            const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
+            const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
+            const staff = activeMobilePayload ? (activeMobilePayload.staff || 'Staff') : (document.getElementById('staffNameInput').value.trim() || 'Staff');
+            
+            let msg = `*LALITHA NATURALS - TRANSIT*\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staff}\nItems: ${totalCount}\n\n`;
             for(let cat in grouped) {
                 msg += `*[ ${cat.toUpperCase()} ]*\n`;
-                grouped[cat].forEach(i => {
-                    msg += `• ${i.name} (${i.uom}) | Code: ${i.code} | *Req: ${i.reqQty}*\n`;
-                });
+                grouped[cat].forEach(i => { msg += `• ${i.name} (${i.uom}) [${i.code}] - *Req: ${i.reqQty}*\n`; });
                 msg += `\n`;
             }
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        }
 
-            const encoded = encodeURIComponent(msg);
-            window.open(`https://wa.me/?text=${encoded}`, '_blank');
+        async function sharePdfFile() {
+            if (!preparePrintData()) return;
+            const html = `<!DOCTYPE html><html><head><title>Transit</title><style>body{font-family:Inter,sans-serif;padding:0;margin:0;}</style></head><body>` + document.getElementById('pdfTemplateContainer').innerHTML + `</body></html>`;
+            const file = new File([new Blob([html], { type: 'text/html' })], "Transit_Sheet.html", { type: 'text/html' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try { await navigator.share({ title: 'Transit Sheet', files: [file] }); return; } catch(e){}
+            }
+            triggerDirectPrint();
         }
 
         function preparePrintData() {
+            const staffInputVal = document.getElementById('staffNameInput').value.trim();
+            const staff = activeMobilePayload ? (activeMobilePayload.staff || 'Staff') : (staffInputVal ? staffInputVal.charAt(0).toUpperCase() + staffInputVal.slice(1) : '');
+            
+            if (!staff && !activeMobilePayload) {
+                alert("Please enter the Staff Name before printing or viewing!");
+                document.getElementById('staffNameInput').focus();
+                return false;
+            }
+
             const { grouped, totalCount } = getGroupedShortages();
-            if (totalCount === 0) { alert("No items required to print."); return false; }
+            if (totalCount === 0) { alert("No items required."); return false; }
 
             const timeStr = activeMobilePayload ? new Date(activeMobilePayload.time).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
-            const source = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
-            const dest = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
+            const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
+            const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
 
             let categoryBlocks = [];
             for (let cat in grouped) {
-                let rows = "";
-                let globalIdx = 1;
+                let rows = ""; let idx = 1;
                 grouped[cat].forEach(item => {
-                    rows += `<tr>
-                        <td style="padding: 2px 4px; border: 1px solid #cbd5e1; text-align: center;">${globalIdx++}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #cbd5e1;"><strong>${item.name}</strong></td>
-                        <td style="padding: 2px 4px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace;">${item.code}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #cbd5e1; text-align: center;">${item.uom}</td>
-                        <td style="padding: 2px 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #059669;">${item.reqQty}</td>
+                    rows += `<tr style="border-bottom:1px solid #cbd5e1;">
+                        <td style="padding:2px 4px;text-align:center;font-size:9px;font-weight:bold;color:#475569;">${idx++}</td>
+                        <td style="padding:2px 4px;font-size:10px;font-weight:600;color:#0f172a;">${item.name} <span style="font-size:8px;color:#64748b;">(${item.uom})</span></td>
+                        <td style="padding:2px 4px;text-align:center;font-family:monospace;font-size:9px;font-weight:bold;color:#334155;">${item.code}</td>
+                        <td style="padding:2px 4px;text-align:center;font-size:10px;font-weight:800;color:#047857;background:#f0fdf4;">${item.reqQty}</td>
                     </tr>`;
                 });
-                
                 categoryBlocks.push(`
-                    <div style="break-inside: avoid; margin-bottom: 10px;">
-                        <h4 style="font-size: 10px; font-weight: bold; color: #059669; background-color: #ecfdf5; padding: 3px 6px; margin: 0 0 2px 0; border-left: 2px solid #059669;">${cat}</h4>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+                    <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 8px; background: #fff; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; display: inline-block; width: 100%;">
+                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 3px 5px; text-transform: uppercase;">${cat}</div>
+                        <table style="width: 100%; border-collapse: collapse;">
                             <thead>
-                                <tr style="background-color: #059669; color: white;">
-                                    <th style="padding: 2px; border: 1px solid #cbd5e1; width: 22px;">#</th>
-                                    <th style="padding: 2px; border: 1px solid #cbd5e1; text-align: left;">Item Name</th>
-                                    <th style="padding: 2px; border: 1px solid #cbd5e1; width: 45px;">Code</th>
-                                    <th style="padding: 2px; border: 1px solid #cbd5e1; width: 40px;">UOM</th>
-                                    <th style="padding: 2px; border: 1px solid #cbd5e1; width: 35px;">Req</th>
+                                <tr style="background: #f1f5f9; color: #334155; border-bottom: 1px solid #cbd5e1;">
+                                    <th style="width: 22px; padding: 2px; font-size: 8px; text-align: center;">#</th>
+                                    <th style="text-align: left; padding: 2px; font-size: 8px;">Item</th>
+                                    <th style="width: 45px; padding: 2px; font-size: 8px; text-align: center;">Code</th>
+                                    <th style="width: 28px; padding: 2px; font-size: 8px; text-align: center;">Req</th>
                                 </tr>
                             </thead>
                             <tbody>${rows}</tbody>
@@ -927,49 +969,54 @@
                     </div>
                 `);
             }
-            
+
+            // Using CSS multi-columns layout (column-count: 3) to achieve side-by-side category boxes matching the exact requested view
             document.getElementById('pdfTemplateContainer').innerHTML = `
-                <div style="border-bottom: 1px solid #059669; padding-bottom: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div><h2 style="font-size: 14px; font-weight: 800; color: #059669; margin: 0;">LALITHA NATURALS - TRANSIT HUB</h2></div>
-                    <div style="text-align: right; font-size: 9px; color: #475569;"><strong>From:</strong> ${source} &rarr; <strong>To:</strong> ${dest} | <strong>Date:</strong> ${timeStr}</div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    ${categoryBlocks.join('')}
+                <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:100%;">
+                    <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-end;">
+                        <div>
+                            <h2 style="font-size:13px;font-weight:900;color:#047857;margin:0;">LALITHA NATURALS - TRANSIT SHEET</h2>
+                        </div>
+                        <div style="font-size:8px;color:#334155;text-align:right;line-height:1.2;">
+                            <div><strong>From:</strong> ${src} &rarr; <strong>To:</strong> ${dst} | <strong>Staff:</strong> <span style="color:#047857;font-weight:bold;">${staff}</span></div>
+                            <div><strong>Date:</strong> ${timeStr}</div>
+                        </div>
+                    </div>
+                    <div style="column-count: 3; column-gap: 8px; width: 100%; margin: 0; padding: 0;">
+                        ${categoryBlocks.join('')}
+                    </div>
                 </div>
             `;
 
             let thermHtml = "";
             for (let cat in grouped) {
-                thermHtml += `<div style="margin-bottom: 6px;"><div style="font-weight: bold; background: #000; color: #fff; padding: 2px; font-size: 9px;">[ ${cat.toUpperCase()} ]</div><table style="width: 100%; border-collapse: collapse; font-size: 9px;"><thead><tr style="border-bottom: 1px solid #000;"><th style="text-align: left;">Item (Code)</th><th style="text-align: right;">Req</th></tr></thead><tbody>`;
-                grouped[cat].forEach(item => {
-                    thermHtml += `<tr><td style="padding: 2px 0; border-bottom: 1px dotted #ccc;">${item.name} (${item.uom})<br><span style="font-size:8px; font-weight:bold;">Code: ${item.code}</span></td><td style="text-align: right; vertical-align: top; padding: 2px 0; border-bottom: 1px dotted #ccc; font-weight: bold; font-size: 11px;">${item.reqQty}</td></tr>`;
-                });
-                thermHtml += `</tbody></table></div>`;
+                thermHtml += `<div style="margin-bottom:4px;"><div style="font-weight:bold;background:#000;color:#fff;padding:1px;font-size:8px;">[ ${cat.toUpperCase()} ]</div><table style="width:100%;border-collapse:collapse;font-size:8px;">`;
+                grouped[cat].forEach(i => { thermHtml += `<tr><td style="border-bottom:1px dotted #ccc;padding:1px 0;">${i.name} (${i.uom})<br><span style="font-size:7px;">Code: ${i.code}</span></td><td style="border-bottom:1px dotted #ccc;text-align:right;font-weight:bold;font-size:10px;vertical-align:top;padding:1px 0;">${i.reqQty}</td></tr>`; });
+                thermHtml += `</table></div>`;
             }
-            
             document.getElementById('thermalTemplateContainer').innerHTML = `
-                <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px;">
-                    <h3 style="font-size: 12px; font-weight: bold; margin: 0;">LALITHA NATURALS</h3>
-                    <p style="font-size: 9px; margin: 2px 0;">${source} &rarr; ${dest}</p>
-                    <p style="font-size: 8px; margin: 1px 0;">${timeStr}</p>
+                <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:3px;">
+                    <h3 style="font-size:10px;font-weight:bold;margin:0;">LALITHA NATURALS</h3>
+                    <p style="font-size:8px;margin:1px 0;">${src} &rarr; ${dst} | Staff: ${staff}</p>
+                    <p style="font-size:7px;margin:0;">${timeStr}</p>
                 </div>
                 ${thermHtml}
-                <div style="border-top: 1px dashed #000; margin-top: 5px; padding-top: 4px; text-align: center; font-size: 8px;">
-                    <p style="margin:0;">*** END OF TRANSIT SHEET ***</p>
-                </div>
             `;
             return true;
         }
 
-        function openPrintPreview() { if (preparePrintData()) { document.getElementById('previewPaper').innerHTML = document.getElementById('pdfTemplateContainer').innerHTML; document.getElementById('previewModal').classList.remove('hidden'); } }
+        function openPrintPreview() { 
+            if (preparePrintData()) { 
+                document.getElementById('previewPaper').innerHTML = document.getElementById('pdfTemplateContainer').innerHTML; 
+                document.getElementById('previewModal').classList.remove('hidden'); 
+            } 
+        }
         function closePrintPreview() { document.getElementById('previewModal').classList.add('hidden'); }
         
         function triggerDirectPrint() {
-            const printContent = document.getElementById('pdfTemplateContainer').innerHTML;
-            const win = window.open('', '', 'height=600,width=400');
-            win.document.write('<html><head><title>Print</title><style>body{font-family:Inter,sans-serif;padding:10px;}</style></head><body>');
-            win.document.write(printContent);
-            win.document.write('</body></html>');
+            if (!preparePrintData()) return;
+            const win = window.open('', '', 'height=800,width=700');
+            win.document.write('<html><head><title>Lalitha Naturals - Transit Sheet</title><style>@page{size:A4;margin:4mm;}body{font-family:Inter,sans-serif;margin:0;padding:0;}</style></head><body>' + document.getElementById('pdfTemplateContainer').innerHTML + '</body></html>');
             win.document.close(); win.focus(); setTimeout(() => { win.print(); win.close(); }, 300);
         }
 
@@ -977,11 +1024,8 @@
         function closeThermalPreview() { document.getElementById('thermalModal').classList.add('hidden'); }
         
         function triggerThermalPrint() {
-            const printContent = document.getElementById('thermalTemplateContainer').innerHTML;
             const win = window.open('', '', 'height=500,width=300');
-            win.document.write('<html><head><title>Thermal</title><style>body{font-family:monospace;font-size:10px;width:270px;margin:0;padding:5px;}</style></head><body>');
-            win.document.write(printContent);
-            win.document.write('</body></html>');
+            win.document.write('<html><head><title>Thermal</title><style>body{font-family:monospace;font-size:9px;width:270px;margin:0;padding:2px;}</style></head><body>' + document.getElementById('thermalTemplateContainer').innerHTML + '</body></html>');
             win.document.close(); win.focus(); setTimeout(() => { win.print(); win.close(); }, 300);
         }
 
