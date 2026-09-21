@@ -25,6 +25,7 @@
     <!-- Bundled locally (same as Offer-Calc) so PDF export works without extra CDN calls -->
     <script src="./html2canvas.min.js"></script>
     <script src="./jspdf.umd.min.js"></script>
+    <script src="./xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         html { touch-action: manipulation; }
@@ -275,7 +276,12 @@
                     <div id="catalogEditorList" class="space-y-2 max-h-56 overflow-y-auto"></div>
                 </div>
             </div>
-            <div class="bg-white border-t border-slate-200 p-3 flex justify-end items-center">
+            <div class="bg-white border-t border-slate-200 p-3 flex justify-between items-center gap-2">
+                <div class="flex gap-1.5">
+                    <button onclick="exportCatalogExcel()" title="Download all items as an Excel file (also works as the sample/template)" class="px-3 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Export</button>
+                    <button onclick="document.getElementById('catalogImportFile').click()" title="Upload an edited Excel file to update all items" class="px-3 py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up"></i> Import</button>
+                    <input type="file" id="catalogImportFile" accept=".xlsx,.xls" class="hidden" onchange="importCatalogExcel(event)">
+                </div>
                 <button onclick="closeCatalogModal()" class="px-5 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Done</button>
             </div>
         </div>
@@ -678,6 +684,12 @@
             window.addEventListener('online', () => flushPendingQueue(false));
 
             if (navigator.onLine) syncCatalogFromCloud(); // pick up catalog edits made from the other branch
+            setInterval(() => {
+                // Skip while the catalog editor is open — openCatalogModal() already synced on
+                // open, and pulling again mid-edit could wipe out an unsaved edit in progress.
+                const catalogOpen = !document.getElementById('catalogModal').classList.contains('hidden');
+                if (navigator.onLine && !catalogOpen) syncCatalogFromCloud();
+            }, 60000); // keep polling so edits made on the other branch's phone show up without a manual reload
         }
 
         function openLogoPreview() {
@@ -951,11 +963,21 @@
         }
 
         // ---------- Catalog manager ----------
-        function openCatalogModal() {
+        async function openCatalogModal() {
             const sel = document.getElementById('newItemCat');
             sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
             document.getElementById('catalogModal').classList.remove('hidden');
             renderCatalogEditorList();
+
+            // Pull the latest catalog (in case the other branch changed something) before
+            // this device makes its own edits, so nobody overwrites someone else's change.
+            if (navigator.onLine) {
+                await syncCatalogFromCloud();
+                if (!document.getElementById('catalogModal').classList.contains('hidden')) {
+                    sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+                    renderCatalogEditorList();
+                }
+            }
         }
         function closeCatalogModal() {
             document.getElementById('catalogModal').classList.add('hidden');
@@ -978,7 +1000,7 @@
                     const dup = codeInUse(item.code, item.id);
 
                     html += `
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2">
+                        <div id="catalog_row_${item.id}" class="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2">
                             <div class="flex justify-between items-center font-bold text-slate-800">
                                 <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${esc(cat)}</span>
                                 <div class="flex gap-1.5">
@@ -1079,6 +1101,103 @@
             saveInventory();
             renderCatalogEditorList();
             alert("Item updated successfully!");
+        }
+
+        // ---------- Excel import / export ----------
+        // Export doubles as the "sample file": it's the exact same columns you'd fill in
+        // to import, just already populated with every current item.
+        function exportCatalogExcel() {
+            const rows = [];
+            for (const cat in inventoryData) {
+                inventoryData[cat].forEach(item => {
+                    rows.push({ Category: cat, ID: item.id, Name: item.name, UOM: item.uom, Code: item.code, Min: item.min });
+                });
+            }
+            const ws = XLSX.utils.json_to_sheet(rows, { header: ['Category', 'ID', 'Name', 'UOM', 'Code', 'Min'] });
+            ws['!cols'] = [{ wch: 16 }, { wch: 6 }, { wch: 28 }, { wch: 10 }, { wch: 10 }, { wch: 6 }];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Catalog');
+            XLSX.writeFile(wb, `Lalitha_Catalog_${localDateStr(new Date())}.xlsx`);
+        }
+
+        // Uploading a file REPLACES the whole catalog with what's in it.
+        // - A row with a blank/unrecognized ID becomes a NEW item.
+        // - A row whose ID matches an existing item UPDATES that item.
+        // - Leave a row out of the file entirely to remove that item from the catalog.
+        function importCatalogExcel(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const wb = XLSX.read(data, { type: 'array' });
+                    const sheetName = wb.SheetNames.includes('Catalog') ? 'Catalog' : wb.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
+
+                    if (!rows.length) { alert("That file has no rows to import."); event.target.value = ''; return; }
+
+                    const getVal = (row, key) => {
+                        const foundKey = Object.keys(row).find(k => k.trim().toLowerCase() === key);
+                        return foundKey ? row[foundKey] : '';
+                    };
+
+                    let nextId = 1;
+                    for (const cat in inventoryData) inventoryData[cat].forEach(i => { if (i.id >= nextId) nextId = i.id + 1; });
+
+                    const newInventoryData = {};
+                    const usedCodes = {};
+                    const dupCodeWarnings = [];
+                    let addedCount = 0, updatedCount = 0;
+
+                    rows.forEach(row => {
+                        const cat = String(getVal(row, 'category')).trim();
+                        const name = String(getVal(row, 'name')).trim();
+                        const uom = String(getVal(row, 'uom')).trim();
+                        const code = String(getVal(row, 'code')).trim();
+                        const min = parseInt(getVal(row, 'min'), 10);
+                        let id = parseInt(getVal(row, 'id'), 10);
+
+                        if (!cat || !name) return; // blank/template row — skip
+
+                        if (!id || isNaN(id)) { id = nextId++; addedCount++; }
+                        else { updatedCount++; if (id >= nextId) nextId = id + 1; }
+
+                        if (code) {
+                            if (usedCodes[code] && usedCodes[code] !== id) dupCodeWarnings.push(`${code} (${name})`);
+                            usedCodes[code] = id;
+                        }
+
+                        if (!newInventoryData[cat]) newInventoryData[cat] = [];
+                        newInventoryData[cat].push({ id, name, uom, code, min: isNaN(min) ? 0 : min });
+                    });
+
+                    if (Object.keys(newInventoryData).length === 0) {
+                        alert("Couldn't find any valid rows. Make sure the file has Category and Name columns filled in.");
+                        event.target.value = '';
+                        return;
+                    }
+
+                    let msg = `Import ${rows.length} row(s) from "${file.name}"?\n\n${addedCount} new item(s), ${updatedCount} existing item(s) updated.\nThis REPLACES the entire catalog with what's in the file — any item left out of the file will be removed.`;
+                    if (dupCodeWarnings.length) msg += `\n\nWarning — duplicate codes in the file: ${dupCodeWarnings.slice(0, 5).join(', ')}${dupCodeWarnings.length > 5 ? '…' : ''}`;
+
+                    if (!confirm(msg)) { event.target.value = ''; return; }
+
+                    inventoryData = newInventoryData;
+                    saveInventory();
+                    renderTabs();
+                    renderItems(document.getElementById('searchBox').value);
+                    const sel = document.getElementById('newItemCat');
+                    if (sel) sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+                    renderCatalogEditorList();
+                    alert(`Catalog updated — ${addedCount} added, ${updatedCount} updated.`);
+                } catch (err) {
+                    alert("Couldn't read that file. Make sure it's the Excel file exported from this app (or matches its columns: Category, ID, Name, UOM, Code, Min).");
+                }
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function addNewCatalogItem() {
@@ -1219,14 +1338,22 @@
                 document.getElementById('newItemCode').value = scannedCode;
                 closeScannerModal();
             } else if (scannerTargetMode === 'catalogSearch') {
-                document.getElementById('catalogSearch').value = scannedCode;
-                renderCatalogEditorList();
                 const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
-                const statusEl = document.getElementById('scanStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = match
-                        ? `<span style="color:#059669;font-weight:bold;">&#10003; ${esc(match.name)} (${esc(match.uom)})</span> — ready for next item`
-                        : `<span style="color:#dc2626;font-weight:bold;">No item matches ${esc(scannedCode)}</span> — ready for next item`;
+                if (match) {
+                    // Found it — close the scanner and drop straight into editing this item.
+                    closeScannerModal();
+                    document.getElementById('catalogSearch').value = scannedCode;
+                    renderCatalogEditorList();
+                    const row = document.getElementById(`catalog_row_${match.id}`);
+                    if (row) row.scrollIntoView({ block: 'center' });
+                    toggleEditItem(match.id);
+                } else {
+                    document.getElementById('catalogSearch').value = scannedCode;
+                    renderCatalogEditorList();
+                    const statusEl = document.getElementById('scanStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = `<span style="color:#dc2626;font-weight:bold;">No item matches ${esc(scannedCode)}</span> — ready to scan again`;
+                    }
                 }
             } else if (scannerTargetMode.startsWith('edit_')) {
                 const inputEl = document.getElementById(scannerTargetMode.replace('edit_', 'edit_code_'));
