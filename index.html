@@ -47,7 +47,7 @@
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow flex items-center justify-center">
+            <div onclick="event.stopPropagation(); openLogoPreview();" class="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow flex items-center justify-center cursor-pointer">
                 <img src="./logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
             </div>
             <div>
@@ -329,6 +329,12 @@
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end">
                 <button onclick="closeStaffCheckModal()" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
             </div>
+        </div>
+    </div>
+
+    <div id="logoPreviewModal" onclick="closeLogoPreview()" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="w-40 h-40 rounded-2xl overflow-hidden shadow-2xl bg-white flex items-center justify-center shrink-0">
+            <img src="./logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
         </div>
     </div>
 
@@ -672,6 +678,13 @@
             window.addEventListener('online', () => flushPendingQueue(false));
 
             if (navigator.onLine) syncCatalogFromCloud(); // pick up catalog edits made from the other branch
+        }
+
+        function openLogoPreview() {
+            document.getElementById('logoPreviewModal').classList.remove('hidden');
+        }
+        function closeLogoPreview() {
+            document.getElementById('logoPreviewModal').classList.add('hidden');
         }
 
         function updateClock() {
