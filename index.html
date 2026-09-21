@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lalitha Naturals - Operations Hub</title>
 
     <!-- Browser Tab Favicon & PWA Icons pointing to your uploaded file -->
@@ -18,8 +18,11 @@
     <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html { touch-action: manipulation; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         button, input, select { touch-action: manipulation; }
+        /* Belt-and-braces: kill double-tap-to-zoom even on browsers that ignore user-scalable=no */
+        * { touch-action: manipulation; }
         .capitalize-first { text-transform: capitalize; }
         .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
         .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -105,7 +108,7 @@
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
                         <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
-                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white">Avail</button>
+                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white">Available</button>
                             <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600">Missing</button>
                         </div>
                     </div>
@@ -140,9 +143,9 @@
                 <!-- Category Tabs -->
                 <div id="categoryTabs" class="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none"></div>
 
-                <p class="text-[10px] text-slate-500 font-semibold px-1 leading-snug">
-                    Enter the quantity currently on the shelf. <strong>Need = Min &minus; shelf count.</strong>
-                    Items you leave blank are not added to the sheet.
+                <p id="modeHelpText" class="text-[10px] text-slate-500 font-semibold px-1 leading-snug">
+                    <strong>Available mode:</strong> enter the quantity on the shelf. Need = Min &minus; shelf count.
+                    Any item you leave blank counts as 0 on the shelf, so it shows as needing its full Min.
                 </p>
             </div>
 
@@ -614,12 +617,15 @@
 
         function setAuditMode(mode) {
             auditMode = mode;
+            const helpText = document.getElementById('modeHelpText');
             if (mode === 'available') {
                 document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white";
                 document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
+                helpText.innerHTML = `<strong>Available mode:</strong> enter the quantity on the shelf. Need = Min &minus; shelf count. Any item you leave blank counts as 0 on the shelf, so it shows as needing its full Min.`;
             } else {
                 document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-amber-600 text-white";
                 document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
+                helpText.innerHTML = `<strong>Missing mode:</strong> enter the quantity that is short/missing directly. Need = what you enter. Any item you leave blank is treated as not missing (Need = 0).`;
             }
             renderItems(document.getElementById('searchBox').value);
         }
@@ -695,11 +701,12 @@
             }
         }
 
-        // Need = Min - shelf count (never below 0). Items with no entry are not counted at all.
+        // An item left blank is treated as 0 entered (matches the original app).
+        // Available mode: you enter what's ON the shelf, so blank = 0 on shelf = fully needed (Need = Min).
+        // Missing mode: you enter what's MISSING directly, so blank = nothing reported missing (Need = 0).
         function needFor(item) {
-            const v = shelfStock[item.id];
-            if (v === undefined) return null;
-            return Math.max(0, item.min - v);
+            const v = shelfStock[item.id] !== undefined ? shelfStock[item.id] : 0;
+            return auditMode === 'available' ? Math.max(0, item.min - v) : Math.max(0, v);
         }
 
         function renderItems(filter = "") {
@@ -724,11 +731,9 @@
             }
 
             container.innerHTML = itemsToDisplay.map((item) => {
-                const counted = shelfStock[item.id] !== undefined;
-                const need = counted ? needFor(item) : null;
-                const inputDisplayVal = counted ? shelfStock[item.id] : '';
-                const needClass = !counted ? 'text-slate-500 bg-slate-50 border-slate-200'
-                    : (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+                const need = needFor(item);
+                const inputDisplayVal = shelfStock[item.id] !== undefined ? shelfStock[item.id] : '';
+                const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
 
                 return `
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
@@ -736,7 +741,7 @@
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
                                 <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
-                                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${counted ? need : '&ndash;'}</span>
+                                <span id="need_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
                                 ${searching ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
                             </div>
                             <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
@@ -744,7 +749,7 @@
                         </div>
                         <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
                             <button onclick="updateStock(${item.id}, -1)" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-base shadow-sm">-</button>
-                            <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="&ndash;" onchange="setStock(${item.id}, this.value)" class="w-11 text-center text-sm font-bold bg-transparent outline-none">
+                            <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-11 text-center text-sm font-bold bg-transparent outline-none">
                             <button onclick="updateStock(${item.id}, 1)" class="w-11 h-11 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-base shadow-sm">+</button>
                         </div>
                     </div>
@@ -752,10 +757,28 @@
             }).join('');
         }
 
+        // Updates one item row in place (input value + Need badge) instead of rebuilding
+        // the whole list. A full re-render on every +/- tap is what made fast tapping
+        // feel laggy and register as a double-tap (which browsers read as "zoom").
+        function patchRow(id) {
+            const found = findCatalogItemById(id);
+            if (!found) return;
+            const item = found.item;
+            const input = document.getElementById(`stock_${id}`);
+            const badge = document.getElementById(`need_${id}`);
+            if (!input || !badge) return; // row not currently on screen (different category/filter)
+
+            const need = needFor(item);
+            input.value = shelfStock[id] !== undefined ? shelfStock[id] : '';
+            badge.innerHTML = `Need: ${need}`;
+            badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " +
+                (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+        }
+
         function updateStock(id, change) {
             const current = shelfStock[id] !== undefined ? shelfStock[id] : 0;
             shelfStock[id] = Math.max(0, current + change);
-            renderItems(document.getElementById('searchBox').value);
+            patchRow(id);
         }
 
         function setStock(id, val) {
@@ -765,7 +788,7 @@
             } else {
                 shelfStock[id] = Math.max(0, parsed);
             }
-            renderItems(document.getElementById('searchBox').value);
+            patchRow(id);
         }
 
         // ---------- Catalog manager ----------
@@ -930,12 +953,15 @@
                     totalCount++;
                 });
             } else {
+                // Every item in the catalog is considered. In Available mode, an item you
+                // never touched counts as 0 on the shelf, so it shows up needing its full Min.
                 for (const cat in inventoryData) {
                     const catShortages = [];
                     inventoryData[cat].forEach(item => {
-                        const need = needFor(item);           // null when not counted
-                        if (need !== null && need > 0) {
-                            catShortages.push({ id: item.id, cat: cat, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: shelfStock[item.id], reqQty: need });
+                        const need = needFor(item);
+                        if (need > 0) {
+                            const stockVal = shelfStock[item.id] !== undefined ? shelfStock[item.id] : 0;
+                            catShortages.push({ id: item.id, cat: cat, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: stockVal, reqQty: need });
                             totalCount++;
                         }
                     });
@@ -1140,9 +1166,16 @@
             (rec.items || []).forEach(item => {
                 const cat = findCatalogItemForRecord(item);
                 if (!cat) { missing++; return; }
-                // Shelf count = the min at dispatch time minus what was requested
-                const minThen = typeof item.min === 'number' ? item.min : cat.min;
-                shelfStock[cat.id] = Math.max(0, minThen - item.reqQty);
+                // Restore exactly what was entered. item.stock is the raw number the
+                // staff typed (shelf count in Available mode, missing qty in Missing mode) —
+                // recomputing it from reqQty/min would get Missing mode wrong.
+                if (item.stock !== undefined && item.stock !== null) {
+                    shelfStock[cat.id] = item.stock;
+                } else {
+                    // Older record saved before "stock" was recorded: fall back to a best guess.
+                    const minThen = typeof item.min === 'number' ? item.min : cat.min;
+                    shelfStock[cat.id] = (rec.auditMode === 'shortage') ? item.reqQty : Math.max(0, minThen - item.reqQty);
+                }
             });
 
             activeMobilePayload = null;
@@ -1150,7 +1183,7 @@
             switchMode('audit');
             setAuditMode(rec.auditMode === 'shortage' ? 'shortage' : 'available');
             updateEditBanner();
-            let msg = "Loaded record for editing. Only the items on the sheet are loaded; add any others you need, then press 'Confirm & Dispatch'.";
+            let msg = "Loaded record for editing. Only the items that were on the sheet are restored with their entered count; any item that was fully stocked (and so wasn't on the sheet) will show as needing its full Min again unless you re-enter it. Press 'Confirm & Dispatch' when done.";
             if (missing > 0) msg += `\n\n${missing} item(s) on this record are no longer in the catalog and were not loaded.`;
             alert(msg);
         }
