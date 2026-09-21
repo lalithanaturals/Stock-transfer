@@ -2,25 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lalitha Naturals - Operations Hub</title>
-    
+
     <!-- Browser Tab Favicon & PWA Icons pointing to your uploaded file -->
-    <link rel="icon" type="image/png" href="./van logo.png">
-    <link rel="apple-touch-icon" href="./van logo.png">
+    <link rel="icon" type="image/png" href="./van%20logo.png">
+    <link rel="apple-touch-icon" href="./van%20logo.png">
     <link rel="manifest" href="./manifest.json">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR / Barcode Reader Library (ZXing) -->
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <!-- QR / Barcode Reader Library (ZXing) - version pinned -->
+    <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         button, input, select { touch-action: manipulation; }
         .capitalize-first { text-transform: capitalize; }
+        .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
         @media print {
             @page { size: A4; margin: 4mm; }
             body { margin: 0; padding: 0; background: #fff; width: 210mm; }
@@ -33,9 +35,8 @@
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <!-- Logo Image Display -->
             <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow bg-amber-500 flex items-center justify-center">
-                <img src="./van logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
+                <img src="./van%20logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
             </div>
             <div>
                 <h1 class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
@@ -52,7 +53,7 @@
 
     <!-- Main Mobile Container -->
     <main class="max-w-md mx-auto px-3 py-3 space-y-3">
-        
+
         <!-- Mode Switcher Tabs -->
         <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1.5">
             <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
@@ -65,6 +66,13 @@
 
         <!-- AUDIT & INTELLIGENT STOCK CHECK VIEW -->
         <div id="auditViewSection" class="space-y-3">
+
+            <!-- Edit-mode banner -->
+            <div id="editBanner" class="hidden bg-amber-50 border border-amber-300 text-amber-900 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-bold">
+                <span><i class="fa-solid fa-pen-to-square mr-1"></i> Editing a sent record</span>
+                <button onclick="cancelEdit()" class="bg-white border border-amber-300 text-amber-800 px-3 py-1.5 rounded-lg text-[11px] font-bold">Cancel edit</button>
+            </div>
+
             <!-- Branch & Staff Card -->
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
                 <div class="grid grid-cols-2 gap-2.5">
@@ -88,11 +96,11 @@
                     <div class="relative">
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
                         <div class="relative flex items-center">
-                            <input type="text" id="staffNameInput" placeholder="Required..." onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
+                            <input type="text" id="staffNameInput" placeholder="Required..." onclick="event.stopPropagation(); toggleStaffDropdown(true)" onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
                             <button onclick="toggleStaffDropdown(event)" class="absolute right-2.5 text-slate-400 text-xs"><i class="fa-solid fa-chevron-down"></i></button>
                         </div>
                         <!-- Staff Name Dropdown List -->
-                        <div id="staffDropdownList" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-40 overflow-y-auto p-1 space-y-0.5"></div>
+                        <div id="staffDropdownList" onclick="event.stopPropagation()" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-40 overflow-y-auto p-1 space-y-0.5"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
@@ -117,7 +125,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-xs">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
-                        <input type="text" id="searchBox" placeholder="Search item or code..." 
+                        <input type="text" id="searchBox" placeholder="Search item or code..."
                             class="w-full pl-10 pr-3 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
                     </div>
                     <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
@@ -131,6 +139,11 @@
                 </div>
                 <!-- Category Tabs -->
                 <div id="categoryTabs" class="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none"></div>
+
+                <p class="text-[10px] text-slate-500 font-semibold px-1 leading-snug">
+                    Enter the quantity currently on the shelf. <strong>Need = Min &minus; shelf count.</strong>
+                    Items you leave blank are not added to the sheet.
+                </p>
             </div>
 
             <!-- Items List -->
@@ -171,7 +184,7 @@
     <!-- Sync Loading Screen Overlay -->
     <div id="syncLoadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4 space-y-3">
         <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <div class="text-white text-xs font-bold tracking-wide">Syncing with Google Sheets...</div>
+        <div id="syncLoadingText" class="text-white text-xs font-bold tracking-wide">Saving to Google Sheets...</div>
     </div>
 
     <!-- Post-Submission Success & Print/Share Options Modal -->
@@ -182,11 +195,11 @@
             </div>
             <div>
                 <h3 class="font-bold text-sm text-slate-900">Successfully Dispatched!</h3>
-                <p class="text-[11px] text-slate-500 mt-0.5">Recorded to Google Sheets. Use options below:</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Confirmed in Google Sheets. Use options below:</p>
             </div>
             <div class="grid grid-cols-2 gap-2 pt-1">
                 <button onclick="triggerSuccessAction('pdf')" class="py-2.5 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-file-pdf"></i> Download PDF
+                    <i class="fa-solid fa-file-pdf"></i> Print / PDF
                 </button>
                 <button onclick="triggerSuccessAction('whatsapp')" class="py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
                     <i class="fa-brands fa-whatsapp"></i> WhatsApp
@@ -212,15 +225,7 @@
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
                     <h4 class="text-xs font-bold text-emerald-700"><i class="fa-solid fa-plus-circle mr-1"></i> Add Item</h4>
                     <div class="grid grid-cols-2 gap-2.5">
-                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
-                            <option value="Groceries">Groceries</option>
-                            <option value="Karam">Karam</option>
-                            <option value="Flours">Flours</option>
-                            <option value="Millets">Millets</option>
-                            <option value="Ravva">Ravva</option>
-                            <option value="Dry Fruits">Dry Fruits</option>
-                            <option value="Spices">Spices</option>
-                        </select>
+                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
                         <div class="flex gap-1.5">
                             <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                             <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-barcode"></i></button>
@@ -304,6 +309,9 @@
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
+        // Bump this when catalog names/codes are corrected in code so phones can migrate.
+        const CATALOG_VERSION = 2;
+
         const defaultInventoryData = {
             "Groceries": [
                 { id: 1, name: "White Peas", uom: "250g", code: "1503", min: 10 },
@@ -341,7 +349,7 @@
                 { id: 33, name: "White Sesame Seeds", uom: "500g", code: "1330", min: 8 },
                 { id: 34, name: "White Sesame Seeds", uom: "1kg", code: "1329", min: 8 },
                 { id: 35, name: "Crystal Salt", uom: "1kg", code: "1516", min: 10 },
-                { id: 36, name: "Thamrind", uom: "500g", code: "1436", min: 8 },
+                { id: 36, name: "Tamarind", uom: "500g", code: "1436", min: 8 },
                 { id: 37, name: "Patha Ballem", uom: "500g", code: "1734", min: 8 },
                 { id: 38, name: "White Horsegram", uom: "500g", code: "1268", min: 6 },
                 { id: 39, name: "Black Horsegram", uom: "500g", code: "1267", min: 6 },
@@ -361,9 +369,9 @@
                 { id: 51, name: "Masala Karam", uom: "250g", code: "1150", min: 8 },
                 { id: 52, name: "Masala Karam", uom: "500g", code: "1149", min: 6 },
                 { id: 53, name: "Masala Karam", uom: "1kg", code: "1148", min: 4 },
-                { id: 54, name: "Plane Karam", uom: "250g", code: "1382", min: 8 },
-                { id: 55, name: "Plane Karam", uom: "500g", code: "1381", min: 6 },
-                { id: 56, name: "Plane Karam", uom: "1kg", code: "1380", min: 4 }
+                { id: 54, name: "Plain Karam", uom: "250g", code: "1382", min: 8 },
+                { id: 55, name: "Plain Karam", uom: "500g", code: "1381", min: 6 },
+                { id: 56, name: "Plain Karam", uom: "1kg", code: "1380", min: 4 }
             ],
             "Flours": [
                 { id: 57, name: "7 Grain Atta", uom: "1kg", code: "1028", min: 15 },
@@ -372,7 +380,7 @@
                 { id: 60, name: "Ragi Flour", uom: "500g", code: "1027", min: 10 },
                 { id: 61, name: "Ragi Flour", uom: "1kg", code: "1026", min: 15 },
                 { id: 62, name: "Besan Flour", uom: "500g", code: "1175", min: 10 },
-                { id: 63, name: "Jower Flour", uom: "500g", code: "1029", min: 10 }
+                { id: 63, name: "Jowar Flour", uom: "500g", code: "1029", min: 10 }
             ],
             "Millets": [
                 { id: 64, name: "Foxtail Millet", uom: "500g", code: "1418", min: 6 },
@@ -444,7 +452,7 @@
                 { id: 124, name: "Jeera", uom: "50g", code: "1360", min: 10 },
                 { id: 125, name: "Pacha Kapuram", uom: "10g", code: "1674", min: 10 },
                 { id: 126, name: "Vammu Puvvu", uom: "10g", code: "1675", min: 10 },
-                { id: 127, name: "Green Sounf", uom: "100g", code: "1368", min: 10 },
+                { id: 127, name: "Green Saunf", uom: "100g", code: "1368", min: 10 },
                 { id: 128, name: "Fenugreek", uom: "100g", code: "1356", min: 10 },
                 { id: 129, name: "Poppy Seeds", uom: "100g", code: "1495", min: 10 },
                 { id: 130, name: "Cinnamon Flat", uom: "50g", code: "1352", min: 8 },
@@ -468,24 +476,109 @@
             ]
         };
 
-        let inventoryData = JSON.parse(localStorage.getItem('lalitha_master_inventory')) || defaultInventoryData;
+        // ---------- Helpers ----------
+        function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+        function esc(s) {
+            return String(s === undefined || s === null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // Local (IST) date as YYYY-MM-DD. toISOString() uses UTC and shifts dates before 5:30 AM IST.
+        function localDateStr(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function fmtName(n) { return n ? n.charAt(0).toUpperCase() + n.slice(1) : n; }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function readJson(key, fallback) {
+            try {
+                const v = JSON.parse(localStorage.getItem(key));
+                return v === null || v === undefined ? fallback : v;
+            } catch (e) { return fallback; }
+        }
+        function writeJson(key, value) {
+            try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage full or blocked */ }
+        }
+
+        // ---------- Catalog load + migration ----------
+        const NAME_FIXES = [
+            [/Thamrind/g, 'Tamarind'],
+            [/Plane Karam/g, 'Plain Karam'],
+            [/Jower Flour/g, 'Jowar Flour'],
+            [/Green Sounf/g, 'Green Saunf']
+        ];
+
+        function loadInventory() {
+            const stored = readJson('lalitha_master_inventory', null);
+            if (!stored || typeof stored !== 'object' || Array.isArray(stored)) {
+                writeJson('lalitha_catalog_version', CATALOG_VERSION);
+                return deepClone(defaultInventoryData);
+            }
+            const ver = parseInt(localStorage.getItem('lalitha_catalog_version') || '1', 10);
+            if (ver < CATALOG_VERSION) {
+                for (const cat in stored) {
+                    if (!Array.isArray(stored[cat])) continue;
+                    stored[cat].forEach(item => {
+                        NAME_FIXES.forEach(([re, rep]) => { item.name = String(item.name).replace(re, rep); });
+                    });
+                }
+                writeJson('lalitha_master_inventory', stored);
+                writeJson('lalitha_catalog_version', CATALOG_VERSION);
+            }
+            return stored;
+        }
+
+        let inventoryData = loadInventory();
+        function saveInventory() { writeJson('lalitha_master_inventory', inventoryData); }
+
         let activeCategory = "Groceries";
         let auditMode = "available";
-        const shelfStock = {};
-        let activeMobilePayload = null;
+        const shelfStock = {};            // key = item.id, value = shelf count entered by staff
+        let activeMobilePayload = null;   // record currently being viewed / printed
         let codeReader = null;
         let scannerTargetMode = 'search';
-        let editingTransitId = null;
+        let editingTransitId = null;      // record id being edited
+        let editingOriginal = null;       // original record being edited (to keep time & status)
+        let pendingDraft = null;          // {id,time} reused if a save could not be confirmed
 
+        function findCatalogItemById(id) {
+            for (const cat in inventoryData) {
+                const index = inventoryData[cat].findIndex(i => i.id === id);
+                if (index !== -1) return { cat, index, item: inventoryData[cat][index] };
+            }
+            return null;
+        }
+
+        function findCatalogItemForRecord(recItem) {
+            if (recItem.id !== undefined && recItem.id !== null) {
+                const byId = findCatalogItemById(recItem.id);
+                if (byId) return byId.item;
+            }
+            const list = inventoryData[recItem.cat] || [];
+            return list.find(i => i.code === recItem.code && i.uom === recItem.uom && i.name === recItem.name) || null;
+        }
+
+        function codeInUse(code, excludeId) {
+            for (const cat in inventoryData) {
+                const hit = inventoryData[cat].find(i => i.code === code && i.id !== excludeId);
+                if (hit) return hit;
+            }
+            return null;
+        }
+
+        // ---------- App init ----------
         function initApp() {
             updateClock();
             setInterval(updateClock, 1000);
             renderTabs();
             renderItems();
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            document.getElementById('lookupDateInput').value = todayStr;
-
+            document.getElementById('lookupDateInput').value = localDateStr(new Date());
             document.getElementById('searchBox').addEventListener('input', (e) => {
                 renderItems(e.target.value);
             });
@@ -498,14 +591,18 @@
 
         function switchMode(mode) {
             const bottomBar = document.getElementById('bottomActionBar');
-            if(mode === 'audit') {
+            if (mode === 'audit') {
                 document.getElementById('auditViewSection').classList.remove('hidden');
                 document.getElementById('packingViewSection').classList.add('hidden');
                 document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
                 document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
                 bottomBar.classList.remove('hidden');
-                if(!editingTransitId) activeMobilePayload = null;
+                if (!editingTransitId) activeMobilePayload = null;
             } else {
+                if (editingTransitId) {
+                    if (!confirm("You are editing a sent record. Leave and discard your changes?")) return;
+                    cancelEdit();
+                }
                 document.getElementById('auditViewSection').classList.add('hidden');
                 document.getElementById('packingViewSection').classList.remove('hidden');
                 document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
@@ -517,7 +614,7 @@
 
         function setAuditMode(mode) {
             auditMode = mode;
-            if(mode === 'available') {
+            if (mode === 'available') {
                 document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white";
                 document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
             } else {
@@ -527,192 +624,206 @@
             renderItems(document.getElementById('searchBox').value);
         }
 
-        // --- STAFF NAME DROPDOWN MANAGEMENT ---
-        function getSavedStaffNames() {
-            return JSON.parse(localStorage.getItem('lalitha_staff_names')) || [];
-        }
+        // ---------- Staff name dropdown ----------
+        function getSavedStaffNames() { return readJson('lalitha_staff_names', []); }
 
         function saveStaffName(name) {
-            if(!name) return;
-            let list = getSavedStaffNames();
-            const formatted = name.charAt(0).toUpperCase() + name.slice(1);
-            if(!list.includes(formatted)) {
+            if (!name) return;
+            const list = getSavedStaffNames();
+            const formatted = fmtName(name);
+            if (!list.includes(formatted)) {
                 list.unshift(formatted);
-                localStorage.setItem('lalitha_staff_names', JSON.stringify(list));
+                writeJson('lalitha_staff_names', list);
             }
         }
 
-        function toggleStaffDropdown(show) {
+        function toggleStaffDropdown(arg) {
+            const isEvent = arg && typeof arg.stopPropagation === 'function';
+            if (isEvent) arg.stopPropagation();
             const dropdown = document.getElementById('staffDropdownList');
             const list = getSavedStaffNames();
-            if (list.length === 0 || show === false) {
-                dropdown.classList.add('hidden');
-                return;
-            }
+            if (arg === false || list.length === 0) { dropdown.classList.add('hidden'); return; }
+            if (isEvent && !dropdown.classList.contains('hidden')) { dropdown.classList.add('hidden'); return; }
 
-            dropdown.innerHTML = list.map(name => `
+            dropdown.innerHTML = list.map((name, i) => `
                 <div class="flex justify-between items-center px-3 py-2 hover:bg-slate-100 rounded-lg cursor-pointer text-xs font-bold text-slate-700">
-                    <span onclick="selectStaffName('${name}')" class="flex-1">${name}</span>
-                    <button onclick="removeStaffName(event, '${name}')" class="text-red-500 hover:text-red-700 px-2 py-0.5 font-bold text-sm" title="Remove">&times;</button>
+                    <span onclick="selectStaffName(${i})" class="flex-1">${esc(name)}</span>
+                    <button onclick="removeStaffName(event, ${i})" class="text-red-500 hover:text-red-700 px-2 py-0.5 font-bold text-sm" title="Remove">&times;</button>
                 </div>
             `).join('');
             dropdown.classList.remove('hidden');
         }
 
-        function selectStaffName(name) {
+        function selectStaffName(index) {
+            const name = getSavedStaffNames()[index];
+            if (name === undefined) return;
             document.getElementById('staffNameInput').value = name;
             document.getElementById('staffDropdownList').classList.add('hidden');
         }
 
-        function removeStaffName(event, name) {
+        function removeStaffName(event, index) {
             event.stopPropagation();
-            let list = getSavedStaffNames().filter(n => n !== name);
-            localStorage.setItem('lalitha_staff_names', JSON.stringify(list));
+            const list = getSavedStaffNames();
+            list.splice(index, 1);
+            writeJson('lalitha_staff_names', list);
             toggleStaffDropdown(true);
         }
 
+        // ---------- Category tabs & item list ----------
         function renderTabs() {
             const container = document.getElementById('categoryTabs');
             const categories = Object.keys(inventoryData);
-            if(!categories.includes(activeCategory) && categories.length > 0) {
-                activeCategory = categories[0];
-            }
+            if (!categories.includes(activeCategory) && categories.length > 0) activeCategory = categories[0];
             document.getElementById('activeCategoryTitle').innerText = activeCategory;
             container.innerHTML = categories.map(cat => `
-                <button onclick="switchCategory('${cat}')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200'}">${cat}</button>
+                <button onclick="switchCategory('${esc(cat)}')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-emerald-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200'}">${esc(cat)}</button>
             `).join('');
         }
 
         function switchCategory(cat) {
             activeCategory = cat;
-            document.getElementById('searchBox').value = ""; 
+            document.getElementById('searchBox').value = "";
             renderTabs();
             renderItems("");
         }
 
         function clearCurrentCategory() {
-            if(!inventoryData[activeCategory]) return;
-            if(confirm(`Clear audits for ${activeCategory}?`)) {
-                inventoryData[activeCategory].forEach(item => {
-                    delete shelfStock[`${activeCategory}_${item.code}_${item.uom}`];
-                });
+            if (!inventoryData[activeCategory]) return;
+            if (confirm(`Clear entered counts for ${activeCategory}?`)) {
+                inventoryData[activeCategory].forEach(item => { delete shelfStock[item.id]; });
                 renderItems(document.getElementById('searchBox').value);
             }
+        }
+
+        // Need = Min - shelf count (never below 0). Items with no entry are not counted at all.
+        function needFor(item) {
+            const v = shelfStock[item.id];
+            if (v === undefined) return null;
+            return Math.max(0, item.min - v);
         }
 
         function renderItems(filter = "") {
             const container = document.getElementById('itemsContainer');
             let itemsToDisplay = [];
+            const searching = filter.trim() !== "";
 
-            if (filter.trim() !== "") {
-                const query = filter.toLowerCase();
-                for (let cat in inventoryData) {
+            if (searching) {
+                const query = filter.trim().toLowerCase();
+                for (const cat in inventoryData) {
                     inventoryData[cat].forEach(item => {
-                        if (item.name.toLowerCase().includes(query) || item.code.includes(query)) itemsToDisplay.push({ ...item, category: cat });
+                        if (item.name.toLowerCase().includes(query) || String(item.code).includes(query)) itemsToDisplay.push({ ...item, category: cat });
                     });
                 }
             } else {
                 itemsToDisplay = inventoryData[activeCategory] ? inventoryData[activeCategory].map(item => ({ ...item, category: activeCategory })) : [];
             }
 
+            if (itemsToDisplay.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200">No items found.</div>`;
+                return;
+            }
+
             container.innerHTML = itemsToDisplay.map((item) => {
-                const key = `${item.category}_${item.code}_${item.uom}`;
-                const val = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) : 0;
-                let reqQty = auditMode === 'available' ? Math.max(0, item.min - val) : Math.max(0, val);
-                const inputDisplayVal = shelfStock[key] !== undefined ? shelfStock[key] : '';
+                const counted = shelfStock[item.id] !== undefined;
+                const need = counted ? needFor(item) : null;
+                const inputDisplayVal = counted ? shelfStock[item.id] : '';
+                const needClass = !counted ? 'text-slate-500 bg-slate-50 border-slate-200'
+                    : (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
 
                 return `
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
-                        <div class="flex-1">
+                        <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${item.code}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
                                 <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
-                                <span class="text-[10px] font-extrabold text-red-700 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">Need: ${reqQty}</span>
+                                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${counted ? need : '&ndash;'}</span>
+                                ${searching ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
                             </div>
-                            <h3 class="text-sm font-bold text-slate-900 leading-snug">${item.name}</h3>
-                            <p class="text-xs text-slate-500 font-medium">${item.uom}</p>
+                            <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
+                            <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
                         </div>
                         <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
-                            <button onclick="updateStock('${key}', -1, ${item.min}, '${item.category}')" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-base shadow-sm">-</button>
-                            <input type="number" id="stock_${key}" value="${inputDisplayVal}" placeholder="0" onchange="setStock('${key}', this.value, ${item.min})" class="w-11 text-center text-sm font-bold bg-transparent outline-none">
-                            <button onclick="updateStock('${key}', 1, ${item.min}, '${item.category}')" class="w-11 h-11 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-base shadow-sm">+</button>
+                            <button onclick="updateStock(${item.id}, -1)" class="w-11 h-11 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-base shadow-sm">-</button>
+                            <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="&ndash;" onchange="setStock(${item.id}, this.value)" class="w-11 text-center text-sm font-bold bg-transparent outline-none">
+                            <button onclick="updateStock(${item.id}, 1)" class="w-11 h-11 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-base shadow-sm">+</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function updateStock(key, change, minLimit) {
-            let current = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) : 0;
-            current += change;
-            if (current < 0) current = 0;
-            
-            if (auditMode === 'available' && current > minLimit) {
-                current = minLimit;
-            }
-
-            shelfStock[key] = current;
+        function updateStock(id, change) {
+            const current = shelfStock[id] !== undefined ? shelfStock[id] : 0;
+            shelfStock[id] = Math.max(0, current + change);
             renderItems(document.getElementById('searchBox').value);
         }
 
-        function setStock(key, val, minLimit) {
-            const parsed = parseInt(val);
+        function setStock(id, val) {
+            const parsed = parseInt(val, 10);
             if (isNaN(parsed) || val === "") {
-                delete shelfStock[key];
+                delete shelfStock[id];
             } else {
-                let clamped = parsed < 0 ? 0 : parsed;
-                if (auditMode === 'available' && clamped > minLimit) {
-                    clamped = minLimit;
-                }
-                shelfStock[key] = clamped;
+                shelfStock[id] = Math.max(0, parsed);
             }
             renderItems(document.getElementById('searchBox').value);
         }
 
-        // --- CATALOG MANAGEMENT & EDIT FUNCTIONS ---
-        function openCatalogModal() { document.getElementById('catalogModal').classList.remove('hidden'); renderCatalogEditorList(); }
-        function closeCatalogModal() { document.getElementById('catalogModal').classList.add('hidden'); renderTabs(); renderItems(document.getElementById('searchBox').value); }
+        // ---------- Catalog manager ----------
+        function openCatalogModal() {
+            const sel = document.getElementById('newItemCat');
+            sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+            document.getElementById('catalogModal').classList.remove('hidden');
+            renderCatalogEditorList();
+        }
+        function closeCatalogModal() {
+            document.getElementById('catalogModal').classList.add('hidden');
+            renderTabs();
+            renderItems(document.getElementById('searchBox').value);
+        }
 
         function renderCatalogEditorList() {
             const container = document.getElementById('catalogEditorList');
             const filter = (document.getElementById('catalogSearch').value || "").toLowerCase();
             let html = "", totalCount = 0;
 
-            for (let cat in inventoryData) {
-                inventoryData[cat].forEach((item, index) => {
+            for (const cat in inventoryData) {
+                inventoryData[cat].forEach((item) => {
                     totalCount++;
-                    if (filter && !item.name.toLowerCase().includes(filter) && !item.code.includes(filter)) return;
-                    
+                    if (filter && !item.name.toLowerCase().includes(filter) && !String(item.code).includes(filter)) return;
+                    const dup = codeInUse(item.code, item.id);
+
                     html += `
-                        <div id="catalog_row_${cat}_${index}" class="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2">
                             <div class="flex justify-between items-center font-bold text-slate-800">
-                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${cat}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${esc(cat)}</span>
                                 <div class="flex gap-1.5">
-                                    <button onclick="toggleEditItem('${cat}', ${index})" id="edit_btn_${cat}_${index}" class="text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
-                                    <button onclick="deleteCatalogItem('${cat}', ${index})" class="text-red-600 bg-red-50 px-2.5 py-1 rounded-lg font-bold">Remove</button>
+                                    <button onclick="toggleEditItem(${item.id})" id="edit_btn_${item.id}" class="text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
+                                    <button onclick="deleteCatalogItem(${item.id})" class="text-red-600 bg-red-50 px-2.5 py-1 rounded-lg font-bold">Remove</button>
                                 </div>
                             </div>
-                            <div id="view_mode_${cat}_${index}" class="py-0.5">
-                                <strong>${item.name}</strong> (${item.uom})
-                                <div class="text-[10px] text-slate-500">Code: ${item.code} | Min: ${item.min}</div>
+                            <div id="view_mode_${item.id}" class="py-0.5">
+                                <strong>${esc(item.name)}</strong> (${esc(item.uom)})
+                                <div class="text-[10px] text-slate-500">Code: ${esc(item.code)} | Min: ${item.min}
+                                    ${dup ? `<span class="text-red-600 font-bold"> &middot; duplicate code (also ${esc(dup.name)} ${esc(dup.uom)})</span>` : ''}
+                                </div>
                             </div>
-                            <div id="edit_mode_${cat}_${index}" class="hidden space-y-2.5 pt-1 border-t border-slate-100">
+                            <div id="edit_mode_${item.id}" class="hidden space-y-2.5 pt-1 border-t border-slate-100">
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="col-span-1 flex gap-1">
-                                        <input type="text" id="edit_code_${cat}_${index}" value="${item.code}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
-                                        <button onclick="openScannerModal('edit_${cat}_${index}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-xs" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
+                                        <input type="text" id="edit_code_${item.id}" value="${esc(item.code)}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
+                                        <button onclick="openScannerModal('edit_${item.id}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-xs" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
                                     </div>
-                                    <input type="text" id="edit_name_${cat}_${index}" value="${item.name}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
-                                    <input type="text" id="edit_uom_${cat}_${index}" value="${item.uom}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
+                                    <input type="text" id="edit_name_${item.id}" value="${esc(item.name)}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                    <input type="text" id="edit_uom_${item.id}" value="${esc(item.uom)}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
                                 </div>
                                 <div class="flex justify-between items-center pt-1">
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-[10px] text-slate-500 font-bold">Min:</span>
-                                        <input type="number" id="edit_min_${cat}_${index}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
+                                        <input type="number" id="edit_min_${item.id}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
                                     </div>
                                     <div class="flex gap-1.5">
-                                        <button onclick="toggleEditItem('${cat}', ${index})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Cancel</button>
-                                        <button onclick="saveCatalogItem('${cat}', ${index})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-xs">Save</button>
+                                        <button onclick="toggleEditItem(${item.id})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Cancel</button>
+                                        <button onclick="saveCatalogItem(${item.id})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-xs">Save</button>
                                     </div>
                                 </div>
                             </div>
@@ -724,10 +835,11 @@
             container.innerHTML = html || `<p class="text-center text-slate-400 py-3">No matching items.</p>`;
         }
 
-        function toggleEditItem(cat, index) {
-            const viewDiv = document.getElementById(`view_mode_${cat}_${index}`);
-            const editDiv = document.getElementById(`edit_mode_${cat}_${index}`);
-            const btn = document.getElementById(`edit_btn_${cat}_${index}`);
+        function toggleEditItem(id) {
+            const viewDiv = document.getElementById(`view_mode_${id}`);
+            const editDiv = document.getElementById(`edit_mode_${id}`);
+            const btn = document.getElementById(`edit_btn_${id}`);
+            if (!viewDiv || !editDiv || !btn) return;
 
             if (editDiv.classList.contains('hidden')) {
                 editDiv.classList.remove('hidden');
@@ -742,16 +854,22 @@
             }
         }
 
-        function saveCatalogItem(cat, index) {
-            const code = document.getElementById(`edit_code_${cat}_${index}`).value.trim();
-            const name = document.getElementById(`edit_name_${cat}_${index}`).value.trim();
-            const uom = document.getElementById(`edit_uom_${cat}_${index}`).value.trim();
-            const min = parseInt(document.getElementById(`edit_min_${cat}_${index}`).value);
+        function saveCatalogItem(id) {
+            const found = findCatalogItemById(id);
+            if (!found) return;
+            const code = document.getElementById(`edit_code_${id}`).value.trim();
+            const name = document.getElementById(`edit_name_${id}`).value.trim();
+            const uom = document.getElementById(`edit_uom_${id}`).value.trim();
+            const min = parseInt(document.getElementById(`edit_min_${id}`).value, 10);
 
-            if(!code || !name || !uom || isNaN(min)) { alert("Please check your inputs!"); return; }
+            if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Please check your inputs!"); return; }
+            if (code !== found.item.code) {
+                const dup = codeInUse(code, id);
+                if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return; }
+            }
 
-            inventoryData[cat][index] = { ...inventoryData[cat][index], code, name, uom, min };
-            localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
+            inventoryData[found.cat][found.index] = { ...found.item, code, name, uom, min };
+            saveInventory();
             renderCatalogEditorList();
             alert("Item updated successfully!");
         }
@@ -761,35 +879,50 @@
             const code = document.getElementById('newItemCode').value.trim();
             const name = document.getElementById('newItemName').value.trim();
             const uom = document.getElementById('newItemUom').value.trim();
-            const min = parseInt(document.getElementById('newItemMin').value);
+            const min = parseInt(document.getElementById('newItemMin').value, 10);
 
-            if(!code || !name || !uom || isNaN(min)) { alert("Fill all fields!"); return; }
-            if(!inventoryData[cat]) inventoryData[cat] = [];
+            if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Fill all fields!"); return; }
+            const dup = codeInUse(code, null);
+            if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return; }
+
+            if (!inventoryData[cat]) inventoryData[cat] = [];
             inventoryData[cat].push({ id: Date.now(), name, uom, code, min });
-            localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
-            document.getElementById('newItemCode').value = ""; document.getElementById('newItemName').value = ""; document.getElementById('newItemUom').value = ""; document.getElementById('newItemMin').value = "";
-            renderCatalogEditorList(); alert("Added successfully!");
+            saveInventory();
+            document.getElementById('newItemCode').value = "";
+            document.getElementById('newItemName').value = "";
+            document.getElementById('newItemUom').value = "";
+            document.getElementById('newItemMin').value = "";
+            renderCatalogEditorList();
+            alert("Added successfully!");
         }
 
-        function deleteCatalogItem(cat, index) {
-            if(confirm("Remove item?")) {
-                inventoryData[cat].splice(index, 1);
-                localStorage.setItem('lalitha_master_inventory', JSON.stringify(inventoryData));
+        function deleteCatalogItem(id) {
+            const found = findCatalogItemById(id);
+            if (!found) return;
+            if (confirm("Remove item?")) {
+                inventoryData[found.cat].splice(found.index, 1);
+                delete shelfStock[id];
+                saveInventory();
                 renderCatalogEditorList();
             }
         }
 
         function resetDefaultCatalog() {
-            if(confirm("Reset catalog?")) {
-                localStorage.removeItem('lalitha_master_inventory');
-                inventoryData = JSON.parse(JSON.stringify(defaultInventoryData));
-                renderCatalogEditorList(); alert("Reset complete.");
+            if (confirm("Reset catalog to defaults? Your added/edited items on this phone will be lost.")) {
+                inventoryData = deepClone(defaultInventoryData);
+                saveInventory();
+                writeJson('lalitha_catalog_version', CATALOG_VERSION);
+                for (const k in shelfStock) delete shelfStock[k];
+                openCatalogModal();
+                alert("Reset complete.");
             }
         }
 
+        // ---------- Sheet building ----------
         function getGroupedShortages() {
-            let grouped = {}, totalCount = 0;
-            if (activeMobilePayload && activeMobilePayload.items && activeMobilePayload.items.length > 0) {
+            const grouped = {};
+            let totalCount = 0;
+            if (activeMobilePayload && Array.isArray(activeMobilePayload.items) && activeMobilePayload.items.length > 0) {
                 activeMobilePayload.items.forEach(item => {
                     const cat = item.cat || 'Groceries';
                     if (!grouped[cat]) grouped[cat] = [];
@@ -797,14 +930,12 @@
                     totalCount++;
                 });
             } else {
-                for (let cat in inventoryData) {
-                    let catShortages = [];
+                for (const cat in inventoryData) {
+                    const catShortages = [];
                     inventoryData[cat].forEach(item => {
-                        const key = `${cat}_${item.code}_${item.uom}`;
-                        const val = shelfStock[key] !== undefined && shelfStock[key] !== "" ? parseInt(shelfStock[key]) || 0 : 0;
-                        let reqQty = auditMode === 'available' ? Math.max(0, item.min - val) : Math.max(0, val);
-                        if (reqQty > 0) {
-                            catShortages.push({ cat: cat, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: val, reqQty: reqQty });
+                        const need = needFor(item);           // null when not counted
+                        if (need !== null && need > 0) {
+                            catShortages.push({ id: item.id, cat: cat, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: shelfStock[item.id], reqQty: need });
                             totalCount++;
                         }
                     });
@@ -814,17 +945,23 @@
             return { grouped, totalCount };
         }
 
+        function getAllCategories(grouped) {
+            const cats = Object.keys(inventoryData);
+            Object.keys(grouped).forEach(c => { if (!cats.includes(c)) cats.push(c); });
+            return cats;
+        }
+
+        // ---------- Barcode scanner ----------
         function openScannerModal(mode = 'search') {
+            if (typeof ZXing === 'undefined') { alert("Scanner library did not load. Check your internet connection and refresh."); return; }
             scannerTargetMode = mode;
             document.getElementById('scannerModal').classList.remove('hidden');
             codeReader = new ZXing.BrowserBarcodeReader();
             codeReader.decodeFromConstraints({ video: { facingMode: { exact: "environment" } } }, 'interactive', (result) => {
-                if (result) {
-                    handleScanResult(result.text);
-                }
+                if (result) handleScanResult(result.text);
             }).catch(() => {
                 codeReader.decodeFromVideoDevice(null, 'interactive', (result) => {
-                    if (result) { handleScanResult(result.text); }
+                    if (result) handleScanResult(result.text);
                 });
             });
         }
@@ -833,8 +970,7 @@
             if (scannerTargetMode === 'newItem') {
                 document.getElementById('newItemCode').value = scannedCode;
             } else if (scannerTargetMode.startsWith('edit_')) {
-                const fieldId = scannerTargetMode.replace('edit_', 'edit_code_');
-                const inputEl = document.getElementById(fieldId);
+                const inputEl = document.getElementById(scannerTargetMode.replace('edit_', 'edit_code_'));
                 if (inputEl) inputEl.value = scannedCode;
             } else {
                 document.getElementById('searchBox').value = scannedCode;
@@ -843,8 +979,12 @@
             closeScannerModal();
         }
 
-        function closeScannerModal() { document.getElementById('scannerModal').classList.add('hidden'); if(codeReader) codeReader.reset(); }
+        function closeScannerModal() {
+            document.getElementById('scannerModal').classList.add('hidden');
+            if (codeReader) { try { codeReader.reset(); } catch (e) {} }
+        }
 
+        // ---------- Dispatch ----------
         function confirmAndDispatchTransit() {
             const staffNameInput = document.getElementById('staffNameInput').value.trim();
             if (!staffNameInput) {
@@ -853,33 +993,61 @@
                 return;
             }
 
-            const { grouped, totalCount } = getGroupedShortages();
-            if (totalCount === 0) { alert("No items required to dispatch!"); return; }
+            const { totalCount } = getGroupedShortages();
+            if (totalCount === 0) { alert("No items required to dispatch! Enter shelf counts first."); return; }
 
             const src = document.getElementById('sourceBranch').value;
             const dst = document.getElementById('destBranch').value;
-            const staffName = staffNameInput.charAt(0).toUpperCase() + staffNameInput.slice(1);
+            const staffName = fmtName(staffNameInput);
 
-            let confirmMsg = `Please Confirm Submission:\n\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staffName}\nTotal Items Required: ${totalCount}\n\nDo you want to proceed and submit?`;
+            const confirmMsg = `Please Confirm Submission:\n\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staffName}\nTotal Items Required: ${totalCount}\n\nDo you want to proceed and submit?`;
             if (confirm(confirmMsg)) {
                 saveStaffName(staffName);
                 dispatchTransitSheet();
             }
         }
 
+        function setOverlay(show, text) {
+            const el = document.getElementById('syncLoadingOverlay');
+            if (text) document.getElementById('syncLoadingText').innerText = text;
+            el.classList.toggle('hidden', !show);
+        }
+
+        // The Google Script is called with no-cors, so its reply can't be read.
+        // Instead, read the ledger back and check the record is really there.
+        async function confirmSaved(predicate, tries = 4) {
+            for (let i = 0; i < tries; i++) {
+                await sleep(1200 + i * 800);
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL);
+                    const sheets = await response.json();
+                    if (!Array.isArray(sheets)) continue;
+                    if (sheets.some(predicate)) {
+                        writeJson('lalitha_cached_sheets', sheets.filter(s => s && Array.isArray(s.items)));
+                        return true;
+                    }
+                } catch (e) { /* try again */ }
+            }
+            return false;
+        }
+
         async function dispatchTransitSheet() {
             const staffNameInput = document.getElementById('staffNameInput').value.trim();
             const { grouped, totalCount } = getGroupedShortages();
 
-            let itemsToSave = [];
-            for (let cat in grouped) grouped[cat].forEach(i => itemsToSave.push(i));
+            const itemsToSave = [];
+            for (const cat in grouped) grouped[cat].forEach(i => itemsToSave.push(i));
 
-            const staffName = staffNameInput.charAt(0).toUpperCase() + staffNameInput.slice(1);
+            const staffName = fmtName(staffNameInput);
             const notesVal = document.getElementById('transitNotesInput').value.trim();
-            const now = new Date();
-            
-            const recordId = editingTransitId ? editingTransitId : ('transit_' + now.getTime());
-            const recordTime = now.getTime();
+
+            if (!editingTransitId && !pendingDraft) {
+                const t = Date.now();
+                pendingDraft = { id: 'transit_' + t, time: t };
+            }
+            const recordId = editingTransitId ? editingTransitId : pendingDraft.id;
+            const recordTime = editingOriginal ? editingOriginal.time : pendingDraft.time;
+            const recordStatus = editingOriginal && editingOriginal.status ? editingOriginal.status : "In Transit";
 
             const newTransit = {
                 id: recordId,
@@ -889,83 +1057,113 @@
                 notes: notesVal,
                 auditMode: auditMode,
                 time: recordTime,
-                status: "In Transit",
+                status: recordStatus,
                 items: itemsToSave
             };
 
-            document.getElementById('syncLoadingOverlay').classList.remove('hidden');
+            setOverlay(true, "Saving to Google Sheets...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'transit', action: 'save_transit', transit: newTransit })
                 });
-                
-                let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
-                cachedSheets = cachedSheets.filter(s => s.id !== recordId);
-                cachedSheets.unshift(newTransit);
-                localStorage.setItem('lalitha_cached_sheets', JSON.stringify(cachedSheets));
-
-                activeMobilePayload = newTransit;
-                editingTransitId = null; 
-                document.getElementById('syncLoadingOverlay').classList.add('hidden');
-                document.getElementById('successModal').classList.remove('hidden');
             } catch (err) {
-                document.getElementById('syncLoadingOverlay').classList.add('hidden');
-                alert("Cloud sync network error.");
+                setOverlay(false);
+                alert("Network error. Nothing was confirmed. Your entries are kept; press Confirm & Dispatch again to retry.");
+                return;
             }
+
+            setOverlay(true, "Verifying it reached the sheet...");
+            const ok = await confirmSaved(s => s && s.id === recordId && Array.isArray(s.items) && s.items.length === itemsToSave.length);
+            setOverlay(false);
+
+            if (!ok) {
+                alert("Could not confirm the record in Google Sheets.\n\nYour entries are kept. Press Confirm & Dispatch again to retry (it will not create a duplicate). Check the Ledger before relying on this dispatch.");
+                return;
+            }
+
+            // Success: reset the audit form so the next transfer starts clean
+            for (const k in shelfStock) delete shelfStock[k];
+            document.getElementById('transitNotesInput').value = "";
+            document.getElementById('searchBox').value = "";
+            editingTransitId = null;
+            editingOriginal = null;
+            pendingDraft = null;
+            updateEditBanner();
+            activeMobilePayload = newTransit;
+            renderItems("");
+            document.getElementById('successModal').classList.remove('hidden');
         }
 
         function triggerSuccessAction(action) {
-            if(action === 'pdf') downloadPdfFile();
-            else if(action === 'whatsapp') shareToWhatsApp();
-            else if(action === 'thermal') openThermalPreview();
+            if (action === 'pdf') downloadPdfFile();
+            else if (action === 'whatsapp') shareToWhatsApp();
+            else if (action === 'thermal') openThermalPreview();
         }
 
-        function closeSuccessModalManually() { 
-            document.getElementById('successModal').classList.add('hidden'); 
-            switchMode('packing'); 
-            loadTransitSheets(false); 
+        function closeSuccessModalManually() {
+            document.getElementById('successModal').classList.add('hidden');
+            switchMode('packing');
+            loadTransitSheets(false);
+        }
+
+        // ---------- Edit an existing record ----------
+        function updateEditBanner() {
+            document.getElementById('editBanner').classList.toggle('hidden', !editingTransitId);
+        }
+
+        function cancelEdit() {
+            editingTransitId = null;
+            editingOriginal = null;
+            activeMobilePayload = null;
+            for (const k in shelfStock) delete shelfStock[k];
+            document.getElementById('transitNotesInput').value = "";
+            updateEditBanner();
+            renderItems(document.getElementById('searchBox').value);
         }
 
         function editTransitRecord(id) {
-            loadTransitPayload(id);
-            if(!activeMobilePayload) return;
+            const rec = findSheet(id);
+            if (!rec) return;
 
-            editingTransitId = activeMobilePayload.id;
-            document.getElementById('sourceBranch').value = activeMobilePayload.src;
-            document.getElementById('destBranch').value = activeMobilePayload.dst;
-            document.getElementById('staffNameInput').value = activeMobilePayload.staff || '';
-            document.getElementById('transitNotesInput').value = activeMobilePayload.notes || '';
+            editingTransitId = rec.id;
+            editingOriginal = rec;
+            pendingDraft = null;
+            document.getElementById('sourceBranch').value = rec.src;
+            document.getElementById('destBranch').value = rec.dst;
+            document.getElementById('staffNameInput').value = rec.staff || '';
+            document.getElementById('transitNotesInput').value = rec.notes || '';
 
-            if(activeMobilePayload.auditMode) {
-                setAuditMode(activeMobilePayload.auditMode);
-            } else {
-                setAuditMode('available');
-            }
-
-            for(let k in shelfStock) delete shelfStock[k];
-            
-            activeMobilePayload.items.forEach(item => {
-                const key = `${item.cat}_${item.code}_${item.uom}`;
-                if(item.stock !== undefined) {
-                    shelfStock[key] = item.stock;
-                }
+            for (const k in shelfStock) delete shelfStock[k];
+            let missing = 0;
+            (rec.items || []).forEach(item => {
+                const cat = findCatalogItemForRecord(item);
+                if (!cat) { missing++; return; }
+                // Shelf count = the min at dispatch time minus what was requested
+                const minThen = typeof item.min === 'number' ? item.min : cat.min;
+                shelfStock[cat.id] = Math.max(0, minThen - item.reqQty);
             });
 
-            activeMobilePayload = null; 
+            activeMobilePayload = null;
+            document.getElementById('searchBox').value = "";
             switchMode('audit');
-            renderItems('');
-            alert("Loaded record for editing. Make your changes and press 'Confirm & Dispatch'.");
+            setAuditMode(rec.auditMode === 'shortage' ? 'shortage' : 'available');
+            updateEditBanner();
+            let msg = "Loaded record for editing. Only the items on the sheet are loaded; add any others you need, then press 'Confirm & Dispatch'.";
+            if (missing > 0) msg += `\n\n${missing} item(s) on this record are no longer in the catalog and were not loaded.`;
+            alert(msg);
         }
 
+        // ---------- Ledger ----------
         async function loadTransitSheets(forceSync = false) {
             const container = document.getElementById('transitSheetsFeed');
             const targetDateStr = document.getElementById('lookupDateInput').value;
 
-            let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
-            if (!forceSync && cachedSheets.length > 0) {
-                renderTransitList(cachedSheets, targetDateStr);
+            const cachedSheets = readJson('lalitha_cached_sheets', []);
+            const cachedOk = Array.isArray(cachedSheets) ? cachedSheets : [];
+            if (!forceSync && cachedOk.length > 0) {
+                renderTransitList(cachedOk, targetDateStr);
             } else {
                 container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">Fetching from cloud...</div>`;
             }
@@ -973,10 +1171,12 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const sheets = await response.json();
-                localStorage.setItem('lalitha_cached_sheets', JSON.stringify(sheets));
-                renderTransitList(sheets, targetDateStr);
+                if (!Array.isArray(sheets)) throw new Error("Unexpected server reply");
+                const clean = sheets.filter(s => s && Array.isArray(s.items));
+                writeJson('lalitha_cached_sheets', clean);
+                renderTransitList(clean, targetDateStr);
             } catch (err) {
-                if (cachedSheets.length === 0) {
+                if (cachedOk.length === 0) {
                     container.innerHTML = `<div class="text-center py-6 text-red-500 text-xs">Failed to load records. Check connection.</div>`;
                 }
             }
@@ -984,13 +1184,13 @@
 
         function renderTransitList(sheets, targetDateStr) {
             const container = document.getElementById('transitSheetsFeed');
-            const filtered = sheets.filter(s => new Date(s.time).toISOString().split('T')[0] === targetDateStr)
+            const filtered = sheets.filter(s => s && Array.isArray(s.items) && localDateStr(new Date(s.time)) === targetDateStr)
                                    .sort((a, b) => b.time - a.time);
-                                   
+
             document.getElementById('mobileSheetCount').innerText = `${filtered.length} records`;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs bg-white rounded-xl border">No records found for ${targetDateStr}.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs bg-white rounded-xl border">No records found for ${esc(targetDateStr)}.</div>`;
                 window._latestCloudSheets = [];
                 return;
             }
@@ -1000,41 +1200,42 @@
                 const dateStr = sheetDateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
                 const timeStr = sheetDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
                 const staffName = s.staff || 'Staff';
+                const sid = esc(s.id);
+                const received = s.status === 'Received';
 
                 return `
                     <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-xs">
                         <div class="flex justify-between font-bold text-sm">
-                            <span>#${idx + 1} &bull; ${s.src} &rarr; ${s.dst}</span>
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] ${s.status === 'Received' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
+                            <span>#${idx + 1} &bull; ${esc(s.src)} &rarr; ${esc(s.dst)}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] ${received ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${esc(s.status)}</span>
                         </div>
-                        <p class="text-slate-500 text-[11px]">Date: ${dateStr} | Time: ${timeStr} | Staff: ${staffName} | <strong>${s.items.length} items</strong></p>
-                        ${s.notes ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${s.notes}</p>` : ''}
-                        
+                        <p class="text-slate-500 text-[11px]">Date: ${esc(dateStr)} | Time: ${esc(timeStr)} | Staff: ${esc(staffName)} | <strong>${s.items.length} items</strong></p>
+                        ${s.notes ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${esc(s.notes)}</p>` : ''}
+
                         <div class="flex items-center gap-2 pt-1 relative">
-                            <button onclick="loadTransitPayload('${s.id}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
-                            
+                            <button onclick="loadTransitPayload('${sid}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
+
                             <!-- Print & Share Dropdown Toggle -->
                             <div class="relative flex-1">
-                                <button onclick="toggleActionDropdown(event, 'print_${s.id}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+                                <button onclick="toggleActionDropdown(event, 'print_${sid}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
                                     <i class="fa-solid fa-print text-sm"></i> Print & Share <i class="fa-solid fa-chevron-down text-[10px]"></i>
                                 </button>
-                                <!-- Dropdown Menu -->
-                                <div id="dropdown_print_${s.id}" class="hidden absolute left-0 bottom-full mb-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
-                                    <button onclick="loadTransitPayload('${s.id}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Download PDF</button>
-                                    <button onclick="loadTransitPayload('${s.id}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
-                                    <button onclick="loadTransitPayload('${s.id}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
+                                <div id="dropdown_print_${sid}" class="hidden absolute left-0 bottom-full mb-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
+                                    <button onclick="loadTransitPayload('${sid}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Print / PDF</button>
+                                    <button onclick="loadTransitPayload('${sid}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
+                                    <button onclick="loadTransitPayload('${sid}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
                                 </div>
                             </div>
 
-                            <!-- Actions Dropdown (Edit & Delete) -->
+                            <!-- Actions Dropdown -->
                             <div class="relative">
-                                <button onclick="toggleActionDropdown(event, 'actions_${s.id}')" class="py-2.5 px-3 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                                <button onclick="toggleActionDropdown(event, 'actions_${sid}')" class="py-2.5 px-3 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
                                     <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
                                 </button>
-                                <!-- Dropdown Menu -->
-                                <div id="dropdown_actions_${s.id}" class="hidden absolute right-0 bottom-full mb-1.5 w-36 bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
-                                    <button onclick="editTransitRecord('${s.id}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2"><i class="fa-solid fa-pen-to-square w-4"></i> Edit</button>
-                                    <button onclick="deleteCloudTransit('${s.id}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"><i class="fa-solid fa-trash w-4"></i> Delete</button>
+                                <div id="dropdown_actions_${sid}" class="hidden absolute right-0 bottom-full mb-1.5 w-40 bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
+                                    ${received ? '' : `<button onclick="markReceived('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"><i class="fa-solid fa-circle-check w-4"></i> Mark Received</button>`}
+                                    <button onclick="editTransitRecord('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2"><i class="fa-solid fa-pen-to-square w-4"></i> Edit</button>
+                                    <button onclick="deleteCloudTransit('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"><i class="fa-solid fa-trash w-4"></i> Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -1047,30 +1248,60 @@
         function toggleActionDropdown(event, prefixId) {
             event.stopPropagation();
             const dropdown = document.getElementById(`dropdown_${prefixId}`);
+            if (!dropdown) return;
             const isHidden = dropdown.classList.contains('hidden');
             closeAllDropdowns();
-            if (isHidden) {
-                dropdown.classList.remove('hidden');
-            }
+            if (isHidden) dropdown.classList.remove('hidden');
         }
 
-        function closeAllDropdowns(event) {
+        function closeAllDropdowns() {
             document.querySelectorAll('[id^="dropdown_"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById('staffDropdownList')?.classList.add('hidden');
+            const staffList = document.getElementById('staffDropdownList');
+            if (staffList) staffList.classList.add('hidden');
         }
 
-        function loadTransitPayload(id) { 
-            let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
-            activeMobilePayload = cachedSheets.find(s => s.id === id) || (window._latestCloudSheets ? window._latestCloudSheets.find(s => s.id === id) : null); 
+        function findSheet(id) {
+            const cached = readJson('lalitha_cached_sheets', []);
+            const list = Array.isArray(cached) ? cached : [];
+            return list.find(s => s && s.id === id) || (window._latestCloudSheets ? window._latestCloudSheets.find(s => s.id === id) : null) || null;
+        }
+
+        function loadTransitPayload(id) { activeMobilePayload = findSheet(id); }
+
+        async function markReceived(id) {
+            const rec = findSheet(id);
+            if (!rec) return;
+            if (!confirm(`Mark this transfer as RECEIVED at ${rec.dst}?`)) return;
+
+            const updated = { ...rec, status: 'Received' };
+            setOverlay(true, "Updating status...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'transit', action: 'save_transit', transit: updated })
+                });
+            } catch (err) {
+                setOverlay(false);
+                alert("Network error. Status was not updated.");
+                return;
+            }
+            const ok = await confirmSaved(s => s && s.id === id && s.status === 'Received');
+            setOverlay(false);
+            if (!ok) {
+                alert("Could not confirm the status change in Google Sheets. Check that your Google Script updates an existing record when the same id is saved again.");
+                return;
+            }
+            renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value);
         }
 
         async function deleteCloudTransit(id) {
             if (!confirm("Delete this entry permanently?")) return;
             try {
-                let cachedSheets = JSON.parse(localStorage.getItem('lalitha_cached_sheets')) || [];
-                cachedSheets = cachedSheets.filter(s => s.id !== id);
-                localStorage.setItem('lalitha_cached_sheets', JSON.stringify(cachedSheets));
-                renderTransitList(cachedSheets, document.getElementById('lookupDateInput').value);
+                const cached = readJson('lalitha_cached_sheets', []);
+                const remaining = (Array.isArray(cached) ? cached : []).filter(s => s && s.id !== id);
+                writeJson('lalitha_cached_sheets', remaining);
+                renderTransitList(remaining, document.getElementById('lookupDateInput').value);
 
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
@@ -1080,18 +1311,19 @@
             } catch (err) { alert("Error deleting record."); }
         }
 
+        // ---------- Share / Print ----------
         function shareToWhatsApp() {
             const { grouped, totalCount } = getGroupedShortages();
-            if (totalCount === 0) return;
+            if (totalCount === 0) { alert("No items required."); return; }
             const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
             const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
             const staff = activeMobilePayload ? (activeMobilePayload.staff || 'Staff') : (document.getElementById('staffNameInput').value.trim() || 'Staff');
             const notes = activeMobilePayload ? (activeMobilePayload.notes || '') : document.getElementById('transitNotesInput').value.trim();
-            
+
             let msg = `*LALITHA NATURALS - TRANSIT*\nFrom: ${src} ➔ To: ${dst}\nStaff: ${staff}\nItems: ${totalCount}\n`;
             if (notes) msg += `Notes: ${notes}\n`;
             msg += `\n`;
-            for(let cat in grouped) {
+            for (const cat in grouped) {
                 msg += `*[ ${cat.toUpperCase()} ]*\n`;
                 grouped[cat].forEach(i => { msg += `• ${i.name} (${i.uom}) [${i.code}] - *Req: ${i.reqQty}*\n`; });
                 msg += `\n`;
@@ -1099,50 +1331,49 @@
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
+        // Opens the A4 sheet in its own window and starts the print dialog.
+        // Choose "Save as PDF" as the printer to get a real PDF file.
         function downloadPdfFile() {
             if (!preparePrintData()) return;
-            const htmlContent = `<!DOCTYPE html><html><head><title>Transit Sheet</title><style>@page{size:A4;margin:4mm;}body{font-family:Inter,sans-serif;margin:0;padding:0;}</style></head><body>` + document.getElementById('pdfTemplateContainer').innerHTML + `</body></html>`;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Lalitha_Naturals_Transit_${new Date().toISOString().split('T')[0]}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Transit Sheet</title><style>@page{size:A4;margin:4mm;}body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:0;}</style></head><body>` + document.getElementById('pdfTemplateContainer').innerHTML + `</body></html>`;
+            const w = window.open('', '_blank');
+            if (!w) { alert("Please allow pop-ups for this page, then try again."); return; }
+            w.document.write(htmlContent);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 400);
         }
 
         function preparePrintData() {
             const staffInputVal = document.getElementById('staffNameInput').value.trim();
-            const staff = activeMobilePayload && activeMobilePayload.staff ? activeMobilePayload.staff : (staffInputVal ? staffInputVal.charAt(0).toUpperCase() + staffInputVal.slice(1) : 'Staff');
+            const staff = activeMobilePayload && activeMobilePayload.staff ? activeMobilePayload.staff : (staffInputVal ? fmtName(staffInputVal) : 'Staff');
             const notes = activeMobilePayload ? (activeMobilePayload.notes || '') : document.getElementById('transitNotesInput').value.trim();
-            
+
             const { grouped, totalCount } = getGroupedShortages();
             if (totalCount === 0) { alert("No items required."); return false; }
 
-            const dateTimeStr = activeMobilePayload ? new Date(activeMobilePayload.time).toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'}) : new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+            const dateTimeStr = activeMobilePayload ? new Date(activeMobilePayload.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
             const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
             const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
 
-            const allCategories = ["Groceries", "Karam", "Flours", "Millets", "Ravva", "Dry Fruits", "Spices"];
-            let categoryBlocks = [];
+            const allCategories = getAllCategories(grouped);
+            const categoryBlocks = [];
 
             allCategories.forEach(cat => {
-                let items = grouped[cat] || [];
-                let rows = ""; 
+                const items = grouped[cat] || [];
+                let rows = "";
                 let idx = 1;
-                
+
                 items.forEach(item => {
                     rows += `<tr style="border-bottom:1px solid #cbd5e1; height:18px;">
                         <td style="padding:1px 3px;text-align:center;font-size:9px;font-weight:bold;color:#475569;">${idx++}</td>
-                        <td style="padding:1px 3px;font-size:10px;font-weight:600;color:#0f172a;">${item.name} <span style="font-size:8px;color:#64748b;">(${item.uom})</span></td>
-                        <td style="padding:1px 3px;text-align:center;font-family:monospace;font-size:9px;font-weight:bold;color:#334155;">${item.code}</td>
-                        <td style="padding:1px 3px;text-align:center;font-size:10px;font-weight:800;color:#047857;background:#f0fdf4;">${item.reqQty}</td>
+                        <td style="padding:1px 3px;font-size:10px;font-weight:600;color:#0f172a;">${esc(item.name)} <span style="font-size:8px;color:#64748b;">(${esc(item.uom)})</span></td>
+                        <td style="padding:1px 3px;text-align:center;font-family:monospace;font-size:9px;font-weight:bold;color:#334155;">${esc(item.code)}</td>
+                        <td style="padding:1px 3px;text-align:center;font-size:10px;font-weight:800;color:#047857;background:#f0fdf4;">${esc(item.reqQty)}</td>
                     </tr>`;
                 });
 
-                const minPaddingRows = 6; 
+                const minPaddingRows = 6;
                 for (let i = items.length; i < minPaddingRows; i++) {
                     rows += `<tr style="border-bottom:1px solid #e2e8f0; height:18px;">
                         <td style="padding:1px 3px;text-align:center;font-size:9px;color:#cbd5e1;">${idx++}</td>
@@ -1154,7 +1385,7 @@
 
                 categoryBlocks.push(`
                     <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; background: #fff; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; width: 100%;">
-                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${cat}</div>
+                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${esc(cat)}</div>
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #f1f5f9; color: #334155; border-bottom: 1px solid #cbd5e1;">
@@ -1170,6 +1401,16 @@
                 `);
             });
 
+            // Spread categories over 3 columns (7 categories -> 3 / 2 / 2)
+            const n = categoryBlocks.length;
+            const base = Math.floor(n / 3), extra = n % 3;
+            const sizes = [base + (extra > 0 ? 1 : 0), base + (extra > 1 ? 1 : 0), base];
+            const cols = [
+                categoryBlocks.slice(0, sizes[0]).join(''),
+                categoryBlocks.slice(sizes[0], sizes[0] + sizes[1]).join(''),
+                categoryBlocks.slice(sizes[0] + sizes[1]).join('')
+            ];
+
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:198mm;">
                     <div style="border-bottom:2px solid #047857;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-end;">
@@ -1177,69 +1418,66 @@
                             <h2 style="font-size:13px;font-weight:900;color:#047857;margin:0;">LALITHA NATURALS - TRANSIT SHEET</h2>
                         </div>
                         <div style="font-size:8px;color:#334155;text-align:right;line-height:1.2;">
-                            <div><strong>From:</strong> ${src} &rarr; <strong>To:</strong> ${dst} | <strong>Staff:</strong> <span style="color:#047857;font-weight:bold;">${staff}</span></div>
-                            <div><strong>Date & Time:</strong> ${dateTimeStr}</div>
+                            <div><strong>From:</strong> ${esc(src)} &rarr; <strong>To:</strong> ${esc(dst)} | <strong>Staff:</strong> <span style="color:#047857;font-weight:bold;">${esc(staff)}</span></div>
+                            <div><strong>Date & Time:</strong> ${esc(dateTimeStr)}</div>
                         </div>
                     </div>
                     <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
                         <tr>
-                            <td style="width:33.33%; vertical-align:top; padding-right:3px;">
-                                ${categoryBlocks[0] || ''}
-                                ${categoryBlocks[1] || ''}
-                                ${categoryBlocks[2] || ''}
-                            </td>
-                            <td style="width:33.33%; vertical-align:top; padding-left:3px; padding-right:3px;">
-                                ${categoryBlocks[3] || ''}
-                                ${categoryBlocks[4] || ''}
-                            </td>
-                            <td style="width:33.33%; vertical-align:top; padding-left:3px;">
-                                ${categoryBlocks[5] || ''}
-                                ${categoryBlocks[6] || ''}
-                            </td>
+                            <td style="width:33.33%; vertical-align:top; padding-right:3px;">${cols[0]}</td>
+                            <td style="width:33.33%; vertical-align:top; padding-left:3px; padding-right:3px;">${cols[1]}</td>
+                            <td style="width:33.33%; vertical-align:top; padding-left:3px;">${cols[2]}</td>
                         </tr>
                     </table>
                     <div style="margin-top:6px; border:1px solid #cbd5e1; border-radius:3px; padding:4px 6px; background:#f8fafc; font-size:9px;">
-                        <strong>Staff Remarks / Notes:</strong> <span style="color:#334155;">${notes ? notes : '__________________________________________________________________________________________'}</span>
+                        <strong>Staff Remarks / Notes:</strong> <span style="color:#334155;">${notes ? esc(notes) : '__________________________________________________________________________________________'}</span>
                     </div>
                 </div>
             `;
 
             let thermHtml = "";
             allCategories.forEach(cat => {
-                let items = grouped[cat] || [];
-                if(items.length > 0) {
-                    thermHtml += `<div style="margin-bottom:4px;"><div style="font-weight:bold;background:#000;color:#fff;padding:1px;font-size:8px;">[ ${cat.toUpperCase()} ]</div><table style="width:100%;border-collapse:collapse;font-size:8px;">`;
-                    items.forEach(i => { thermHtml += `<tr><td style="border-bottom:1px dotted #ccc;padding:1px 0;">${i.name} (${i.uom})<br><span style="font-size:7px;">Code: ${i.code}</span></td><td style="border-bottom:1px dotted #ccc;text-align:right;font-weight:bold;font-size:10px;vertical-align:top;padding:1px 0;">${i.reqQty}</td></tr>`; });
+                const items = grouped[cat] || [];
+                if (items.length > 0) {
+                    thermHtml += `<div style="margin-bottom:4px;"><div style="font-weight:bold;background:#000;color:#fff;padding:1px;font-size:8px;">[ ${esc(cat.toUpperCase())} ]</div><table style="width:100%;border-collapse:collapse;font-size:8px;">`;
+                    items.forEach(i => { thermHtml += `<tr><td style="border-bottom:1px dotted #ccc;padding:1px 0;">${esc(i.name)} (${esc(i.uom)})<br><span style="font-size:7px;">Code: ${esc(i.code)}</span></td><td style="border-bottom:1px dotted #ccc;text-align:right;font-weight:bold;font-size:10px;vertical-align:top;padding:1px 0;">${esc(i.reqQty)}</td></tr>`; });
                     thermHtml += `</table></div>`;
                 }
             });
             document.getElementById('thermalTemplateContainer').innerHTML = `
                 <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:3px;margin-bottom:3px;">
                     <h3 style="font-size:10px;font-weight:bold;margin:0;">LALITHA NATURALS</h3>
-                    <p style="font-size:8px;margin:1px 0;">${src} &rarr; ${dst} | Staff: ${staff}</p>
-                    <p style="font-size:7px;margin:0;">${dateTimeStr}</p>
-                    ${notes ? `<p style="font-size:8px;margin:2px 0;text-align:left;"><strong>Note:</strong> ${notes}</p>` : ''}
+                    <p style="font-size:8px;margin:1px 0;">${esc(src)} &rarr; ${esc(dst)} | Staff: ${esc(staff)}</p>
+                    <p style="font-size:7px;margin:0;">${esc(dateTimeStr)}</p>
+                    ${notes ? `<p style="font-size:8px;margin:2px 0;text-align:left;"><strong>Note:</strong> ${esc(notes)}</p>` : ''}
                 </div>
                 ${thermHtml}
             `;
             return true;
         }
 
-        function openStaffCheckModal() { 
-            if (preparePrintData()) { 
-                document.getElementById('previewPaper').innerHTML = document.getElementById('pdfTemplateContainer').innerHTML; 
-                document.getElementById('previewModal').classList.remove('hidden'); 
-            } 
+        function openStaffCheckModal() {
+            if (preparePrintData()) {
+                document.getElementById('previewPaper').innerHTML = document.getElementById('pdfTemplateContainer').innerHTML;
+                document.getElementById('previewModal').classList.remove('hidden');
+            }
         }
         function closeStaffCheckModal() { document.getElementById('previewModal').classList.add('hidden'); }
-        
-        function openThermalPreview() { if (preparePrintData()) { document.getElementById('thermalPaper').innerHTML = document.getElementById('thermalTemplateContainer').innerHTML; document.getElementById('thermalModal').classList.remove('hidden'); } }
+
+        function openThermalPreview() {
+            if (preparePrintData()) {
+                document.getElementById('thermalPaper').innerHTML = document.getElementById('thermalTemplateContainer').innerHTML;
+                document.getElementById('thermalModal').classList.remove('hidden');
+            }
+        }
         function closeThermalPreview() { document.getElementById('thermalModal').classList.add('hidden'); }
-        
+
         function triggerThermalPrint() {
             const win = window.open('', '', 'height=500,width=300');
+            if (!win) { alert("Please allow pop-ups for this page, then try again."); return; }
             win.document.write('<html><head><title>Thermal</title><style>body{font-family:monospace;font-size:9px;width:270px;margin:0;padding:2px;}</style></head><body>' + document.getElementById('thermalTemplateContainer').innerHTML + '</body></html>');
-            win.document.close(); win.focus(); setTimeout(() => { win.print(); win.close(); }, 300);
+            win.document.close(); win.focus();
+            setTimeout(() => { win.print(); win.close(); }, 300);
         }
 
         window.onload = initApp;
