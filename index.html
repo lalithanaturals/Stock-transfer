@@ -1409,6 +1409,10 @@
         // Export doubles as the "sample file": it's the exact same columns you'd fill in
         // to import, just already populated with every current item.
         function exportCatalogExcel(filenamePrefix) {
+            if (typeof XLSX === 'undefined') {
+                alert("Excel library didn't load (xlsx.full.min.js). Make sure that file is uploaded to your GitHub repo next to index.html, and check your internet connection, then refresh.");
+                return;
+            }
             const rows = [];
             for (const cat in inventoryData) {
                 inventoryData[cat].forEach(item => {
@@ -1431,6 +1435,11 @@
         function importCatalogExcel(event) {
             const file = event.target.files && event.target.files[0];
             if (!file) return;
+            if (typeof XLSX === 'undefined') {
+                alert("Excel library didn't load (xlsx.full.min.js). Make sure that file is uploaded to your GitHub repo next to index.html, and check your internet connection, then refresh.");
+                event.target.value = '';
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = (e) => {
