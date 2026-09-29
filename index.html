@@ -670,7 +670,11 @@
                             <span class="text-[10px] font-bold uppercase text-slate-400">1. Brands supplied</span>
                             <i id="vendorFormStepBrandsChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform rotate-180"></i>
                         </button>
-                        <div id="vendorFormStepBrandsBody" class="px-3.5 pb-3.5 space-y-1">
+                        <div id="vendorFormStepBrandsBody" class="px-3.5 pb-3.5 space-y-2">
+                            <div class="flex justify-end gap-3">
+                                <button type="button" onclick="selectAllVendorBrands()" class="text-[11px] font-bold text-cyan-700">Select all</button>
+                                <button type="button" onclick="clearAllVendorBrands()" class="text-[11px] font-bold text-red-600">Clear all</button>
+                            </div>
                             <div id="newVendorBrandChips" class="space-y-1"></div>
                         </div>
                     </div>
@@ -681,8 +685,12 @@
                             <i id="vendorFormStepCategoriesChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
                         </button>
                         <div id="vendorFormStepCategoriesBody" class="hidden px-3.5 pb-3.5 space-y-2">
+                            <p class="text-[10px] text-slate-400">Pick a brand above first — its categories show up here. Leave none selected to supply every category under the picked brand(s).</p>
+                            <div class="flex justify-end gap-3">
+                                <button type="button" onclick="selectAllVendorCategories()" class="text-[11px] font-bold text-cyan-700">Select all</button>
+                                <button type="button" onclick="clearAllVendorCategories()" class="text-[11px] font-bold text-red-600">Clear all</button>
+                            </div>
                             <div id="newVendorCategoryChips" class="space-y-1"></div>
-                            <p class="text-[10px] text-slate-400">Leave none selected to supply every category under the picked brand(s).</p>
                         </div>
                     </div>
 
@@ -696,6 +704,10 @@
                                 <select id="newVendorItemCategorySelect" onchange="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
                             </div>
                             <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
+                            <div class="flex justify-end gap-3">
+                                <button type="button" onclick="selectAllVendorItems()" class="text-[11px] font-bold text-cyan-700">Select all shown</button>
+                                <button type="button" onclick="clearAllVendorItems()" class="text-[11px] font-bold text-red-600">Clear all</button>
+                            </div>
                             <div id="newVendorItemPicker" class="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
                             <p class="text-[10px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
                             <div id="newVendorItemChips" class="flex flex-wrap gap-1.5"></div>
@@ -4868,7 +4880,27 @@
         }
 
         function toggleNewVendorBrandChip(brand) {
-            if (newVendorSelectedBrands.has(brand)) newVendorSelectedBrands.delete(brand); else newVendorSelectedBrands.add(brand);
+            const adding = !newVendorSelectedBrands.has(brand);
+            if (!adding) newVendorSelectedBrands.delete(brand); else newVendorSelectedBrands.add(brand);
+            newVendorItemPickerLimit = 150;
+            renderNewVendorBrandChips();
+            renderNewVendorCategoryChips();
+            renderVendorFormItemCategorySelect();
+            renderVendorFormItemPicker();
+            // Cascade: picking a brand jumps straight to its categories, so you go
+            // brand → categories → items → Save, then repeat for the next brand.
+            if (adding) ['brands', 'categories', 'items'].forEach(s => setVendorFormStepExpanded(s, s === 'categories'));
+        }
+        function selectAllVendorBrands() {
+            allBrandsInCatalog().forEach(b => newVendorSelectedBrands.add(b));
+            newVendorItemPickerLimit = 150;
+            renderNewVendorBrandChips();
+            renderNewVendorCategoryChips();
+            renderVendorFormItemCategorySelect();
+            renderVendorFormItemPicker();
+        }
+        function clearAllVendorBrands() {
+            newVendorSelectedBrands.clear();
             newVendorItemPickerLimit = 150;
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
@@ -4901,7 +4933,24 @@
         }
 
         function toggleNewVendorCategoryChip(cat) {
-            if (newVendorSelectedCategories.has(cat)) newVendorSelectedCategories.delete(cat); else newVendorSelectedCategories.add(cat);
+            const adding = !newVendorSelectedCategories.has(cat);
+            if (!adding) newVendorSelectedCategories.delete(cat); else newVendorSelectedCategories.add(cat);
+            newVendorItemPickerLimit = 150;
+            renderNewVendorCategoryChips();
+            const catSel = document.getElementById('newVendorItemCategorySelect');
+            if (catSel && newVendorSelectedCategories.size === 1) catSel.value = Array.from(newVendorSelectedCategories)[0];
+            renderVendorFormItemPicker();
+            // Cascade: picking a category jumps straight to its items.
+            if (adding) ['brands', 'categories', 'items'].forEach(s => setVendorFormStepExpanded(s, s === 'items'));
+        }
+        function selectAllVendorCategories() {
+            categoriesForSelectedVendorBrands().forEach(c => newVendorSelectedCategories.add(c));
+            newVendorItemPickerLimit = 150;
+            renderNewVendorCategoryChips();
+            renderVendorFormItemPicker();
+        }
+        function clearAllVendorCategories() {
+            newVendorSelectedCategories.clear();
             newVendorItemPickerLimit = 150;
             renderNewVendorCategoryChips();
             renderVendorFormItemPicker();
@@ -4917,9 +4966,7 @@
         // The scrollable list of individual items to tap and add — filtered by the picked
         // brand(s)/category and by the search box.
         let newVendorItemPickerLimit = 150;
-        function renderVendorFormItemPicker() {
-            const container = document.getElementById('newVendorItemPicker');
-            if (!container) return;
+        function vendorItemPickerResults() {
             const brands = Array.from(newVendorSelectedBrands);
             const catFilter = document.getElementById('newVendorItemCategorySelect') ? document.getElementById('newVendorItemCategorySelect').value : '';
             const q = (document.getElementById('newVendorItemSearch') ? document.getElementById('newVendorItemSearch').value : '').trim().toLowerCase();
@@ -4934,6 +4981,12 @@
                     results.push({ ...item, category: cat });
                 });
             }
+            return results;
+        }
+        function renderVendorFormItemPicker() {
+            const container = document.getElementById('newVendorItemPicker');
+            if (!container) return;
+            const results = vendorItemPickerResults();
             if (results.length === 0) {
                 container.innerHTML = '<p class="col-span-2 text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
             } else {
@@ -4951,6 +5004,18 @@
 
         function toggleNewVendorItemChip(itemId) {
             if (newVendorSelectedItemIds.has(itemId)) newVendorSelectedItemIds.delete(itemId); else newVendorSelectedItemIds.add(itemId);
+            renderVendorFormItemPicker();
+        }
+        // "Select all" picks every item matching the current category/search filter —
+        // not just the ones paginated onto screen — so it works even before you've
+        // tapped "Load more". "Clear all" wipes the whole item selection, not just what's
+        // currently filtered into view.
+        function selectAllVendorItems() {
+            vendorItemPickerResults().forEach(item => newVendorSelectedItemIds.add(String(item.id)));
+            renderVendorFormItemPicker();
+        }
+        function clearAllVendorItems() {
+            newVendorSelectedItemIds.clear();
             renderVendorFormItemPicker();
         }
 
