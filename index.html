@@ -234,13 +234,70 @@
 
     <!-- Bottom Action Bar (Only visible/active on Audit View) -->
     <div id="bottomActionBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
-        <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5">
-            <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+        <div class="max-w-md mx-auto grid grid-cols-3 gap-2">
+            <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
                 <i class="fa-solid fa-eye text-sm"></i> Staff Check
             </button>
-            <button onclick="confirmAndDispatchTransit()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane text-sm"></i> Confirm & Dispatch
+            <button onclick="openVendorReqModal()" class="bg-cyan-700 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+                <i class="fa-solid fa-truck-fast text-sm"></i> Vendor Req.
             </button>
+            <button onclick="confirmAndDispatchTransit()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+                <i class="fa-solid fa-paper-plane text-sm"></i> Dispatch
+            </button>
+        </div>
+    </div>
+
+    <!-- Vendor Requirements Modal: a self-contained "cart" per vendor, entirely separate from
+         the shelf-count/dispatch (store requirement) flow. Step 1: pick a vendor. Step 2: add
+         items with +/- like a shopping cart; the cart is saved per vendor, so reopening the same
+         vendor later shows what's already in it, ready to edit and send. -->
+    <div id="vendorReqModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
+            <!-- Step 1: pick vendor -->
+            <div id="vendorReqPickView">
+                <div class="bg-cyan-700 text-white px-4 py-3.5 flex justify-between items-center">
+                    <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> Vendor Requirements</h3>
+                    <button onclick="closeVendorReqModal()" class="text-white text-2xl font-bold px-2 leading-none">&times;</button>
+                </div>
+                <div class="p-3.5 overflow-y-auto bg-slate-50 space-y-2.5" style="max-height:75vh;">
+                    <p class="text-[11px] text-slate-500 px-0.5">Pick a vendor to build or continue their requirement cart. Each vendor keeps their own saved list.</p>
+                    <div class="relative">
+                        <input type="text" id="vendorReqPickSearch" placeholder="Search vendors..." oninput="renderVendorReqPickList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                    <div id="vendorReqPickList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: cart for the selected vendor -->
+            <div id="vendorReqCartView" class="hidden flex flex-col max-h-[90vh]">
+                <div class="bg-cyan-700 text-white px-4 py-3.5 flex justify-between items-center shrink-0">
+                    <h3 class="font-bold text-sm flex items-center gap-2 min-w-0">
+                        <button onclick="backToVendorPicker()" class="text-white -ml-1 text-base shrink-0"><i class="fa-solid fa-arrow-left"></i></button>
+                        <span class="truncate"><i class="fa-solid fa-cart-shopping mr-1"></i> <span id="vendorReqCartVendorName">Vendor</span></span>
+                    </h3>
+                    <button onclick="closeVendorReqModal()" class="text-white text-2xl font-bold px-2 leading-none shrink-0">&times;</button>
+                </div>
+                <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-3">
+                    <div class="relative">
+                        <input type="text" id="vendorReqSearch" placeholder="Search items to add..." oninput="renderVendorCartList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                    <div class="flex items-center justify-between px-0.5">
+                        <span id="vendorReqListLabel" class="text-xs font-bold text-slate-600">In cart</span>
+                        <button id="vendorReqClearBtn" onclick="clearVendorReqList()" class="hidden text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">Clear cart</button>
+                    </div>
+                    <div id="vendorReqItemList" class="space-y-1.5"></div>
+                </div>
+                <div class="p-3.5 bg-white border-t border-slate-200 shrink-0 flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Items</p>
+                        <p id="vendorReqCartCount" class="text-lg font-bold text-slate-800">0</p>
+                    </div>
+                    <button onclick="sendVendorRequirement()" class="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl text-sm shadow flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp"></i> Send to Vendor</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -280,72 +337,72 @@
     <!-- Settings Modal -->
     <div id="catalogModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs flex items-center gap-1.5">
-                    <button id="settingsBackBtn" onclick="switchSettingsView('menu')" class="hidden text-white px-1 -ml-1"><i class="fa-solid fa-arrow-left"></i></button>
-                    <i class="fa-solid fa-gear text-emerald-400"></i> <span id="settingsTitle">Settings</span>
+            <div class="bg-slate-800 text-white px-4 py-3.5 flex justify-between items-center">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <button id="settingsBackBtn" onclick="switchSettingsView('menu')" class="hidden text-white px-1.5 -ml-1 text-base"><i class="fa-solid fa-arrow-left"></i></button>
+                    <i class="fa-solid fa-gear text-emerald-400 text-base"></i> <span id="settingsTitle">Settings</span>
                 </h3>
-                <button onclick="closeCatalogModal()" class="text-white text-lg font-bold px-2">&times;</button>
+                <button onclick="closeCatalogModal()" class="text-white text-2xl font-bold px-2 leading-none">&times;</button>
             </div>
             <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-3">
 
                 <!-- Menu view -->
                 <div id="settingsView_menu" class="space-y-2.5">
-                    <button onclick="switchSettingsView('addItem')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus-circle"></i></div>
+                    <button onclick="switchSettingsView('addItem')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus-circle"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Add Item</p>
-                            <p class="text-[10px] text-slate-500">Add a new item to an existing category</p>
+                            <p class="text-sm font-bold text-slate-800">Add Item</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Add a new item to an existing category</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
-                    <button onclick="switchSettingsView('existing')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-list"></i></div>
+                    <button onclick="switchSettingsView('existing')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-list"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Existing Items</p>
-                            <p class="text-[10px] text-slate-500">View, edit, remove, or scan to find an item</p>
+                            <p class="text-sm font-bold text-slate-800">Existing Items</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">View, edit, remove, or scan to find an item</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
-                    <button onclick="switchSettingsView('categories')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></div>
+                    <button onclick="switchSettingsView('categories')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Categories</p>
-                            <p class="text-[10px] text-slate-500">Add, rename, hide, or remove a category</p>
+                            <p class="text-sm font-bold text-slate-800">Categories</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Add, rename, hide, or remove a category</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
-                    <button onclick="switchSettingsView('brands')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-tag"></i></div>
+                    <button onclick="switchSettingsView('brands')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-tag"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Brands</p>
-                            <p class="text-[10px] text-slate-500">Rename or hide a brand</p>
+                            <p class="text-sm font-bold text-slate-800">Brands</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Rename or hide a brand</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
-                    <button onclick="switchSettingsView('vendors')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center"><i class="fa-solid fa-truck-fast"></i></div>
+                    <button onclick="switchSettingsView('vendors')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-cyan-100 text-cyan-700 flex items-center justify-center"><i class="fa-solid fa-truck-fast"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Vendors</p>
-                            <p class="text-[10px] text-slate-500">Add vendor name + mobile, for sending requirements</p>
+                            <p class="text-sm font-bold text-slate-800">Vendors</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Add vendor name + mobile, for sending requirements</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
-                    <button onclick="switchSettingsView('excel')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel"></i></div>
+                    <button onclick="switchSettingsView('excel')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Import / Export Excel</p>
-                            <p class="text-[10px] text-slate-500">Download a sample file, edit it, upload to update every item</p>
+                            <p class="text-sm font-bold text-slate-800">Import / Export Excel</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Download a sample file, edit it, upload to update every item</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
-                    <button onclick="switchSettingsView('history')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
-                        <div class="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <button onclick="switchSettingsView('history')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                        <div class="w-12 h-12 rounded-xl text-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
                         <div class="flex-1">
-                            <p class="text-xs font-bold text-slate-800">Catalog History</p>
-                            <p class="text-[10px] text-slate-500">Recent catalog changes made from this phone</p>
+                            <p class="text-sm font-bold text-slate-800">Catalog History</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Recent catalog changes made from this phone</p>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                     </button>
                 </div>
 
@@ -365,9 +422,12 @@
                         <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-2.5">
-                        <input type="text" id="newItemBrand" placeholder="Brand" value="Lalitha Naturals" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <div class="bg-slate-100 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-500 flex items-center gap-1.5" title="In-store items are always added under Lalitha Naturals">
+                            <i class="fa-solid fa-lock text-[10px]"></i> Lalitha Naturals
+                        </div>
                         <input type="number" id="newItemMin" placeholder="Min" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                     </div>
+                    <p class="text-[10px] text-slate-400">Items added here go in as "Lalitha Naturals" — other brands come in through Excel import.</p>
                     <button onclick="addNewCatalogItem()" class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow">Save</button>
                     </div>
                 </div>
@@ -401,9 +461,13 @@
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
                         <p class="text-[11px] text-slate-500">Add a new category — it'll show up in the Category filter and as a choice under "Add Item". Tap the eye icon to hide a category from the main list without deleting it.</p>
                         <div class="flex gap-1.5">
-                            <input type="text" id="newCategoryName" placeholder="Category name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
-                            <button onclick="addNewCategory()" class="px-4 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-xs shadow">Add</button>
+                            <input type="text" id="newCategoryName" placeholder="Category name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
+                            <button onclick="addNewCategory()" class="px-4 py-3 bg-amber-500 text-white font-bold rounded-xl text-sm shadow">Add</button>
                         </div>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="categorySearch" placeholder="Search categories..." oninput="renderCategoryManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div id="categoryManageList" class="space-y-1.5"></div>
                 </div>
@@ -414,6 +478,10 @@
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
                         <p class="text-[11px] text-slate-500">Brands come from the items in your catalog — rename one to relabel every item under it, tap the eye icon to hide it from the Brand filter and the main list, or tap the layers icon to hide specific categories just for that brand.</p>
                     </div>
+                    <div class="relative">
+                        <input type="text" id="brandSearch" placeholder="Search brands..." oninput="renderBrandManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
                     <div id="brandManageList" class="space-y-1.5"></div>
                 </div>
 
@@ -421,12 +489,16 @@
                 <div id="settingsView_vendors" class="hidden space-y-2.5">
                     <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
-                        <p class="text-[11px] text-slate-500">Add a vendor's name and mobile number here so it shows up under Destination → "Send to Vendor…" on the main screen. Sending a requirement opens WhatsApp with the item list pre-filled — you review and hit send.</p>
+                        <p class="text-[11px] text-slate-500">Add a vendor's name and mobile number here so it shows up under Destination → "Send to Vendor…" on the main screen, and in Vendor Requirements. Sending a requirement opens WhatsApp with the item list pre-filled — you review and hit send.</p>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <input type="text" id="newVendorName" placeholder="Vendor name" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
-                            <input type="tel" id="newVendorMobile" placeholder="Mobile (with country code)" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                            <input type="text" id="newVendorName" placeholder="Vendor name" class="bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
+                            <input type="tel" id="newVendorMobile" placeholder="Mobile (with country code)" class="bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                         </div>
-                        <button onclick="addNewVendor()" class="w-full py-2.5 bg-cyan-600 text-white font-bold rounded-xl text-xs shadow">Add Vendor</button>
+                        <button onclick="addNewVendor()" class="w-full py-3 bg-cyan-600 text-white font-bold rounded-xl text-sm shadow">Add Vendor</button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="vendorSearch" placeholder="Search vendors..." oninput="renderVendorManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div id="vendorManageList" class="space-y-1.5"></div>
                 </div>
@@ -4034,9 +4106,9 @@
             document.getElementById('settingsTitle').innerText = SETTINGS_TITLES[view] || 'Settings';
             document.getElementById('settingsBackBtn').classList.toggle('hidden', view === 'menu');
             if (view === 'existing') renderCatalogEditorList();
-            if (view === 'categories') { document.getElementById('newCategoryName').value = ''; renderCategoryManageList(); }
-            if (view === 'brands') renderBrandManageList();
-            if (view === 'vendors') { document.getElementById('newVendorName').value = ''; document.getElementById('newVendorMobile').value = ''; renderVendorManageList(); }
+            if (view === 'categories') { document.getElementById('newCategoryName').value = ''; document.getElementById('categorySearch').value = ''; renderCategoryManageList(); }
+            if (view === 'brands') { document.getElementById('brandSearch').value = ''; renderBrandManageList(); }
+            if (view === 'vendors') { document.getElementById('newVendorName').value = ''; document.getElementById('newVendorMobile').value = ''; document.getElementById('vendorSearch').value = ''; renderVendorManageList(); }
             if (view === 'history') renderCatalogHistoryList();
         }
 
@@ -4074,19 +4146,26 @@
         function renderCategoryManageList() {
             const container = document.getElementById('categoryManageList');
             if (!container) return;
-            container.innerHTML = Object.keys(inventoryData).map(cat => {
+            const searchEl = document.getElementById('categorySearch');
+            const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+            const cats = Object.keys(inventoryData).filter(cat => !q || cat.toLowerCase().includes(q));
+            if (cats.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">No categories match "${esc(q)}".</p>`;
+                return;
+            }
+            container.innerHTML = cats.map(cat => {
                 const count = inventoryData[cat].length;
                 const hidden = hiddenCategories.has(cat);
                 return `
-                    <div class="bg-white p-3 rounded-xl border ${hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} flex items-center justify-between gap-2">
+                    <div class="bg-white p-3.5 rounded-xl border ${hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} flex items-center justify-between gap-2">
                         <div class="min-w-0">
-                            <p class="text-xs font-bold text-slate-800 truncate">${esc(cat)} ${hidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
-                            <p class="text-[10px] text-slate-500">${count} item${count === 1 ? '' : 's'}</p>
+                            <p class="text-sm font-bold text-slate-800 truncate">${esc(cat)} ${hidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
+                            <p class="text-[11px] text-slate-500">${count} item${count === 1 ? '' : 's'}</p>
                         </div>
-                        <div class="flex gap-1.5 shrink-0">
-                            <button onclick="toggleCategoryHidden('${esc(cat)}')" class="${hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} px-3 py-1.5 rounded-lg text-[11px] font-bold" title="${hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-                            <button onclick="renameCategory('${esc(cat)}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-[11px] font-bold"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteCategory('${esc(cat)}')" class="text-red-600 bg-red-50 px-3 py-1.5 rounded-lg text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                        <div class="flex gap-2 shrink-0">
+                            <button onclick="toggleCategoryHidden('${esc(cat)}')" class="${hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="${hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                            <button onclick="renameCategory('${esc(cat)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCategory('${esc(cat)}')" class="text-red-600 bg-red-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -4184,9 +4263,11 @@
                     counts[b] = (counts[b] || 0) + 1;
                 });
             }
-            const brands = Object.keys(counts).sort((a, b) => a.localeCompare(b));
+            const searchEl = document.getElementById('brandSearch');
+            const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+            const brands = Object.keys(counts).filter(b => !q || b.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b));
             if (brands.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">No brands yet — add an item to create one.</p>`;
+                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">${q ? `No brands match "${esc(q)}".` : 'No brands yet — add an item to create one.'}</p>`;
                 return;
             }
             container.innerHTML = brands.map(brand => {
@@ -4199,29 +4280,29 @@
                 const expanded = expandedBrandForCats === brand;
                 return `
                     <div class="bg-white rounded-xl border ${hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} overflow-hidden">
-                        <div class="p-3 flex items-center justify-between gap-2">
+                        <div class="p-3.5 flex items-center justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="text-xs font-bold text-slate-800 truncate">${esc(brand)} ${hidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
-                                <p class="text-[10px] text-slate-500">${counts[brand]} item${counts[brand] === 1 ? '' : 's'}</p>
+                                <p class="text-sm font-bold text-slate-800 truncate">${esc(brand)} ${hidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
+                                <p class="text-[11px] text-slate-500">${counts[brand]} item${counts[brand] === 1 ? '' : 's'}</p>
                             </div>
-                            <div class="flex gap-1.5 shrink-0">
-                                <button onclick="toggleBrandCatsExpanded('${esc(brand)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} px-3 py-1.5 rounded-lg text-[11px] font-bold" title="Hide categories for this brand"><i class="fa-solid fa-layer-group"></i></button>
-                                <button onclick="toggleBrandHidden('${esc(brand)}')" class="${hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} px-3 py-1.5 rounded-lg text-[11px] font-bold" title="${hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-                                <button onclick="renameBrand('${esc(brand)}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-[11px] font-bold"><i class="fa-solid fa-pen"></i></button>
+                            <div class="flex gap-2 shrink-0">
+                                <button onclick="toggleBrandCatsExpanded('${esc(brand)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this brand"><i class="fa-solid fa-layer-group"></i></button>
+                                <button onclick="toggleBrandHidden('${esc(brand)}')" class="${hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="${hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                                <button onclick="renameBrand('${esc(brand)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         ${expanded ? `
-                            <div class="border-t border-slate-100 bg-slate-50 p-2.5 space-y-1">
-                                <p class="text-[10px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(brand)}" — it stays visible for other brands.</p>
+                            <div class="border-t border-slate-100 bg-slate-50 p-3 space-y-1.5">
+                                <p class="text-[11px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(brand)}" — it stays visible for other brands.</p>
                                 ${catsForBrand.map(cat => {
                                     const catHidden = isCatHiddenForBrand(brand, cat);
                                     return `
-                                        <div class="flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200">
-                                            <span class="text-[11px] font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[9px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''}</span>
-                                            <button onclick="toggleCategoryHiddenForBrand('${esc(brand)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                                        <div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                                            <span class="text-xs font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''}</span>
+                                            <button onclick="toggleCategoryHiddenForBrand('${esc(brand)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center shrink-0"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                         </div>
                                     `;
-                                }).join('') || '<p class="text-[10px] text-slate-400 px-0.5">No categories for this brand.</p>'}
+                                }).join('') || '<p class="text-[11px] text-slate-400 px-0.5">No categories for this brand.</p>'}
                             </div>
                         ` : ''}
                     </div>
@@ -4273,19 +4354,22 @@
         function renderVendorManageList() {
             const container = document.getElementById('vendorManageList');
             if (!container) return;
-            if (vendors.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">No vendors added yet.</p>`;
+            const searchEl = document.getElementById('vendorSearch');
+            const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+            const list = vendors.filter(v => !q || v.name.toLowerCase().includes(q) || v.mobile.includes(q));
+            if (list.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">${q ? `No vendors match "${esc(q)}".` : 'No vendors added yet.'}</p>`;
                 return;
             }
-            container.innerHTML = vendors.map(v => `
-                <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+            container.innerHTML = list.map(v => `
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
                     <div class="min-w-0">
-                        <p class="text-xs font-bold text-slate-800 truncate">${esc(v.name)}</p>
-                        <p class="text-[10px] text-slate-500">${esc(v.mobile)}</p>
+                        <p class="text-sm font-bold text-slate-800 truncate">${esc(v.name)}</p>
+                        <p class="text-[11px] text-slate-500">${esc(v.mobile)}</p>
                     </div>
-                    <div class="flex gap-1.5 shrink-0">
-                        <button onclick="editVendor('${esc(v.id)}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-[11px] font-bold"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteVendor('${esc(v.id)}')" class="text-red-600 bg-red-50 px-3 py-1.5 rounded-lg text-[11px] font-bold"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="editVendor('${esc(v.id)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteVendor('${esc(v.id)}')" class="text-red-600 bg-red-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -4386,6 +4470,199 @@
             Object.keys(byBrand).forEach(b => {
                 msg += `*${b}*\n`;
                 byBrand[b].forEach(i => { msg += `• ${i.name} (${i.uom}) — Qty: ${i.reqQty}\n`; });
+                msg += `\n`;
+            });
+            msg += `Please arrange the above at the earliest. Thank you.`;
+
+            const digits = vendor.mobile.replace(/\D/g, '');
+            window.open(`https://wa.me/${digits}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // ---------- Vendor Requirements: a shopping-cart-style, per-vendor list, entirely
+        // separate from the in-store shelf-count/dispatch flow. Step 1: pick a vendor (their
+        // cart is saved and reopens exactly as left). Step 2: search items, use +/- to add or
+        // adjust quantity like a cart, then send. ----------
+        let vendorReqLists = readJson('lalitha_vendor_req_lists', {}); // { vendorId: [{id,name,uom,code,cat,brand,qty}] }
+        let currentVendorReqId = null;
+        function saveVendorReqLists() { writeJson('lalitha_vendor_req_lists', vendorReqLists); }
+
+        function openVendorReqModal() {
+            document.getElementById('vendorReqPickSearch').value = '';
+            renderVendorReqPickList();
+            document.getElementById('vendorReqPickView').classList.remove('hidden');
+            document.getElementById('vendorReqCartView').classList.add('hidden');
+            document.getElementById('vendorReqModal').classList.remove('hidden');
+        }
+        function closeVendorReqModal() { document.getElementById('vendorReqModal').classList.add('hidden'); }
+
+        function renderVendorReqPickList() {
+            const container = document.getElementById('vendorReqPickList');
+            if (!container) return;
+            const q = (document.getElementById('vendorReqPickSearch').value || '').trim().toLowerCase();
+            const list = vendors.filter(v => !q || v.name.toLowerCase().includes(q));
+            if (vendors.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 py-4 text-xs">No vendors yet — add one in Settings → Vendors first.</p>`;
+                return;
+            }
+            if (list.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 py-4 text-xs">No vendors match "${esc(q)}".</p>`;
+                return;
+            }
+            container.innerHTML = list.map(v => {
+                const count = (vendorReqLists[v.id] || []).length;
+                return `
+                    <button onclick="selectVendorForReq('${esc(v.id)}')" class="w-full bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3 text-left">
+                        <div class="w-11 h-11 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center text-base font-bold shrink-0"><i class="fa-solid fa-store"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-800 truncate">${esc(v.name)}</p>
+                            <p class="text-[11px] text-slate-500">${esc(v.mobile)}${count > 0 ? ` · <span class="text-cyan-700 font-bold">${count} item${count === 1 ? '' : 's'} saved</span>` : ''}</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm shrink-0"></i>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectVendorForReq(vendorId) {
+            currentVendorReqId = vendorId;
+            const vendor = vendors.find(v => v.id === vendorId);
+            document.getElementById('vendorReqCartVendorName').innerText = vendor ? vendor.name : 'Vendor';
+            document.getElementById('vendorReqSearch').value = '';
+            document.getElementById('vendorReqPickView').classList.add('hidden');
+            document.getElementById('vendorReqCartView').classList.remove('hidden');
+            renderVendorCartList();
+        }
+
+        function backToVendorPicker() {
+            document.getElementById('vendorReqPickView').classList.remove('hidden');
+            document.getElementById('vendorReqCartView').classList.add('hidden');
+            renderVendorReqPickList();
+        }
+
+        function vendorCartQtyFor(itemId) {
+            const list = vendorReqLists[currentVendorReqId] || [];
+            const found = list.find(i => i.id === itemId);
+            return found ? found.qty : 0;
+        }
+
+        // With no search text: shows exactly what's saved in this vendor's cart (so reopening
+        // a vendor shows their existing list first). With search text: shows matching catalog
+        // items, each with a +/- stepper reflecting its current cart quantity (0 if not added).
+        function renderVendorCartList() {
+            const container = document.getElementById('vendorReqItemList');
+            const label = document.getElementById('vendorReqListLabel');
+            if (!container) return;
+            const q = (document.getElementById('vendorReqSearch').value || '').trim().toLowerCase();
+            const cartList = vendorReqLists[currentVendorReqId] || [];
+
+            let rows;
+            if (!q) {
+                if (label) label.innerText = `In cart (${cartList.length})`;
+                rows = cartList.map(i => ({ id: i.id, name: i.name, uom: i.uom, code: i.code, cat: i.cat, brand: i.brand }));
+                if (rows.length === 0) {
+                    container.innerHTML = `<p class="text-center text-slate-400 py-4 text-xs">Cart is empty — search below to add items.</p>`;
+                    updateVendorReqCartCount();
+                    return;
+                }
+            } else {
+                if (label) label.innerText = `Search results`;
+                rows = [];
+                for (const cat in inventoryData) {
+                    inventoryData[cat].forEach(item => {
+                        if (item.hidden) return;
+                        if (item.name.toLowerCase().includes(q) || String(item.code).includes(q)) {
+                            rows.push({ id: item.id, name: item.name, uom: item.uom, code: item.code, cat, brand: item.brand || DEFAULT_BRAND });
+                        }
+                    });
+                }
+                if (rows.length === 0) {
+                    container.innerHTML = `<p class="text-center text-slate-400 py-4 text-xs">No items match "${esc(q)}".</p>`;
+                    updateVendorReqCartCount();
+                    return;
+                }
+                rows = rows.slice(0, 40);
+            }
+
+            container.innerHTML = rows.map(item => {
+                const qty = vendorCartQtyFor(item.id);
+                return `
+                    <div class="bg-white p-2.5 rounded-xl border ${qty > 0 ? 'border-cyan-300' : 'border-slate-200'} flex items-center justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-slate-800 truncate">${esc(item.name)} <span class="text-[10px] text-slate-400">(${esc(item.uom)})</span></p>
+                            <p class="text-[10px] text-slate-500">${esc(item.cat)} · Code: ${esc(item.code)} · ${esc(item.brand)}</p>
+                        </div>
+                        ${qty > 0 ? `
+                            <div class="flex items-center gap-0.5 bg-cyan-50 border border-cyan-200 rounded-lg shrink-0">
+                                <button onclick="vendorCartDecrement(${item.id})" class="w-9 h-9 flex items-center justify-center text-lg font-bold text-cyan-700">−</button>
+                                <span class="w-7 text-center text-sm font-bold text-slate-800">${qty}</span>
+                                <button onclick="vendorCartIncrement(${item.id})" class="w-9 h-9 flex items-center justify-center text-lg font-bold text-cyan-700">+</button>
+                            </div>
+                        ` : `
+                            <button onclick="vendorCartIncrement(${item.id})" class="bg-cyan-600 text-white w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center shrink-0"><i class="fa-solid fa-plus"></i></button>
+                        `}
+                    </div>
+                `;
+            }).join('');
+            updateVendorReqCartCount();
+        }
+
+        function updateVendorReqCartCount() {
+            const countEl = document.getElementById('vendorReqCartCount');
+            const clearBtn = document.getElementById('vendorReqClearBtn');
+            const list = vendorReqLists[currentVendorReqId] || [];
+            if (countEl) countEl.innerText = list.length;
+            if (clearBtn) clearBtn.classList.toggle('hidden', list.length === 0);
+        }
+
+        function vendorCartIncrement(itemId) {
+            if (!currentVendorReqId) return;
+            let found = null, foundCat = null;
+            for (const cat in inventoryData) {
+                const it = inventoryData[cat].find(i => i.id === itemId);
+                if (it) { found = it; foundCat = cat; break; }
+            }
+            if (!found) return;
+            if (!vendorReqLists[currentVendorReqId]) vendorReqLists[currentVendorReqId] = [];
+            const list = vendorReqLists[currentVendorReqId];
+            const existing = list.find(i => i.id === itemId);
+            if (existing) existing.qty += 1;
+            else list.push({ id: found.id, name: found.name, uom: found.uom, code: found.code, cat: foundCat, brand: found.brand || DEFAULT_BRAND, qty: 1 });
+            saveVendorReqLists();
+            renderVendorCartList();
+        }
+
+        function vendorCartDecrement(itemId) {
+            if (!currentVendorReqId || !vendorReqLists[currentVendorReqId]) return;
+            const list = vendorReqLists[currentVendorReqId];
+            const existing = list.find(i => i.id === itemId);
+            if (!existing) return;
+            existing.qty -= 1;
+            if (existing.qty <= 0) vendorReqLists[currentVendorReqId] = list.filter(i => i.id !== itemId);
+            saveVendorReqLists();
+            renderVendorCartList();
+        }
+
+        function clearVendorReqList() {
+            if (!currentVendorReqId) return;
+            if (!confirm("Clear this vendor's cart?")) return;
+            vendorReqLists[currentVendorReqId] = [];
+            saveVendorReqLists();
+            renderVendorCartList();
+        }
+
+        function sendVendorRequirement() {
+            const vendor = vendors.find(v => v.id === currentVendorReqId);
+            if (!vendor) { alert("Pick a vendor first — add one in Settings → Vendors if the list is empty."); return; }
+            const list = vendorReqLists[currentVendorReqId] || [];
+            if (list.length === 0) { alert("Add at least one item to the cart first."); return; }
+
+            let msg = `Requirement for ${vendor.name}\n`;
+            msg += `From: Lalitha Naturals\nDate: ${localDateStr(new Date())}\n\n`;
+            const byCat = {};
+            list.forEach(i => { if (!byCat[i.cat]) byCat[i.cat] = []; byCat[i.cat].push(i); });
+            Object.keys(byCat).forEach(cat => {
+                msg += `*${cat}*\n`;
+                byCat[cat].forEach(i => { msg += `• ${i.name} (${i.uom}) — Qty: ${i.qty}\n`; });
                 msg += `\n`;
             });
             msg += `Please arrange the above at the earliest. Thank you.`;
@@ -4812,7 +5089,7 @@
             const code = document.getElementById('newItemCode').value.trim();
             const name = document.getElementById('newItemName').value.trim();
             const uom = document.getElementById('newItemUom').value.trim();
-            const brand = document.getElementById('newItemBrand').value.trim() || DEFAULT_BRAND;
+            const brand = DEFAULT_BRAND; // in-store "Add Item" always creates Lalitha Naturals items
             const min = parseInt(document.getElementById('newItemMin').value, 10);
 
             if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Fill all fields!"); return; }
@@ -4826,7 +5103,6 @@
             document.getElementById('newItemCode').value = "";
             document.getElementById('newItemName').value = "";
             document.getElementById('newItemUom').value = "";
-            document.getElementById('newItemBrand').value = DEFAULT_BRAND;
             document.getElementById('newItemMin').value = "";
             renderCatalogEditorList();
             renderBrandFilter();
