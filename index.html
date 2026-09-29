@@ -443,63 +443,81 @@
             <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-3">
 
                 <!-- Menu view -->
-                <div id="settingsView_menu" class="space-y-2.5">
-                    <button onclick="switchSettingsView('addItem')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus-circle"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Add Item</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Add a new item to an existing category</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
-                    <button onclick="switchSettingsView('existing')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-list"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Existing Items</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">View, edit, remove, or scan to find an item</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
-                    <button onclick="switchSettingsView('categories')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Categories</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Add, rename, hide, or remove a category</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
-                    <button onclick="switchSettingsView('brands')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-tag"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Brands</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Rename or hide a brand</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
-                    <button onclick="switchSettingsView('vendors')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-cyan-100 text-cyan-700 flex items-center justify-center"><i class="fa-solid fa-truck-fast"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Vendors</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Add vendor name + mobile, for sending requirements</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
-                    <button onclick="switchSettingsView('excel')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Import / Export Excel</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Download a sample file, edit it, upload to update every item</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
-                    <button onclick="switchSettingsView('history')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
-                        <div class="w-12 h-12 rounded-xl text-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-slate-800">Catalog History</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Recent catalog changes made from this phone</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                    </button>
+                <div id="settingsView_menu" class="space-y-4">
+                    <div class="relative">
+                        <input type="text" id="settingsMenuSearch" placeholder="Search settings..." oninput="filterSettingsMenu()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+
+                    <div data-settings-group="catalog" class="space-y-2.5">
+                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Catalog</p>
+                        <button data-settings-item="add item new" onclick="switchSettingsView('addItem')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus-circle"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Add Item</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Add a new item — brand, category & vendor</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                        <button data-settings-item="existing items edit remove scan" onclick="switchSettingsView('existing')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-list"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Existing Items</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">View, edit, remove, or scan to find an item</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                        <button data-settings-item="categories add rename hide" onclick="switchSettingsView('categories')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Categories</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Add, rename, hide, or remove a category</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                        <button data-settings-item="brands rename hide" onclick="switchSettingsView('brands')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-tag"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Brands</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Rename or hide a brand</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                    </div>
+
+                    <div data-settings-group="vendors" class="space-y-2.5">
+                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Vendors</p>
+                        <button data-settings-item="vendors add edit brand category items" onclick="switchSettingsView('vendors')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-cyan-100 text-cyan-700 flex items-center justify-center"><i class="fa-solid fa-truck-fast"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Vendors</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Add/edit vendors — brands, categories & items supplied</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                    </div>
+
+                    <div data-settings-group="data" class="space-y-2.5">
+                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Data</p>
+                        <button data-settings-item="import export excel upload download" onclick="switchSettingsView('excel')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Import / Export Excel</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Download a sample file, edit it, upload to update every item</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                        <button data-settings-item="catalog history changes log" onclick="switchSettingsView('history')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Catalog History</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Recent catalog changes made from this phone</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                    </div>
+
+                    <p id="settingsMenuNoResults" class="hidden text-center text-slate-400 text-xs py-4">No settings match your search.</p>
                 </div>
 
                 <!-- Add Item view -->
@@ -518,12 +536,14 @@
                         <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-2.5">
-                        <div class="bg-slate-100 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-500 flex items-center gap-1.5" title="In-store items are always added under Lalitha Naturals">
-                            <i class="fa-solid fa-lock text-[10px]"></i> Lalitha Naturals
-                        </div>
+                        <input type="text" id="newItemBrand" list="newItemBrandList" placeholder="Brand" value="Lalitha Naturals" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <datalist id="newItemBrandList"></datalist>
                         <input type="number" id="newItemMin" placeholder="Min" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
                     </div>
-                    <p class="text-[10px] text-slate-400">Items added here go in as "Lalitha Naturals" — other brands come in through Excel import.</p>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                        <select id="newItemVendor" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                    </div>
                     <button onclick="addNewCatalogItem()" class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow">Save</button>
                     </div>
                 </div>
@@ -601,9 +621,16 @@
                         </div>
                     </div>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400">1. Brands supplied</label>
-                        <div id="newVendorBrandChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                    <!-- Same accordion pattern for all three steps: tap the header to expand,
+                         full-width rows with a check mark to pick — no nested scroll boxes. -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <button type="button" onclick="toggleVendorFormStep('brands')" class="w-full p-3.5 flex items-center justify-between text-left">
+                            <span class="text-[10px] font-bold uppercase text-slate-400">1. Brands supplied</span>
+                            <i id="vendorFormStepBrandsChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform rotate-180"></i>
+                        </button>
+                        <div id="vendorFormStepBrandsBody" class="px-3.5 pb-3.5 space-y-1">
+                            <div id="newVendorBrandChips" class="space-y-1"></div>
+                        </div>
                     </div>
 
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -612,7 +639,7 @@
                             <i id="vendorFormStepCategoriesChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
                         </button>
                         <div id="vendorFormStepCategoriesBody" class="hidden px-3.5 pb-3.5 space-y-2">
-                            <div id="newVendorCategoryChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                            <div id="newVendorCategoryChips" class="space-y-1"></div>
                             <p class="text-[10px] text-slate-400">Leave none selected to supply every category under the picked brand(s).</p>
                         </div>
                     </div>
@@ -4616,6 +4643,16 @@
         let newVendorSelectedCategories = new Set();
         let newVendorSelectedItemIds = new Set();
 
+        // Same full-width tappable row style used for brands, categories and items — one
+        // consistent pattern across all three steps, easier to hit on a phone than small
+        // wrapped pill chips, and it flows with the page instead of scrolling inside a box.
+        function pickerRow(label, picked, onClick) {
+            return `<button type="button" onclick="${onClick}" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-left border ${picked ? 'bg-cyan-50 border-cyan-300' : 'bg-white border-slate-200'}">
+                <span class="text-xs font-semibold text-slate-700">${label}</span>
+                <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle text-slate-200'}"></i>
+            </button>`;
+        }
+
         function renderNewVendorBrandChips() {
             const container = document.getElementById('newVendorBrandChips');
             if (!container) return;
@@ -4624,10 +4661,9 @@
                 container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No brands yet — add an item first.</p>';
                 return;
             }
-            container.innerHTML = brands.map(b => {
-                const sel = newVendorSelectedBrands.has(b);
-                return `<button type="button" onclick="toggleNewVendorBrandChip('${esc(b)}')" class="${sel ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-slate-600 border-slate-300'} px-3 py-1.5 rounded-full text-xs font-bold border">${esc(b)}</button>`;
-            }).join('');
+            container.innerHTML = brands.map(b =>
+                pickerRow(esc(b), newVendorSelectedBrands.has(b), `toggleNewVendorBrandChip('${esc(b)}')`)
+            ).join('');
         }
 
         function toggleNewVendorBrandChip(brand) {
@@ -4658,10 +4694,9 @@
                 container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No categories yet.</p>';
                 return;
             }
-            container.innerHTML = cats.map(c => {
-                const sel = newVendorSelectedCategories.has(c);
-                return `<button type="button" onclick="toggleNewVendorCategoryChip('${esc(c)}')" class="${sel ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300'} px-3 py-1.5 rounded-full text-xs font-bold border">${esc(c)}</button>`;
-            }).join('');
+            container.innerHTML = cats.map(c =>
+                pickerRow(esc(c), newVendorSelectedCategories.has(c), `toggleNewVendorCategoryChip('${esc(c)}')`)
+            ).join('');
         }
 
         function toggleNewVendorCategoryChip(cat) {
@@ -4702,13 +4737,9 @@
                 container.innerHTML = '<p class="text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
             } else {
                 const shown = results.slice(0, newVendorItemPickerLimit);
-                let html = shown.map(item => {
-                    const picked = newVendorSelectedItemIds.has(item.id);
-                    return `<button type="button" onclick="toggleNewVendorItemChip('${esc(item.id)}')" class="w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left ${picked ? 'bg-cyan-50 border border-cyan-300' : 'bg-white border border-slate-200'}">
-                        <span class="text-xs font-semibold text-slate-700 truncate">${esc(item.name)} <span class="text-slate-400">(${esc(item.uom)})</span></span>
-                        <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle-plus text-slate-300'}"></i>
-                    </button>`;
-                }).join('');
+                let html = shown.map(item =>
+                    pickerRow(`${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span>`, newVendorSelectedItemIds.has(item.id), `toggleNewVendorItemChip('${esc(item.id)}')`)
+                ).join('');
                 if (results.length > shown.length) {
                     html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="w-full text-center py-2 text-[11px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
                 }
@@ -4734,19 +4765,25 @@
             }).join('');
         }
 
-        // Steps 2 ("Categories") and 3 ("Specific items") are optional and start
-        // collapsed, so a vendor with only brands set doesn't need to scroll past them.
+        // All three steps (Brands / Categories / Items) use the same accordion pattern —
+        // tap the header to expand, full-width rows underneath. Brands starts open since
+        // it's required; Categories/Items start collapsed since they're optional.
+        function vendorStepIdPart(step) {
+            return step === 'brands' ? 'Brands' : step === 'categories' ? 'Categories' : 'Items';
+        }
         function toggleVendorFormStep(step) {
-            const body = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Body`);
-            const chevron = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Chevron`);
+            const part = vendorStepIdPart(step);
+            const body = document.getElementById(`vendorFormStep${part}Body`);
+            const chevron = document.getElementById(`vendorFormStep${part}Chevron`);
             if (!body) return;
             const expanding = body.classList.contains('hidden');
             body.classList.toggle('hidden', !expanding);
             if (chevron) chevron.classList.toggle('rotate-180', expanding);
         }
         function setVendorFormStepExpanded(step, expanded) {
-            const body = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Body`);
-            const chevron = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Chevron`);
+            const part = vendorStepIdPart(step);
+            const body = document.getElementById(`vendorFormStep${part}Body`);
+            const chevron = document.getElementById(`vendorFormStep${part}Chevron`);
             if (body) body.classList.toggle('hidden', !expanded);
             if (chevron) chevron.classList.toggle('rotate-180', expanded);
         }
@@ -4757,6 +4794,7 @@
             newVendorSelectedCategories = new Set();
             newVendorSelectedItemIds = new Set();
             newVendorItemPickerLimit = 150;
+            setVendorFormStepExpanded('brands', true);
             setVendorFormStepExpanded('categories', false);
             setVendorFormStepExpanded('items', false);
             const nameEl = document.getElementById('newVendorName');
@@ -4831,6 +4869,7 @@
             renderNewVendorCategoryChips();
             renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
+            setVendorFormStepExpanded('brands', true);
             setVendorFormStepExpanded('categories', newVendorSelectedCategories.size > 0);
             setVendorFormStepExpanded('items', newVendorSelectedItemIds.size > 0);
             const titleEl = document.getElementById('vendorFormTitle');
@@ -5423,10 +5462,40 @@
             if (badge) { badge.textContent = dispatchList.length; badge.classList.toggle('hidden', dispatchList.length === 0); }
         }
 
+        // Settings menu search — filters the grouped settings tiles by their keywords,
+        // and hides a group header entirely if none of its tiles match.
+        function filterSettingsMenu() {
+            const q = (document.getElementById('settingsMenuSearch').value || '').trim().toLowerCase();
+            const groups = document.querySelectorAll('[data-settings-group]');
+            let anyVisible = false;
+            groups.forEach(group => {
+                let groupHasMatch = false;
+                group.querySelectorAll('[data-settings-item]').forEach(item => {
+                    const match = !q || item.getAttribute('data-settings-item').includes(q) || item.textContent.toLowerCase().includes(q);
+                    item.classList.toggle('hidden', !match);
+                    if (match) groupHasMatch = true;
+                });
+                group.classList.toggle('hidden', !groupHasMatch);
+                if (groupHasMatch) anyVisible = true;
+            });
+            const noResults = document.getElementById('settingsMenuNoResults');
+            if (noResults) noResults.classList.toggle('hidden', anyVisible);
+        }
+
+        function renderAddItemFormAuxFields() {
+            const brandList = document.getElementById('newItemBrandList');
+            if (brandList) brandList.innerHTML = allBrandsInCatalog().map(b => `<option value="${esc(b)}"></option>`).join('');
+            const vendorSel = document.getElementById('newItemVendor');
+            if (vendorSel) vendorSel.innerHTML = `<option value="">No vendor</option>` + vendors.map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
+        }
+
         async function openCatalogModal() {
             const sel = document.getElementById('newItemCat');
             sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+            renderAddItemFormAuxFields();
             document.getElementById('catalogModal').classList.remove('hidden');
+            const menuSearch = document.getElementById('settingsMenuSearch');
+            if (menuSearch) { menuSearch.value = ''; filterSettingsMenu(); }
             switchSettingsView('menu');
 
             // Pull the latest catalog (in case the other branch changed something) before
@@ -5781,7 +5850,8 @@
             const code = document.getElementById('newItemCode').value.trim();
             const name = document.getElementById('newItemName').value.trim();
             const uom = document.getElementById('newItemUom').value.trim();
-            const brand = DEFAULT_BRAND; // in-store "Add Item" always creates Lalitha Naturals items
+            const brand = (document.getElementById('newItemBrand').value || '').trim() || DEFAULT_BRAND;
+            const vendorId = document.getElementById('newItemVendor').value; // optional
             const min = parseInt(document.getElementById('newItemMin').value, 10);
 
             if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Fill all fields!"); return; }
@@ -5789,16 +5859,31 @@
             if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return; }
 
             if (!inventoryData[cat]) inventoryData[cat] = [];
-            inventoryData[cat].push({ id: Date.now(), name, uom, code, brand, min });
+            const newItem = { id: Date.now(), name, uom, code, brand, min };
+            inventoryData[cat].push(newItem);
             saveInventory();
-            logCatalogHistory('Added item', `${name} (${uom}) — ${code}, Min ${min}, ${cat}, ${brand}`);
+            // Linking to a vendor here just adds this item to that vendor's specific-item
+            // list (vendor.itemIds) — the same list the Vendor form's item picker manages.
+            let vendorNote = '';
+            if (vendorId) {
+                const v = vendors.find(x => x.id === vendorId);
+                if (v) {
+                    if (!Array.isArray(v.itemIds)) v.itemIds = [];
+                    v.itemIds.push(newItem.id);
+                    saveVendors();
+                    vendorNote = `, Vendor: ${v.name}`;
+                }
+            }
+            logCatalogHistory('Added item', `${name} (${uom}) — ${code}, Min ${min}, ${cat}, ${brand}${vendorNote}`);
             document.getElementById('newItemCode').value = "";
             document.getElementById('newItemName').value = "";
             document.getElementById('newItemUom').value = "";
             document.getElementById('newItemMin').value = "";
+            document.getElementById('newItemVendor').value = "";
             renderCatalogEditorList();
             renderBrandFilter();
-            alert("Added successfully!");
+            renderAddItemFormAuxFields();
+            showToast('Item added');
         }
 
         function deleteCatalogItem(id) {
