@@ -45,6 +45,9 @@
 </head>
 <body class="bg-slate-100 text-slate-900 pb-28" onclick="closeAllDropdowns(event)">
 
+    <!-- Toast: brief non-blocking feedback -->
+    <div id="appToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] text-center"></div>
+
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -112,7 +115,7 @@
         <!-- ============ PACKING REQUIREMENT (in-store, Lalitha Naturals) ============ -->
         <div id="packingRequirementSection" class="hidden space-y-3">
 
-        <button onclick="showHomeSection()" class="text-xs font-bold text-slate-600 flex items-center gap-1.5 -mb-1"><i class="fa-solid fa-arrow-left"></i> Home</button>
+        <button onclick="showHomeSection()" class="w-full bg-white border border-slate-200 shadow-sm text-sm font-bold text-slate-700 flex items-center gap-2 px-4 py-3 rounded-xl"><i class="fa-solid fa-arrow-left text-base"></i> Home</button>
 
         <!-- Mode Switcher Tabs -->
         <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1.5">
@@ -216,13 +219,7 @@
                         </div>
                     </div>
                     <div id="dispatchListBrandBreakdown" class="hidden text-[10px] text-slate-500"></div>
-                    <p class="text-[10px] text-slate-400 leading-snug">Pick a brand, enter counts, tap "Add to List". Switch to another brand and repeat. "Confirm & Dispatch" below sends everything on the list (plus whatever's currently entered) in one go.</p>
                 </div>
-
-                <p id="modeHelpText" class="text-[10px] text-slate-500 font-semibold px-1 leading-snug">
-                    <strong>Available mode:</strong> enter the quantity on the shelf. Need = Min &minus; shelf count.
-                    Any item you leave blank counts as 0 on the shelf, so it shows as needing its full Min.
-                </p>
             </div>
 
             <!-- Items List -->
@@ -266,7 +263,7 @@
              separate data from Packing Requirement) ============ -->
         <div id="vendorRequirementSection" class="hidden space-y-3">
 
-        <button onclick="showHomeSection()" class="text-xs font-bold text-slate-600 flex items-center gap-1.5 -mb-1"><i class="fa-solid fa-arrow-left"></i> Home</button>
+        <button onclick="showHomeSection()" class="w-full bg-white border border-slate-200 shadow-sm text-sm font-bold text-slate-700 flex items-center gap-2 px-4 py-3 rounded-xl"><i class="fa-solid fa-arrow-left text-base"></i> Home</button>
 
         <!-- Mode Switcher Tabs: Request vs Vendor Ledger -->
         <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1.5">
@@ -285,7 +282,10 @@
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Vendor</label>
-                    <select id="vendorReqPageSelect" onchange="onVendorPageVendorChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                    <div class="flex gap-1.5">
+                        <select id="vendorReqPageSelect" onchange="onVendorPageVendorChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                        <button onclick="openQuickAddVendorModal()" class="bg-cyan-600 text-white w-10 rounded-xl shadow-sm shrink-0" title="Add Vendor"><i class="fa-solid fa-plus"></i></button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5 items-center">
                     <div>
@@ -304,10 +304,13 @@
 
             <!-- Search & Brand/Category filters -->
             <div class="space-y-2.5">
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-xs"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input type="text" id="vendorSearchBox" placeholder="Search item or code..." oninput="renderVendorItems(this.value)" class="w-full pl-10 pr-9 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm">
-                    <button id="vendorSearchBoxClear" onclick="document.getElementById('vendorSearchBox').value=''; renderVendorItems('');" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search"><i class="fa-solid fa-circle-xmark text-sm"></i></button>
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-xs"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="vendorSearchBox" placeholder="Search item or code..." oninput="renderVendorItems(this.value)" class="w-full pl-10 pr-9 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm">
+                        <button id="vendorSearchBoxClear" onclick="document.getElementById('vendorSearchBox').value=''; renderVendorItems('');" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search"><i class="fa-solid fa-circle-xmark text-sm"></i></button>
+                    </div>
+                    <button onclick="openScannerModal('vendorSearch')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
                 </div>
 
                 <!-- Brand Filter — exactly one brand at a time -->
@@ -333,7 +336,6 @@
                         </div>
                     </div>
                     <div id="vendorCartCatBreakdown" class="hidden text-[10px] text-slate-500"></div>
-                    <p class="text-[10px] text-slate-400 leading-snug">Pick a brand, enter quantities, tap "Add to Cart". Switch brand and repeat. "Submit" sends everything on the cart in one go.</p>
                 </div>
             </div>
 
@@ -355,7 +357,8 @@
     <!-- Bottom Action Bar for Vendor Requirement -->
     <div id="vendorBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
-            <button onclick="openVendorCartPreview()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+            <button onclick="openVendorCartPreview()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+                <span id="vendorBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-cyan-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
                 <i class="fa-solid fa-cart-shopping text-sm"></i> View Cart
             </button>
             <button onclick="openVendorCartPreview()" class="bg-cyan-700 text-white font-bold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
@@ -367,7 +370,8 @@
     <!-- Bottom Action Bar (Only visible/active on Packing Requirement → Audit view) -->
     <div id="bottomActionBar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
-            <button onclick="openStaffCheckModal()" class="bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+            <button onclick="openStaffCheckModal()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+                <span id="packingBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-emerald-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
                 <i class="fa-solid fa-cart-shopping text-sm"></i> View Cart
             </button>
             <button onclick="confirmAndDispatchTransit()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
@@ -564,9 +568,6 @@
                 <!-- Brands view -->
                 <div id="settingsView_brands" class="hidden space-y-2.5">
                     <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
-                        <p class="text-[11px] text-slate-500">Brands come from the items in your catalog — rename one to relabel every item under it, tap the eye icon to hide it from the Brand filter and the main list, or tap the layers icon to hide specific categories just for that brand.</p>
-                    </div>
                     <div class="relative">
                         <input type="text" id="brandSearch" placeholder="Search brands..." oninput="renderBrandManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
                         <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -578,13 +579,19 @@
                 <div id="settingsView_vendors" class="hidden space-y-2.5">
                     <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
-                        <p class="text-[11px] text-slate-500">Add a vendor's name, mobile number and the brand they supply. This shows them up in Vendor Requirements, with their brand pre-selected there. Sending a requirement opens WhatsApp with the item list pre-filled — you review and hit send.</p>
+                        <p id="vendorFormTitle" class="text-xs font-bold text-slate-700">Add Vendor</p>
                         <div class="grid grid-cols-2 gap-1.5">
                             <input type="text" id="newVendorName" placeholder="Vendor name" class="bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                             <input type="tel" id="newVendorMobile" placeholder="Mobile (with country code)" class="bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                         </div>
-                        <select id="newVendorBrand" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none"></select>
-                        <button onclick="addNewVendor()" class="w-full py-3 bg-cyan-600 text-white font-bold rounded-xl text-sm shadow">Add Vendor</button>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Brands supplied (pick one or more)</label>
+                            <div id="newVendorBrandChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button id="vendorFormSaveBtn" onclick="saveVendorForm()" class="flex-1 py-3 bg-cyan-600 text-white font-bold rounded-xl text-sm shadow">Add Vendor</button>
+                            <button id="vendorFormCancelBtn" onclick="cancelVendorForm()" class="hidden px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm">Cancel</button>
+                        </div>
                     </div>
                     <div class="relative">
                         <input type="text" id="vendorSearch" placeholder="Search vendors..." oninput="renderVendorManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
@@ -615,6 +622,27 @@
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end items-center">
                 <button onclick="closeCatalogModal()" class="px-5 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Vendor Modal (from the Vendor Requirement page) -->
+    <div id="quickAddVendorModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-sm text-slate-900"><i class="fa-solid fa-truck-fast mr-1"></i> Add Vendor</h3>
+                <button onclick="closeQuickAddVendorModal()" class="text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 space-y-2.5">
+                <input type="text" id="quickVendorName" placeholder="Vendor name" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
+                <input type="tel" id="quickVendorMobile" placeholder="Mobile (with country code)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Brands supplied</label>
+                    <div id="quickVendorBrandChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                </div>
+            </div>
+            <div class="p-4 pt-0">
+                <button onclick="saveQuickVendor()" class="w-full py-3 bg-cyan-600 text-white font-bold rounded-xl text-sm shadow">Save Vendor</button>
             </div>
         </div>
     </div>
@@ -3750,7 +3778,30 @@
         }
 
         let vendors = readJson('lalitha_vendors', []);
+        // Migrate old single-brand vendors (vendor.brand) to the new multi-brand shape
+        // (vendor.brands, an array) — a vendor can supply more than one brand.
+        vendors.forEach(v => {
+            if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : [];
+        });
         let dispatchList = readJson('lalitha_dispatch_list', []);
+
+        // Per-vendor category hiding — e.g. hide "Cosmetics" just for one vendor, while it
+        // stays visible for others. Keys are "vendorId||category".
+        let hiddenVendorCategories = new Set(readJson('lalitha_hidden_vendor_categories', []));
+        function vcKey(vendorId, cat) { return vendorId + '||' + cat; }
+        function isCatHiddenForVendor(vendorId, cat) { return hiddenVendorCategories.has(vcKey(vendorId, cat)); }
+        function saveHiddenVendorCategories() { writeJson('lalitha_hidden_vendor_categories', Array.from(hiddenVendorCategories)); }
+        function toggleCategoryHiddenForVendor(vendorId, cat) {
+            const key = vcKey(vendorId, cat);
+            if (hiddenVendorCategories.has(key)) hiddenVendorCategories.delete(key); else hiddenVendorCategories.add(key);
+            saveHiddenVendorCategories();
+            renderVendorManageList();
+            if (currentVendorId === vendorId) { renderVendorCategoryTabs(); renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : ''); }
+        }
+        // Vendor Add/Edit form state (chip-based multi-brand picker)
+        let newVendorSelectedBrands = new Set();
+        let editingVendorId = null;
+        let expandedVendorForCats = null;
 
         function allBrandsInCatalog() {
             const set = new Set();
@@ -4009,15 +4060,12 @@
 
         function setAuditMode(mode) {
             auditMode = mode;
-            const helpText = document.getElementById('modeHelpText');
             if (mode === 'available') {
                 document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white";
                 document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
-                helpText.innerHTML = `<strong>Available mode:</strong> enter the quantity on the shelf. Need = Min &minus; shelf count. Any item you leave blank counts as 0 on the shelf, so it shows as needing its full Min.`;
             } else {
                 document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-amber-600 text-white";
                 document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
-                helpText.innerHTML = `<strong>Missing mode:</strong> enter the quantity that is short/missing directly. Need = what you enter. Any item you leave blank is treated as not missing (Need = 0).`;
             }
             renderItems(document.getElementById('searchBox').value);
         }
@@ -4219,7 +4267,7 @@
             if (view === 'existing') renderCatalogEditorList();
             if (view === 'categories') { document.getElementById('newCategoryName').value = ''; document.getElementById('categorySearch').value = ''; renderCategoryManageList(); }
             if (view === 'brands') { document.getElementById('brandSearch').value = ''; renderBrandManageList(); }
-            if (view === 'vendors') { document.getElementById('newVendorName').value = ''; document.getElementById('newVendorMobile').value = ''; document.getElementById('vendorSearch').value = ''; renderNewVendorBrandSelect(); renderVendorManageList(); }
+            if (view === 'vendors') { document.getElementById('vendorSearch').value = ''; resetVendorForm(); renderVendorManageList(); }
             if (view === 'history') renderCatalogHistoryList();
         }
 
@@ -4472,39 +4520,111 @@
                 container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">${q ? `No vendors match "${esc(q)}".` : 'No vendors added yet.'}</p>`;
                 return;
             }
-            container.innerHTML = list.map(v => `
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-slate-800 truncate">${esc(v.name)}</p>
-                        <p class="text-[11px] text-slate-500">${esc(v.mobile)}${v.brand ? ` · <span class="text-cyan-700 font-bold">${esc(v.brand)}</span>` : ''}</p>
+            container.innerHTML = list.map(v => {
+                const brandsArr = Array.isArray(v.brands) ? v.brands : (v.brand ? [v.brand] : []);
+                const expanded = expandedVendorForCats === v.id;
+                // Categories relevant to this vendor's brands, for the per-vendor hide toggle.
+                const catsForVendor = Object.keys(inventoryData).filter(cat =>
+                    inventoryData[cat].some(item => brandsArr.length === 0 || brandsArr.includes(item.brand || DEFAULT_BRAND))
+                ).sort((a, b) => a.localeCompare(b));
+                return `
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-3.5 flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-slate-800 truncate">${esc(v.name)}</p>
+                            <p class="text-[11px] text-slate-500">${esc(v.mobile)}${brandsArr.length ? ` · <span class="text-cyan-700 font-bold">${brandsArr.map(esc).join(', ')}</span>` : ''}</p>
+                        </div>
+                        <div class="flex gap-2 shrink-0">
+                            <button onclick="toggleVendorCatsExpanded('${esc(v.id)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this vendor"><i class="fa-solid fa-layer-group"></i></button>
+                            <button onclick="editVendor('${esc(v.id)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteVendor('${esc(v.id)}')" class="text-red-600 bg-red-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>
-                    <div class="flex gap-2 shrink-0">
-                        <button onclick="editVendor('${esc(v.id)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteVendor('${esc(v.id)}')" class="text-red-600 bg-red-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
-                    </div>
+                    ${expanded ? `
+                        <div class="border-t border-slate-100 bg-slate-50 p-3 space-y-1.5">
+                            <p class="text-[11px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(v.name)}" — it stays visible for other vendors.</p>
+                            ${catsForVendor.map(cat => {
+                                const catHidden = isCatHiddenForVendor(v.id, cat);
+                                return `
+                                    <div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                                        <span class="text-xs font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden for this vendor)</span>' : ''}</span>
+                                        <button onclick="toggleCategoryHiddenForVendor('${esc(v.id)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center shrink-0"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                                    </div>
+                                `;
+                            }).join('') || '<p class="text-[11px] text-slate-400 px-0.5">No categories for this vendor.</p>'}
+                        </div>
+                    ` : ''}
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
-        function renderNewVendorBrandSelect() {
-            const sel = document.getElementById('newVendorBrand');
-            if (!sel) return;
-            sel.innerHTML = allBrandsInCatalog().map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+        function toggleVendorCatsExpanded(vendorId) {
+            expandedVendorForCats = expandedVendorForCats === vendorId ? null : vendorId;
+            renderVendorManageList();
         }
 
-        function addNewVendor() {
+        function renderNewVendorBrandChips() {
+            const container = document.getElementById('newVendorBrandChips');
+            if (!container) return;
+            const brands = allBrandsInCatalog();
+            if (brands.length === 0) {
+                container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No brands yet — add an item first.</p>';
+                return;
+            }
+            container.innerHTML = brands.map(b => {
+                const sel = newVendorSelectedBrands.has(b);
+                return `<button type="button" onclick="toggleNewVendorBrandChip('${esc(b)}')" class="${sel ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-slate-600 border-slate-300'} px-3 py-1.5 rounded-full text-xs font-bold border">${esc(b)}</button>`;
+            }).join('');
+        }
+
+        function toggleNewVendorBrandChip(brand) {
+            if (newVendorSelectedBrands.has(brand)) newVendorSelectedBrands.delete(brand); else newVendorSelectedBrands.add(brand);
+            renderNewVendorBrandChips();
+        }
+
+        function resetVendorForm() {
+            editingVendorId = null;
+            newVendorSelectedBrands = new Set();
             const nameEl = document.getElementById('newVendorName');
             const mobileEl = document.getElementById('newVendorMobile');
-            const brandEl = document.getElementById('newVendorBrand');
+            if (nameEl) nameEl.value = '';
+            if (mobileEl) mobileEl.value = '';
+            renderNewVendorBrandChips();
+            const titleEl = document.getElementById('vendorFormTitle');
+            const saveBtn = document.getElementById('vendorFormSaveBtn');
+            const cancelBtn = document.getElementById('vendorFormCancelBtn');
+            if (titleEl) titleEl.textContent = 'Add Vendor';
+            if (saveBtn) saveBtn.textContent = 'Add Vendor';
+            if (cancelBtn) cancelBtn.classList.add('hidden');
+        }
+
+        function cancelVendorForm() {
+            resetVendorForm();
+        }
+
+        function saveVendorForm() {
+            const nameEl = document.getElementById('newVendorName');
+            const mobileEl = document.getElementById('newVendorMobile');
             const name = nameEl.value.trim();
             const mobile = mobileEl.value.trim().replace(/[^\d+]/g, '');
-            const brand = brandEl ? brandEl.value : DEFAULT_BRAND;
-            if (!name || !mobile) { alert("Enter both the vendor's name and mobile number."); return; }
-            if (mobile.replace(/\D/g, '').length < 10) { alert("Enter a valid mobile number, with country code if you have one (e.g. 91XXXXXXXXXX)."); return; }
-            vendors.push({ id: 'vendor_' + Date.now(), name, mobile, brand });
-            saveVendors();
-            logCatalogHistory('Added vendor', `${name} (${mobile}) — ${brand}`);
-            nameEl.value = ''; mobileEl.value = '';
+            const brands = Array.from(newVendorSelectedBrands);
+            if (!name || !mobile) { showToast("Enter both the vendor's name and mobile number."); return; }
+            if (mobile.replace(/\D/g, '').length < 10) { showToast("Enter a valid mobile number, with country code if you have one."); return; }
+            if (editingVendorId) {
+                const v = vendors.find(x => x.id === editingVendorId);
+                if (v) {
+                    v.name = name; v.mobile = mobile; v.brands = brands;
+                    saveVendors();
+                    logCatalogHistory('Edited vendor', `${name} (${mobile}) — ${brands.join(', ') || 'no brand'}`);
+                    showToast('Vendor updated');
+                }
+            } else {
+                vendors.push({ id: 'vendor_' + Date.now(), name, mobile, brands });
+                saveVendors();
+                logCatalogHistory('Added vendor', `${name} (${mobile}) — ${brands.join(', ') || 'no brand'}`);
+                showToast('Vendor added');
+            }
+            resetVendorForm();
             renderVendorManageList();
             renderVendorSelectDropdown();
         }
@@ -4512,22 +4632,70 @@
         function editVendor(id) {
             const v = vendors.find(x => x.id === id);
             if (!v) return;
-            const newName = prompt("Vendor name:", v.name);
-            if (newName === null) return;
-            const newMobile = prompt("Vendor mobile number:", v.mobile);
-            if (newMobile === null) return;
+            editingVendorId = id;
+            newVendorSelectedBrands = new Set(Array.isArray(v.brands) ? v.brands : (v.brand ? [v.brand] : []));
+            const nameEl = document.getElementById('newVendorName');
+            const mobileEl = document.getElementById('newVendorMobile');
+            if (nameEl) nameEl.value = v.name;
+            if (mobileEl) mobileEl.value = v.mobile;
+            renderNewVendorBrandChips();
+            const titleEl = document.getElementById('vendorFormTitle');
+            const saveBtn = document.getElementById('vendorFormSaveBtn');
+            const cancelBtn = document.getElementById('vendorFormCancelBtn');
+            if (titleEl) titleEl.textContent = 'Edit Vendor';
+            if (saveBtn) saveBtn.textContent = 'Save Changes';
+            if (cancelBtn) cancelBtn.classList.remove('hidden');
+            const formCard = nameEl ? nameEl.closest('.bg-white') : null;
+            if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Quick-add-vendor, opened right from the Vendor Requirement page's "+" button —
+        // so staff don't need to go into Settings just to add a new vendor.
+        let quickVendorSelectedBrands = new Set();
+        function openQuickAddVendorModal() {
+            quickVendorSelectedBrands = new Set();
+            document.getElementById('quickVendorName').value = '';
+            document.getElementById('quickVendorMobile').value = '';
+            renderQuickVendorBrandChips();
+            document.getElementById('quickAddVendorModal').classList.remove('hidden');
+        }
+        function closeQuickAddVendorModal() {
+            document.getElementById('quickAddVendorModal').classList.add('hidden');
+        }
+        function renderQuickVendorBrandChips() {
+            const container = document.getElementById('quickVendorBrandChips');
+            if (!container) return;
             const brands = allBrandsInCatalog();
-            const newBrand = prompt(`Vendor brand (one of: ${brands.join(', ')}):`, v.brand || brands[0] || DEFAULT_BRAND);
-            if (newBrand === null) return;
-            const trimmedName = newName.trim();
-            const trimmedMobile = newMobile.trim().replace(/[^\d+]/g, '');
-            const trimmedBrand = newBrand.trim();
-            if (!trimmedName || !trimmedMobile) { alert("Both fields are required."); return; }
-            v.name = trimmedName; v.mobile = trimmedMobile; v.brand = trimmedBrand || v.brand;
+            if (brands.length === 0) {
+                container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No brands yet — add an item first.</p>';
+                return;
+            }
+            container.innerHTML = brands.map(b => {
+                const sel = quickVendorSelectedBrands.has(b);
+                return `<button type="button" onclick="toggleQuickVendorBrandChip('${esc(b)}')" class="${sel ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-slate-600 border-slate-300'} px-3 py-1.5 rounded-full text-xs font-bold border">${esc(b)}</button>`;
+            }).join('');
+        }
+        function toggleQuickVendorBrandChip(brand) {
+            if (quickVendorSelectedBrands.has(brand)) quickVendorSelectedBrands.delete(brand); else quickVendorSelectedBrands.add(brand);
+            renderQuickVendorBrandChips();
+        }
+        function saveQuickVendor() {
+            const name = document.getElementById('quickVendorName').value.trim();
+            const mobile = document.getElementById('quickVendorMobile').value.trim().replace(/[^\d+]/g, '');
+            const brands = Array.from(quickVendorSelectedBrands);
+            if (!name || !mobile) { showToast("Enter both the vendor's name and mobile number."); return; }
+            if (mobile.replace(/\D/g, '').length < 10) { showToast("Enter a valid mobile number."); return; }
+            const v = { id: 'vendor_' + Date.now(), name, mobile, brands };
+            vendors.push(v);
             saveVendors();
-            logCatalogHistory('Edited vendor', `${trimmedName} (${trimmedMobile}) — ${v.brand}`);
-            renderVendorManageList();
+            logCatalogHistory('Added vendor', `${name} (${mobile}) — ${brands.join(', ') || 'no brand'}`);
+            closeQuickAddVendorModal();
             renderVendorSelectDropdown();
+            currentVendorId = v.id;
+            const sel = document.getElementById('vendorReqPageSelect');
+            if (sel) sel.value = v.id;
+            onVendorPageVendorChange();
+            showToast('Vendor added');
         }
 
         function deleteVendor(id) {
@@ -4589,7 +4757,8 @@
         function onVendorPageVendorChange() {
             currentVendorId = document.getElementById('vendorReqPageSelect').value;
             const vendor = vendors.find(v => v.id === currentVendorId);
-            vendorActiveBrand = (vendor && vendor.brand) ? vendor.brand : (allBrandsInCatalog()[0] || DEFAULT_BRAND);
+            const vendorBrands = vendor && Array.isArray(vendor.brands) && vendor.brands.length ? vendor.brands : (vendor && vendor.brand ? [vendor.brand] : null);
+            vendorActiveBrand = (vendorBrands && vendorBrands[0]) ? vendorBrands[0] : (allBrandsInCatalog()[0] || DEFAULT_BRAND);
             vendorActiveCategoryFilter = 'All Categories';
             for (const k in vendorShelfStock) delete vendorShelfStock[k];
             renderVendorBrandFilter();
@@ -4601,7 +4770,9 @@
         function renderVendorBrandFilter() {
             const sel = document.getElementById('vendorBrandFilterSelect');
             if (!sel) return;
-            const brands = allBrandsInCatalog().filter(b => !hiddenBrands.has(b));
+            const vendor = vendors.find(v => v.id === currentVendorId);
+            const vendorBrands = vendor && Array.isArray(vendor.brands) && vendor.brands.length ? vendor.brands : null;
+            let brands = (vendorBrands || allBrandsInCatalog()).filter(b => !hiddenBrands.has(b));
             if (vendorActiveBrand && !brands.includes(vendorActiveBrand)) brands.push(vendorActiveBrand);
             if (!vendorActiveBrand) vendorActiveBrand = brands[0] || DEFAULT_BRAND;
             sel.innerHTML = brands.sort((a, b) => a.localeCompare(b)).map(b => `<option value="${esc(b)}" ${b === vendorActiveBrand ? 'selected' : ''}>${esc(b)}</option>`).join('');
@@ -4617,6 +4788,7 @@
 
         function vendorCategoriesForActiveBrand() {
             return Object.keys(inventoryData).filter(cat => !hiddenCategories.has(cat) && !isCatHiddenForBrand(vendorActiveBrand, cat) &&
+                !(currentVendorId && isCatHiddenForVendor(currentVendorId, cat)) &&
                 inventoryData[cat].some(item => !item.hidden && (item.brand || DEFAULT_BRAND) === vendorActiveBrand));
         }
 
@@ -4658,6 +4830,7 @@
                 const query = filter.trim().toLowerCase();
                 for (const cat in inventoryData) {
                     if (hiddenCategories.has(cat)) continue;
+                    if (currentVendorId && isCatHiddenForVendor(currentVendorId, cat)) continue;
                     inventoryData[cat].forEach(item => {
                         if (item.hidden) return;
                         if ((item.brand || DEFAULT_BRAND) !== vendorActiveBrand) return;
@@ -4669,6 +4842,7 @@
                     if (hiddenCategories.has(cat)) continue;
                     if (vendorActiveCategoryFilter !== 'All Categories' && cat !== vendorActiveCategoryFilter) continue;
                     if (isCatHiddenForBrand(vendorActiveBrand, cat)) continue;
+                    if (currentVendorId && isCatHiddenForVendor(currentVendorId, cat)) continue;
                     inventoryData[cat].forEach(item => {
                         if (item.hidden) return;
                         if ((item.brand || DEFAULT_BRAND) !== vendorActiveBrand) return;
@@ -4756,6 +4930,7 @@
                 if (hiddenCategories.has(cat)) continue;
                 if (vendorActiveCategoryFilter !== 'All Categories' && cat !== vendorActiveCategoryFilter) continue;
                 if (isCatHiddenForBrand(vendorActiveBrand, cat)) continue;
+                if (currentVendorId && isCatHiddenForVendor(currentVendorId, cat)) continue;
                 inventoryData[cat].forEach(item => {
                     if (item.hidden) return;
                     if ((item.brand || DEFAULT_BRAND) !== vendorActiveBrand) return;
@@ -4770,9 +4945,9 @@
         }
 
         function addCurrentToVendorCart() {
-            if (!currentVendorId) { alert("Pick a vendor first — add one in Settings → Vendors if the list is empty."); return; }
+            if (!currentVendorId) { showToast("Pick a vendor first"); return; }
             const items = currentVendorFilterShortages();
-            if (items.length === 0) { alert("Nothing to add — no items need requesting in the current Brand/Category view."); return; }
+            if (items.length === 0) { showToast("Nothing to add — no items need requesting in this view"); return; }
             if (!vendorCartLists[currentVendorId]) vendorCartLists[currentVendorId] = [];
             const cart = vendorCartLists[currentVendorId];
             items.forEach(it => {
@@ -4782,7 +4957,7 @@
             });
             saveVendorCartLists();
             renderVendorItems(document.getElementById('vendorSearchBox').value);
-            alert(`Added ${items.length} item(s) from "${vendorActiveBrand}" to the cart.\n\nSwitch brand and tap "Add to Cart" again, or tap "Submit" below to send everything on the cart now.`);
+            showToast(`Added ${items.length} item(s) from "${vendorActiveBrand}"`);
         }
 
         function clearVendorCart() {
@@ -4810,6 +4985,8 @@
                     breakdown.innerHTML = Object.keys(byCat).map(c => `${esc(c)}: ${byCat[c]}`).join(' &middot; ');
                 }
             }
+            const badge = document.getElementById('vendorBottomCartBadge');
+            if (badge) { badge.textContent = cart.length; badge.classList.toggle('hidden', cart.length === 0); }
         }
 
         function mergedVendorCart() {
@@ -4890,7 +5067,8 @@
                 container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200">No vendor requirements sent yet.</div>`;
                 return;
             }
-            container.innerHTML = vendorLedger.map(entry => `
+            const printAllBtn = `<button onclick="printVendorLedgerPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Vendor Ledger (PDF)</button>`;
+            container.innerHTML = printAllBtn + vendorLedger.map(entry => `
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-1.5">
                     <div class="flex justify-between items-start gap-2">
                         <div class="min-w-0">
@@ -4899,7 +5077,10 @@
                         </div>
                         <span class="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200 shrink-0">${entry.items.length} item${entry.items.length === 1 ? '' : 's'}</span>
                     </div>
-                    <button onclick="resendVendorLedgerEntry('${esc(entry.id)}')" class="w-full py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Resend on WhatsApp</button>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button onclick="resendVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Resend</button>
+                        <button onclick="printVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-slate-100 text-slate-700 border border-slate-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print</button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -4909,6 +5090,56 @@
             if (!entry) return;
             const digits = (entry.mobile || '').replace(/\D/g, '');
             window.open(`https://wa.me/${digits}?text=${encodeURIComponent(entry.message)}`, '_blank');
+        }
+
+        function drawVendorLedgerEntryToPdf(pdf, entry, startY, marginX, pageW) {
+            let y = startY;
+            pdf.setFontSize(12); pdf.setFont(undefined, 'bold');
+            pdf.text(`Vendor Requirement — ${entry.vendorName}`, marginX, y);
+            y += 6;
+            pdf.setFontSize(9); pdf.setFont(undefined, 'normal');
+            pdf.text(`${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}  ·  Staff: ${entry.staff || '-'}  ·  Mobile: ${entry.mobile || '-'}`, marginX, y);
+            y += 7;
+            pdf.setFontSize(9); pdf.setFont(undefined, 'bold');
+            pdf.text('Item', marginX, y);
+            pdf.text('UOM', marginX + 110, y);
+            pdf.text('Qty', marginX + 140, y);
+            y += 2;
+            pdf.setDrawColor(180); pdf.line(marginX, y, pageW - marginX, y);
+            y += 5;
+            pdf.setFont(undefined, 'normal');
+            (entry.items || []).forEach(item => {
+                if (y > 280) { pdf.addPage(); y = 16; }
+                pdf.setFontSize(8.5);
+                pdf.text(String(item.name).slice(0, 55), marginX, y);
+                pdf.text(String(item.uom || ''), marginX + 110, y);
+                pdf.text(String(item.reqQty !== undefined ? item.reqQty : (item.qty !== undefined ? item.qty : '')), marginX + 140, y);
+                y += 5.5;
+            });
+            return y + 8;
+        }
+
+        function printVendorLedgerEntry(id) {
+            const entry = vendorLedger.find(e => e.id === id);
+            if (!entry) return;
+            if (typeof window.jspdf === 'undefined') { alert("PDF library did not load. Check your internet connection and refresh."); return; }
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            drawVendorLedgerEntryToPdf(pdf, entry, 16, 12, 210);
+            pdf.save(`Vendor_Requirement_${entry.vendorName.replace(/\s+/g, '_')}_${entry.id}.pdf`);
+        }
+
+        function printVendorLedgerPdf() {
+            if (vendorLedger.length === 0) return;
+            if (typeof window.jspdf === 'undefined') { alert("PDF library did not load. Check your internet connection and refresh."); return; }
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            let y = 16;
+            vendorLedger.forEach((entry, idx) => {
+                if (idx > 0) { pdf.addPage(); y = 16; }
+                y = drawVendorLedgerEntryToPdf(pdf, entry, y, 12, 210);
+            });
+            pdf.save('Vendor_Ledger_Full.pdf');
         }
 
         // ---------- Dispatch List (batch items from several brands before one send) ----------
@@ -4939,7 +5170,7 @@
 
         function addCurrentToDispatchList() {
             const items = currentFilterShortages();
-            if (items.length === 0) { alert("Nothing to add — no items need dispatching in the current Brand/Category view."); return; }
+            if (items.length === 0) { showToast("Nothing to add — no items need dispatching in this view"); return; }
             items.forEach(it => {
                 const idx = dispatchList.findIndex(d => d.id === it.id);
                 if (idx >= 0) dispatchList[idx] = it; else dispatchList.push(it);
@@ -4947,8 +5178,7 @@
             });
             saveDispatchList();
             renderItems(document.getElementById('searchBox').value);
-            const brandLabel = activeBrand === 'All Brands' ? '' : ` from "${activeBrand}"`;
-            alert(`Added ${items.length} item(s)${brandLabel} to the dispatch list.\n\nSwitch brand/category and tap "Add to List" again, or tap "Confirm & Dispatch" below to send everything on the list now.`);
+            showToast(`Added ${items.length} item(s) to the dispatch list`);
         }
 
         function clearDispatchList() {
@@ -4974,6 +5204,8 @@
                     breakdown.innerHTML = Object.keys(byBrand).map(b => `${esc(b)}: ${byBrand[b]}`).join(' &middot; ');
                 }
             }
+            const badge = document.getElementById('packingBottomCartBadge');
+            if (badge) { badge.textContent = dispatchList.length; badge.classList.toggle('hidden', dispatchList.length === 0); }
         }
 
         async function openCatalogModal() {
@@ -5488,6 +5720,17 @@
                 const inputEl = document.getElementById(scannerTargetMode.replace('edit_', 'edit_code_'));
                 if (inputEl) inputEl.value = scannedCode;
                 closeScannerModal();
+            } else if (scannerTargetMode === 'vendorSearch') {
+                // Vendor Requirement's search — keep scanning, same as the main audit flow.
+                document.getElementById('vendorSearchBox').value = scannedCode;
+                renderVendorItems(scannedCode);
+                const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
+                const statusEl = document.getElementById('scanStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = match
+                        ? `<span style="color:#059669;font-weight:bold;">&#10003; ${esc(match.name)} (${esc(match.uom)})</span> — ready for next item`
+                        : `<span style="color:#dc2626;font-weight:bold;">No item matches ${esc(scannedCode)}</span> — ready for next item`;
+                }
             } else {
                 // Main audit flow: keep the camera open and scanning instead of closing the
                 // modal, so the next item can be scanned straight away with no extra tap.
@@ -6287,6 +6530,22 @@
             win.document.write('<html><head><title>Thermal</title><style>body{font-family:monospace;font-size:9px;width:270px;margin:0;padding:2px;}</style></head><body>' + document.getElementById('thermalTemplateContainer').innerHTML + '</body></html>');
             win.document.close(); win.focus();
             setTimeout(() => { win.print(); win.close(); }, 300);
+        }
+
+        // ---------- Toast: quick, non-blocking feedback (instead of alert() popups that
+        // stop and wait for a tap) — keeps fast add/scan workflows moving. ----------
+        let toastTimer = null;
+        function showToast(msg) {
+            const el = document.getElementById('appToast');
+            if (!el) { console.log(msg); return; }
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                el.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => el.classList.add('hidden'), 200);
+            }, 1800);
         }
 
         window.onload = initApp;
