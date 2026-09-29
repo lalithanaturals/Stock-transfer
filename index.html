@@ -47,6 +47,10 @@
 
     <!-- Toast: brief non-blocking feedback -->
     <div id="appToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] text-center"></div>
+    <div id="appUndoToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-xs font-bold pl-4 pr-2 py-2 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] flex items-center gap-3">
+        <span id="appUndoToastMsg"></span>
+        <button id="appUndoToastBtn" class="bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg text-[11px] font-extrabold uppercase tracking-wide">Undo</button>
+    </div>
 
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
@@ -56,7 +60,7 @@
             </div>
             <div>
                 <h1 id="headerTitle" class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
-                <p id="headerSubtitle" class="text-[10px] text-emerald-100">Branch Transfer</p>
+                <p class="text-[10px] text-emerald-100 flex items-center gap-1"><span id="headerSubtitle">Branch Transfer</span><i id="headerHomeChevron" class="hidden fa-solid fa-house text-[9px] opacity-80"></i></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
@@ -82,19 +86,21 @@
 
             <p class="text-[11px] font-bold text-slate-500 uppercase px-1">What do you want to do?</p>
 
-            <button onclick="showPackingRequirementSection()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
+            <button onclick="showPackingRequirementSection()" class="relative w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
+                <span id="homePackingCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-emerald-900 text-[10px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
                 <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-box-open"></i></div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold">Packing Requirement</p>
+                    <p class="text-sm font-bold">Packing Request</p>
                     <p class="text-[11px] text-emerald-50 mt-0.5">Shelf counts, branch transfer & dispatch — in-store, Lalitha Naturals only</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-white/70"></i>
             </button>
 
-            <button onclick="showVendorRequirementSection()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
+            <button onclick="showVendorRequirementSection()" class="relative w-full bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
+                <span id="homeVendorCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-cyan-900 text-[10px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
                 <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-cart-shopping"></i></div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold">Vendor Requirement</p>
+                    <p class="text-sm font-bold">Vendor Request</p>
                     <p class="text-[11px] text-cyan-50 mt-0.5">Build a per-vendor order cart from the full catalog & send on WhatsApp</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-white/70"></i>
@@ -221,7 +227,7 @@
             </div>
 
             <!-- Items List -->
-            <div id="itemsContainer" class="space-y-2.5"></div>
+            <div id="itemsContainer" class="space-y-3.5"></div>
         </div>
 
         <!-- TRANSIT & PACKING SHEETS VIEW -->
@@ -280,7 +286,7 @@
                     <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Vendor</label>
                     <div class="flex gap-1.5">
                         <select id="vendorReqPageSelect" onchange="onVendorPageVendorChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
-                        <button onclick="openQuickAddVendorModal()" class="bg-cyan-600 text-white w-10 rounded-xl shadow-sm shrink-0" title="Add Vendor"><i class="fa-solid fa-plus"></i></button>
+                        <button onclick="editCurrentVendorFromRequestPage()" class="bg-cyan-600 text-white w-10 rounded-xl shadow-sm shrink-0" title="Edit Vendor"><i class="fa-solid fa-pen"></i></button>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5 items-center">
@@ -336,7 +342,7 @@
             </div>
 
             <!-- Items List -->
-            <div id="vendorItemsContainer" class="space-y-2.5"></div>
+            <div id="vendorItemsContainer" class="space-y-3.5"></div>
         </div>
 
         <!-- VENDOR LEDGER VIEW -->
@@ -351,7 +357,7 @@
     </main>
 
     <!-- Bottom Action Bar for Vendor Requirement -->
-    <div id="vendorBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
+    <div id="vendorBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
             <button onclick="openVendorCartPreview()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
                 <span id="vendorBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-cyan-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
@@ -364,7 +370,7 @@
     </div>
 
     <!-- Bottom Action Bar (Only visible/active on Packing Requirement → Audit view) -->
-    <div id="bottomActionBar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-40">
+    <div id="bottomActionBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
             <button onclick="openStaffCheckModal()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
                 <span id="packingBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-emerald-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
@@ -600,21 +606,31 @@
                         <div id="newVendorBrandChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
                     </div>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400">2. Categories supplied</label>
-                        <div id="newVendorCategoryChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
-                        <p class="text-[10px] text-slate-400">Leave none selected to supply every category under the picked brand(s).</p>
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <button type="button" onclick="toggleVendorFormStep('categories')" class="w-full p-3.5 flex items-center justify-between text-left">
+                            <span class="text-[10px] font-bold uppercase text-slate-400">2. Categories supplied <span class="text-slate-300 font-semibold normal-case">(optional)</span></span>
+                            <i id="vendorFormStepCategoriesChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
+                        </button>
+                        <div id="vendorFormStepCategoriesBody" class="hidden px-3.5 pb-3.5 space-y-2">
+                            <div id="newVendorCategoryChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                            <p class="text-[10px] text-slate-400">Leave none selected to supply every category under the picked brand(s).</p>
+                        </div>
                     </div>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400">3. Specific items (optional)</label>
-                        <div class="flex gap-1.5">
-                            <select id="newVendorItemCategorySelect" onchange="renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <button type="button" onclick="toggleVendorFormStep('items')" class="w-full p-3.5 flex items-center justify-between text-left">
+                            <span class="text-[10px] font-bold uppercase text-slate-400">3. Specific items <span class="text-slate-300 font-semibold normal-case">(optional)</span></span>
+                            <i id="vendorFormStepItemsChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
+                        </button>
+                        <div id="vendorFormStepItemsBody" class="hidden px-3.5 pb-3.5 space-y-2">
+                            <div class="flex gap-1.5">
+                                <select id="newVendorItemCategorySelect" onchange="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                            </div>
+                            <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
+                            <div id="newVendorItemPicker" class="max-h-40 overflow-y-auto space-y-1 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                            <p class="text-[10px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
+                            <div id="newVendorItemChips" class="flex flex-wrap gap-1.5"></div>
                         </div>
-                        <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
-                        <div id="newVendorItemPicker" class="max-h-40 overflow-y-auto space-y-1 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
-                        <p class="text-[10px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
-                        <div id="newVendorItemChips" class="flex flex-wrap gap-1.5"></div>
                     </div>
 
                     <div class="flex gap-1.5 pb-2">
@@ -649,26 +665,6 @@
         </div>
     </div>
 
-    <!-- Quick Add Vendor Modal (from the Vendor Requirement page) -->
-    <div id="quickAddVendorModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-sm text-slate-900"><i class="fa-solid fa-truck-fast mr-1"></i> Add Vendor</h3>
-                <button onclick="closeQuickAddVendorModal()" class="text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-4 space-y-2.5">
-                <input type="text" id="quickVendorName" placeholder="Vendor name" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
-                <input type="tel" id="quickVendorMobile" placeholder="Mobile (with country code)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Brands supplied</label>
-                    <div id="quickVendorBrandChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
-                </div>
-            </div>
-            <div class="p-4 pt-0">
-                <button onclick="saveQuickVendor()" class="w-full py-3 bg-cyan-600 text-white font-bold rounded-xl text-sm shadow">Save Vendor</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Barcode Scanner Modal -->
     <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
@@ -708,8 +704,8 @@
     <!-- Staff Check (View Only) Modal -->
     <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-cart-shopping text-emerald-400 mr-1"></i> View Cart</h3>
+            <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center">
+                <h3 class="font-bold text-xs"><i class="fa-solid fa-cart-shopping text-white mr-1"></i> View Cart</h3>
                 <button onclick="closeStaffCheckModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3.5 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
@@ -717,7 +713,7 @@
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-between gap-2">
                 <button onclick="clearDispatchListFromPreview()" class="px-4 py-2.5 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl text-xs flex items-center gap-1.5"><i class="fa-solid fa-trash"></i> Clear Cart</button>
-                <button onclick="closeStaffCheckModal()" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
+                <button onclick="closeStaffCheckModal()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Close</button>
             </div>
         </div>
     </div>
@@ -730,8 +726,8 @@
 
     <div id="insightsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-chart-simple text-purple-400 mr-1"></i> Ledger Insights</h3>
+            <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center">
+                <h3 class="font-bold text-xs"><i class="fa-solid fa-chart-simple text-white mr-1"></i> Ledger Insights</h3>
                 <button onclick="closeInsightsModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-4">
@@ -746,15 +742,15 @@
                 </div>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end">
-                <button onclick="closeInsightsModal()" class="px-6 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Close</button>
+                <button onclick="closeInsightsModal()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Close</button>
             </div>
         </div>
     </div>
 
     <div id="receiveCheckModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Confirm Received Quantities</h3>
+            <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center">
+                <h3 class="font-bold text-xs"><i class="fa-solid fa-circle-check text-white mr-1"></i> Confirm Received Quantities</h3>
                 <button onclick="closeReceiveCheckModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-800">
@@ -4041,9 +4037,11 @@
         }
 
         // ---------- Home <-> Packing Requirement navigation ----------
-        function setHeaderTitle(subtitle) {
+        function setHeaderTitle(subtitle, onHome) {
             const el = document.getElementById('headerSubtitle');
             if (el) el.textContent = subtitle;
+            const chevron = document.getElementById('headerHomeChevron');
+            if (chevron) chevron.classList.toggle('hidden', !!onHome);
         }
         function showHomeSection() {
             document.getElementById('homeSection').classList.remove('hidden');
@@ -4051,7 +4049,24 @@
             document.getElementById('vendorRequirementSection').classList.add('hidden');
             document.getElementById('bottomActionBar').classList.add('hidden');
             document.getElementById('vendorBottomBar').classList.add('hidden');
-            setHeaderTitle('Branch Transfer');
+            setHeaderTitle('Branch Transfer', true);
+            renderHomeCartBadges();
+        }
+
+        // Pending-item badges on the Home cards — how many items are waiting in each
+        // cart/dispatch list right now, so it's visible before opening either page.
+        function renderHomeCartBadges() {
+            const packingBadge = document.getElementById('homePackingCartBadge');
+            if (packingBadge) {
+                packingBadge.textContent = dispatchList.length;
+                packingBadge.classList.toggle('hidden', dispatchList.length === 0);
+            }
+            const vendorBadge = document.getElementById('homeVendorCartBadge');
+            if (vendorBadge) {
+                const total = Object.values(vendorCartLists).reduce((sum, cart) => sum + (cart ? cart.length : 0), 0);
+                vendorBadge.textContent = total;
+                vendorBadge.classList.toggle('hidden', total === 0);
+            }
         }
         function showPackingRequirementSection() {
             document.getElementById('homeSection').classList.add('hidden');
@@ -4062,7 +4077,7 @@
             // (switchMode keeps it hidden while on the Ledger Sheets sub-tab).
             const onAudit = !document.getElementById('auditViewSection').classList.contains('hidden');
             document.getElementById('bottomActionBar').classList.toggle('hidden', !onAudit);
-            setHeaderTitle('Packing Request');
+            setHeaderTitle('Packing Request', false);
         }
 
         function switchMode(mode) {
@@ -4217,7 +4232,7 @@
                 if (activeBrand !== 'All Brands') bits.push(`brand "${esc(activeBrand)}"`);
                 if (activeCategoryFilter !== 'All Categories') bits.push(`category "${esc(activeCategoryFilter)}"`);
                 const note = bits.length ? ` for ${bits.join(' + ')}` : '';
-                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200">No items found${note}.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-2 block"></i>No items found${note}.</div>`;
                 return;
             }
 
@@ -4227,7 +4242,7 @@
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
 
                 return `
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
@@ -4240,9 +4255,9 @@
                             <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
-                            <button onclick="updateStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100">-</button>
+                            <button onclick="updateStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
                             <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
-                            <button onclick="updateStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700">+</button>
+                            <button onclick="updateStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform">+</button>
                         </div>
                     </div>
                 `;
@@ -4456,7 +4471,7 @@
             const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
             const brands = Object.keys(counts).filter(b => !q || b.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b));
             if (brands.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">${q ? `No brands match "${esc(q)}".` : 'No brands yet — add an item to create one.'}</p>`;
+                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs"><i class="fa-solid fa-tags text-2xl text-slate-300 mb-2 block"></i>${q ? `No brands match "${esc(q)}".` : 'No brands yet — add an item to create one.'}</div>`;
                 return;
             }
             container.innerHTML = brands.map(brand => {
@@ -4547,7 +4562,7 @@
             const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
             const list = vendors.filter(v => !q || v.name.toLowerCase().includes(q) || v.mobile.includes(q));
             if (list.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">${q ? `No vendors match "${esc(q)}".` : 'No vendors added yet.'}</p>`;
+                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs"><i class="fa-solid fa-truck-fast text-2xl text-slate-300 mb-2 block"></i>${q ? `No vendors match "${esc(q)}".` : 'No vendors added yet — tap "+ Add Vendor" above.'}</div>`;
                 return;
             }
             container.innerHTML = list.map(v => {
@@ -4564,6 +4579,7 @@
                             <p class="text-sm font-bold text-slate-800 truncate">${esc(v.name)}</p>
                             <p class="text-[11px] text-slate-500">${esc(v.mobile)}${brandsArr.length ? ` · <span class="text-cyan-700 font-bold">${brandsArr.map(esc).join(', ')}</span>` : ''}</p>
                             <p class="text-[10px] text-slate-400 mt-0.5">${Array.isArray(v.categories) && v.categories.length ? `${v.categories.length} categor${v.categories.length === 1 ? 'y' : 'ies'}` : 'All categories'}${Array.isArray(v.itemIds) && v.itemIds.length ? ` · ${v.itemIds.length} specific item${v.itemIds.length === 1 ? '' : 's'}` : ''}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-0.5"></i> ${lastOrderedLabelForVendor(v.id)}</p>
                         </div>
                         <div class="flex gap-2 shrink-0">
                             <button onclick="toggleVendorCatsExpanded('${esc(v.id)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this vendor"><i class="fa-solid fa-layer-group"></i></button>
@@ -4616,6 +4632,7 @@
 
         function toggleNewVendorBrandChip(brand) {
             if (newVendorSelectedBrands.has(brand)) newVendorSelectedBrands.delete(brand); else newVendorSelectedBrands.add(brand);
+            newVendorItemPickerLimit = 150;
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
             renderVendorFormItemCategorySelect();
@@ -4649,6 +4666,7 @@
 
         function toggleNewVendorCategoryChip(cat) {
             if (newVendorSelectedCategories.has(cat)) newVendorSelectedCategories.delete(cat); else newVendorSelectedCategories.add(cat);
+            newVendorItemPickerLimit = 150;
             renderNewVendorCategoryChips();
             renderVendorFormItemPicker();
         }
@@ -4662,6 +4680,7 @@
 
         // The scrollable list of individual items to tap and add — filtered by the picked
         // brand(s)/category and by the search box.
+        let newVendorItemPickerLimit = 150;
         function renderVendorFormItemPicker() {
             const container = document.getElementById('newVendorItemPicker');
             if (!container) return;
@@ -4682,13 +4701,18 @@
             if (results.length === 0) {
                 container.innerHTML = '<p class="text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
             } else {
-                container.innerHTML = results.slice(0, 150).map(item => {
+                const shown = results.slice(0, newVendorItemPickerLimit);
+                let html = shown.map(item => {
                     const picked = newVendorSelectedItemIds.has(item.id);
                     return `<button type="button" onclick="toggleNewVendorItemChip('${esc(item.id)}')" class="w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left ${picked ? 'bg-cyan-50 border border-cyan-300' : 'bg-white border border-slate-200'}">
                         <span class="text-xs font-semibold text-slate-700 truncate">${esc(item.name)} <span class="text-slate-400">(${esc(item.uom)})</span></span>
                         <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle-plus text-slate-300'}"></i>
                     </button>`;
                 }).join('');
+                if (results.length > shown.length) {
+                    html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="w-full text-center py-2 text-[11px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
+                }
+                container.innerHTML = html;
             }
             renderNewVendorItemChips();
         }
@@ -4710,11 +4734,31 @@
             }).join('');
         }
 
+        // Steps 2 ("Categories") and 3 ("Specific items") are optional and start
+        // collapsed, so a vendor with only brands set doesn't need to scroll past them.
+        function toggleVendorFormStep(step) {
+            const body = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Body`);
+            const chevron = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Chevron`);
+            if (!body) return;
+            const expanding = body.classList.contains('hidden');
+            body.classList.toggle('hidden', !expanding);
+            if (chevron) chevron.classList.toggle('rotate-180', expanding);
+        }
+        function setVendorFormStepExpanded(step, expanded) {
+            const body = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Body`);
+            const chevron = document.getElementById(`vendorFormStep${step === 'categories' ? 'Categories' : 'Items'}Chevron`);
+            if (body) body.classList.toggle('hidden', !expanded);
+            if (chevron) chevron.classList.toggle('rotate-180', expanded);
+        }
+
         function resetVendorForm() {
             editingVendorId = null;
             newVendorSelectedBrands = new Set();
             newVendorSelectedCategories = new Set();
             newVendorSelectedItemIds = new Set();
+            newVendorItemPickerLimit = 150;
+            setVendorFormStepExpanded('categories', false);
+            setVendorFormStepExpanded('items', false);
             const nameEl = document.getElementById('newVendorName');
             const mobileEl = document.getElementById('newVendorMobile');
             const searchEl = document.getElementById('newVendorItemSearch');
@@ -4776,6 +4820,7 @@
             newVendorSelectedBrands = new Set(Array.isArray(v.brands) ? v.brands : (v.brand ? [v.brand] : []));
             newVendorSelectedCategories = new Set(Array.isArray(v.categories) ? v.categories : []);
             newVendorSelectedItemIds = new Set(Array.isArray(v.itemIds) ? v.itemIds : []);
+            newVendorItemPickerLimit = 150;
             const nameEl = document.getElementById('newVendorName');
             const mobileEl = document.getElementById('newVendorMobile');
             const searchEl = document.getElementById('newVendorItemSearch');
@@ -4786,6 +4831,8 @@
             renderNewVendorCategoryChips();
             renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
+            setVendorFormStepExpanded('categories', newVendorSelectedCategories.size > 0);
+            setVendorFormStepExpanded('items', newVendorSelectedItemIds.size > 0);
             const titleEl = document.getElementById('vendorFormTitle');
             const saveBtn = document.getElementById('vendorFormSaveBtn');
             if (titleEl) titleEl.textContent = 'Edit Vendor';
@@ -4793,53 +4840,12 @@
             switchSettingsView('vendorForm');
         }
 
-        // Quick-add-vendor, opened right from the Vendor Requirement page's "+" button —
-        // so staff don't need to go into Settings just to add a new vendor.
-        let quickVendorSelectedBrands = new Set();
-        function openQuickAddVendorModal() {
-            quickVendorSelectedBrands = new Set();
-            document.getElementById('quickVendorName').value = '';
-            document.getElementById('quickVendorMobile').value = '';
-            renderQuickVendorBrandChips();
-            document.getElementById('quickAddVendorModal').classList.remove('hidden');
-        }
-        function closeQuickAddVendorModal() {
-            document.getElementById('quickAddVendorModal').classList.add('hidden');
-        }
-        function renderQuickVendorBrandChips() {
-            const container = document.getElementById('quickVendorBrandChips');
-            if (!container) return;
-            const brands = allBrandsInCatalog();
-            if (brands.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No brands yet — add an item first.</p>';
-                return;
-            }
-            container.innerHTML = brands.map(b => {
-                const sel = quickVendorSelectedBrands.has(b);
-                return `<button type="button" onclick="toggleQuickVendorBrandChip('${esc(b)}')" class="${sel ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-slate-600 border-slate-300'} px-3 py-1.5 rounded-full text-xs font-bold border">${esc(b)}</button>`;
-            }).join('');
-        }
-        function toggleQuickVendorBrandChip(brand) {
-            if (quickVendorSelectedBrands.has(brand)) quickVendorSelectedBrands.delete(brand); else quickVendorSelectedBrands.add(brand);
-            renderQuickVendorBrandChips();
-        }
-        function saveQuickVendor() {
-            const name = document.getElementById('quickVendorName').value.trim();
-            const mobile = document.getElementById('quickVendorMobile').value.trim().replace(/[^\d+]/g, '');
-            const brands = Array.from(quickVendorSelectedBrands);
-            if (!name || !mobile) { showToast("Enter both the vendor's name and mobile number."); return; }
-            if (mobile.replace(/\D/g, '').length < 10) { showToast("Enter a valid mobile number."); return; }
-            const v = { id: 'vendor_' + Date.now(), name, mobile, brands };
-            vendors.push(v);
-            saveVendors();
-            logCatalogHistory('Added vendor', `${name} (${mobile}) — ${brands.join(', ') || 'no brand'}`);
-            closeQuickAddVendorModal();
-            renderVendorSelectDropdown();
-            currentVendorId = v.id;
-            const sel = document.getElementById('vendorReqPageSelect');
-            if (sel) sel.value = v.id;
-            onVendorPageVendorChange();
-            showToast('Vendor added');
+        // Edit the vendor currently selected on the Vendor Request page — opens Settings
+        // straight into that vendor's full Edit page. Adding a new vendor is Settings-only.
+        function editCurrentVendorFromRequestPage() {
+            if (!currentVendorId) { showToast('Pick a vendor first'); return; }
+            document.getElementById('catalogModal').classList.remove('hidden');
+            editVendor(currentVendorId);
         }
 
         function deleteVendor(id) {
@@ -4868,6 +4874,15 @@
         function saveVendorCartLists() { writeJson('lalitha_vendor_req_lists', vendorCartLists); renderVendorCartSummary(); }
         function saveVendorLedger() { writeJson('lalitha_vendor_ledger', vendorLedger); }
 
+        // "Last ordered" line shown on each vendor's card in Settings → Vendors.
+        function lastOrderedLabelForVendor(vendorId) {
+            const entry = vendorLedger.find(e => e.vendorId === vendorId);
+            if (!entry) return 'No requirement sent yet';
+            const days = Math.floor((Date.now() - entry.time) / 86400000);
+            const when = days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days} days ago`;
+            return `Last ordered: ${when}`;
+        }
+
         function needForVendor(item) {
             const v = vendorShelfStock[item.id] !== undefined ? vendorShelfStock[item.id] : 0;
             return vendorAuditMode === 'available' ? Math.max(0, item.min - v) : Math.max(0, v);
@@ -4880,7 +4895,7 @@
             document.getElementById('vendorRequirementSection').classList.remove('hidden');
             renderVendorSelectDropdown();
             switchVendorMode('request');
-            setHeaderTitle('Vendor Request');
+            setHeaderTitle('Vendor Request', false);
         }
 
         function renderVendorSelectDropdown() {
@@ -5025,7 +5040,7 @@
             const showCatTag = searching || vendorActiveCategoryFilter === 'All Categories';
 
             if (itemsToDisplay.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200">No "${esc(vendorActiveBrand || '')}" items found${vendorActiveCategoryFilter !== 'All Categories' ? ` in "${esc(vendorActiveCategoryFilter)}"` : ''}.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-2 block"></i>No "${esc(vendorActiveBrand || '')}" items found${vendorActiveCategoryFilter !== 'All Categories' ? ` in "${esc(vendorActiveCategoryFilter)}"` : ''}.</div>`;
                 return;
             }
 
@@ -5034,7 +5049,7 @@
                 const inputDisplayVal = vendorShelfStock[item.id] !== undefined ? vendorShelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
                 return `
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
@@ -5046,9 +5061,9 @@
                             <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
                         </div>
                         <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
-                            <button onclick="updateVendorStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100">-</button>
+                            <button onclick="updateVendorStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
                             <input type="number" inputmode="numeric" min="0" id="vstock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setVendorStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
-                            <button onclick="updateVendorStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-cyan-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-cyan-700">+</button>
+                            <button onclick="updateVendorStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-cyan-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-cyan-700 active:scale-90 transition-transform">+</button>
                         </div>
                     </div>
                 `;
@@ -5136,24 +5151,25 @@
             if (!currentVendorId) return;
             const cart = vendorCartLists[currentVendorId] || [];
             if (cart.length === 0) return;
-            if (!confirm(`Clear all ${cart.length} item(s) from this vendor's cart?`)) return;
-            vendorCartLists[currentVendorId] = [];
+            const vid = currentVendorId;
+            const backup = cart.slice();
+            vendorCartLists[vid] = [];
             saveVendorCartLists();
             renderVendorCartSummary();
             renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
+            showUndoToast(`Cleared ${backup.length} item(s) from cart`, () => {
+                vendorCartLists[vid] = backup;
+                saveVendorCartLists();
+                if (currentVendorId === vid) { renderVendorCartSummary(); renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : ''); }
+            });
         }
 
         function clearVendorCartFromPreview() {
             if (!currentVendorId) return;
             const cart = vendorCartLists[currentVendorId] || [];
             if (cart.length === 0) { showToast('Cart is already empty'); return; }
-            if (!confirm(`Clear all ${cart.length} item(s) from this vendor's cart?`)) return;
-            vendorCartLists[currentVendorId] = [];
-            saveVendorCartLists();
-            renderVendorCartSummary();
-            renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
             closeVendorCartPreview();
-            showToast('Cart cleared');
+            clearVendorCart();
         }
 
         function renderVendorCartSummary() {
@@ -5214,7 +5230,7 @@
 
             const byCat = {};
             merged.forEach(i => { if (!byCat[i.cat]) byCat[i.cat] = []; byCat[i.cat].push(i); });
-            let msg = `Requirement for ${vendor.name}\n`;
+            let msg = `Request for ${vendor.name}\n`;
             msg += `From: Lalitha Naturals · Staff: ${staff}\nDate: ${localDateStr(new Date())}\n\n`;
             Object.keys(byCat).forEach(cat => {
                 msg += `*${cat}*\n`;
@@ -5251,7 +5267,7 @@
             const container = document.getElementById('vendorLedgerList');
             if (!container) return;
             if (vendorLedger.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200">No vendor requirements sent yet.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-receipt text-2xl text-slate-300 mb-2 block"></i>No vendor requirements sent yet.</div>`;
                 return;
             }
             const printAllBtn = `<button onclick="printVendorLedgerPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Vendor Ledger (PDF)</button>`;
@@ -5282,7 +5298,7 @@
         function drawVendorLedgerEntryToPdf(pdf, entry, startY, marginX, pageW) {
             let y = startY;
             pdf.setFontSize(12); pdf.setFont(undefined, 'bold');
-            pdf.text(`Vendor Requirement — ${entry.vendorName}`, marginX, y);
+            pdf.text(`Vendor Request — ${entry.vendorName}`, marginX, y);
             y += 6;
             pdf.setFontSize(9); pdf.setFont(undefined, 'normal');
             pdf.text(`${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}  ·  Staff: ${entry.staff || '-'}  ·  Mobile: ${entry.mobile || '-'}`, marginX, y);
@@ -5313,7 +5329,7 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             drawVendorLedgerEntryToPdf(pdf, entry, 16, 12, 210);
-            pdf.save(`Vendor_Requirement_${entry.vendorName.replace(/\s+/g, '_')}_${entry.id}.pdf`);
+            pdf.save(`Vendor_Request_${entry.vendorName.replace(/\s+/g, '_')}_${entry.id}.pdf`);
         }
 
         function printVendorLedgerPdf() {
@@ -5370,20 +5386,21 @@
 
         function clearDispatchList() {
             if (dispatchList.length === 0) return;
-            if (!confirm(`Clear all ${dispatchList.length} item(s) from the dispatch list?`)) return;
+            const backup = dispatchList.slice();
             dispatchList = [];
             saveDispatchList();
             renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+            showUndoToast(`Cleared ${backup.length} item(s) from cart`, () => {
+                dispatchList = backup;
+                saveDispatchList();
+                renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+            });
         }
 
         function clearDispatchListFromPreview() {
             if (dispatchList.length === 0) { showToast('Cart is already empty'); return; }
-            if (!confirm(`Clear all ${dispatchList.length} item(s) from the dispatch list?`)) return;
-            dispatchList = [];
-            saveDispatchList();
-            renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
             closeStaffCheckModal();
-            showToast('Cart cleared');
+            clearDispatchList();
         }
 
         function renderDispatchListSummary() {
@@ -5426,6 +5443,11 @@
             document.getElementById('catalogModal').classList.add('hidden');
             renderTabs();
             renderItems(document.getElementById('searchBox').value);
+            // Vendor details (brands/categories/items) may have just changed — refresh the
+            // Vendor Request page so it reflects them immediately.
+            if (!document.getElementById('vendorRequirementSection').classList.contains('hidden')) {
+                renderVendorSelectDropdown();
+            }
         }
 
         let dupOnlyFilterActive = false;
@@ -6744,6 +6766,26 @@
                 el.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => el.classList.add('hidden'), 200);
             }, 1800);
+        }
+
+        // A toast with an "Undo" action — used for Clear Cart, so clearing stays a single
+        // fast tap (no confirm dialog) but is still reversible for a few seconds.
+        let undoToastTimer = null;
+        function showUndoToast(msg, onUndo) {
+            const el = document.getElementById('appUndoToast');
+            const msgEl = document.getElementById('appUndoToastMsg');
+            const btn = document.getElementById('appUndoToastBtn');
+            if (!el || !msgEl || !btn) { showToast(msg); return; }
+            msgEl.textContent = msg;
+            el.classList.remove('hidden');
+            requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
+            clearTimeout(undoToastTimer);
+            const hide = () => {
+                el.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => el.classList.add('hidden'), 200);
+            };
+            btn.onclick = () => { clearTimeout(undoToastTimer); hide(); if (onUndo) onUndo(); };
+            undoToastTimer = setTimeout(hide, 5000);
         }
 
         window.onload = initApp;
