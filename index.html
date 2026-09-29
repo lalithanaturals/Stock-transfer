@@ -4738,7 +4738,7 @@
             } else {
                 const shown = results.slice(0, newVendorItemPickerLimit);
                 let html = shown.map(item =>
-                    pickerRow(`${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span>`, newVendorSelectedItemIds.has(item.id), `toggleNewVendorItemChip('${esc(item.id)}')`)
+                    pickerRow(`${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span>`, newVendorSelectedItemIds.has(String(item.id)), `toggleNewVendorItemChip('${esc(item.id)}')`)
                 ).join('');
                 if (results.length > shown.length) {
                     html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="w-full text-center py-2 text-[11px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
@@ -4759,7 +4759,7 @@
             if (newVendorSelectedItemIds.size === 0) { container.innerHTML = ''; return; }
             const allItems = Object.values(inventoryData).flat();
             container.innerHTML = Array.from(newVendorSelectedItemIds).map(id => {
-                const item = allItems.find(i => i.id === id);
+                const item = allItems.find(i => String(i.id) === String(id));
                 if (!item) return '';
                 return `<span class="inline-flex items-center gap-1.5 bg-cyan-600 text-white pl-2.5 pr-1.5 py-1 rounded-full text-[11px] font-bold">${esc(item.name)}<button type="button" onclick="toggleNewVendorItemChip('${esc(id)}')" class="w-4 h-4 rounded-full bg-cyan-800 flex items-center justify-center text-[9px]">&times;</button></span>`;
             }).join('');
@@ -4857,7 +4857,7 @@
             editingVendorId = id;
             newVendorSelectedBrands = new Set(Array.isArray(v.brands) ? v.brands : (v.brand ? [v.brand] : []));
             newVendorSelectedCategories = new Set(Array.isArray(v.categories) ? v.categories : []);
-            newVendorSelectedItemIds = new Set(Array.isArray(v.itemIds) ? v.itemIds : []);
+            newVendorSelectedItemIds = new Set(Array.isArray(v.itemIds) ? v.itemIds.map(String) : []);
             newVendorItemPickerLimit = 150;
             const nameEl = document.getElementById('newVendorName');
             const mobileEl = document.getElementById('newVendorMobile');
@@ -4999,7 +4999,9 @@
         // every item under their picked brand(s)/categories.
         function vendorAllowsItem(vendor, item) {
             if (!vendor || !Array.isArray(vendor.itemIds) || vendor.itemIds.length === 0) return true;
-            return vendor.itemIds.includes(item.id);
+            // itemIds may hold a mix of numbers/strings depending on when they were saved —
+            // compare as strings so a stored "123" still matches a live numeric item.id.
+            return vendor.itemIds.some(id => String(id) === String(item.id));
         }
 
         function vendorCategoriesForActiveBrand() {
@@ -5869,7 +5871,7 @@
                 const v = vendors.find(x => x.id === vendorId);
                 if (v) {
                     if (!Array.isArray(v.itemIds)) v.itemIds = [];
-                    v.itemIds.push(newItem.id);
+                    v.itemIds.push(String(newItem.id));
                     saveVendors();
                     vendorNote = `, Vendor: ${v.name}`;
                 }
