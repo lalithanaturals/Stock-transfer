@@ -289,6 +289,13 @@
                         <button onclick="editCurrentVendorFromRequestPage()" class="bg-cyan-600 text-white w-10 rounded-xl shadow-sm shrink-0" title="Edit Vendor"><i class="fa-solid fa-pen"></i></button>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Branch <span class="text-red-500">*</span></label>
+                    <div class="flex items-center gap-1.5">
+                        <select id="vendorBranchSelect" onchange="onVendorBranchChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                        <span id="vendorBranchLockNote" class="hidden text-[10px] font-bold text-amber-600 shrink-0 px-1.5"><i class="fa-solid fa-lock"></i></span>
+                    </div>
+                </div>
                 <div class="grid grid-cols-2 gap-2.5 items-center">
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Name</label>
@@ -497,6 +504,18 @@
                         </button>
                     </div>
 
+                    <div data-settings-group="branches" class="space-y-2.5">
+                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Branches</p>
+                        <button data-settings-item="branches add rename delete lock device" onclick="switchSettingsView('branches')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-rose-100 text-rose-700 flex items-center justify-center"><i class="fa-solid fa-code-branch"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Branches</p>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Add/rename branches & lock this device to one</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                    </div>
+
                     <div data-settings-group="data" class="space-y-2.5">
                         <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Data</p>
                         <button data-settings-item="import export excel upload download" onclick="switchSettingsView('excel')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
@@ -596,6 +615,29 @@
                         <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     </div>
                     <div id="brandManageList" class="space-y-1.5"></div>
+                </div>
+
+                <!-- Branches view -->
+                <div id="settingsView_branches" class="hidden space-y-2.5">
+                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
+                        <p class="text-[11px] text-slate-500">Add a branch — it shows up wherever a branch is picked (Vendor Request, Branch Transfer).</p>
+                        <div class="flex gap-1.5">
+                            <input type="text" id="newBranchName" placeholder="Branch name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
+                            <button onclick="addNewBranch()" class="px-4 py-3 bg-rose-600 text-white font-bold rounded-xl text-sm shadow">Add</button>
+                        </div>
+                    </div>
+
+                    <div id="branchManageList" class="space-y-1.5"></div>
+
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                        <p class="text-xs font-bold text-slate-700"><i class="fa-solid fa-lock text-amber-500 mr-1"></i> Lock this device to a branch</p>
+                        <p class="text-[11px] text-slate-500">When set, Vendor Request always uses this branch on this phone and skips asking each time. This choice stays on this device only — it does not change on other phones.</p>
+                        <select id="deviceBranchLockSelect" onchange="setDeviceBranchLock(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                            <option value="">Not locked — ask every time</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Vendors view -->
@@ -3790,6 +3832,66 @@
             } catch (e) { /* old script deployment or offline — keep local catalog */ }
         }
 
+        // Best-effort push of vendors + all the hide/show toggles to the shared backend,
+        // kept separate from the catalog blob (see GoogleAppsScript-Full.gs). Debounced
+        // slightly isn't needed — these are rare, deliberate edits, not per-keystroke.
+        function pushSettingsToCloud() {
+            try {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'settings', action: 'save_settings',
+                        settings: {
+                            vendors,
+                            hiddenBrands: Array.from(hiddenBrands),
+                            hiddenCategories: Array.from(hiddenCategories),
+                            hiddenBrandCategories: Array.from(hiddenBrandCategories),
+                            hiddenVendorCategories: Array.from(hiddenVendorCategories)
+                        },
+                        version: Date.now()
+                    })
+                }).catch(() => {});
+            } catch (e) { /* ignore */ }
+        }
+
+        // Best-effort pull of vendors + hide/show toggles. Called on Settings-open, on a
+        // polling timer, and on tab focus — this backend has no push/websocket channel,
+        // so "instant" here means within one poll interval (~15-20s), not literally live.
+        let applyingRemoteSettings = false;
+        async function syncSettingsFromCloud() {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
+                if (!res.ok) return;
+                const data = await res.json();
+                const s = data && data.settings;
+                if (!s || typeof s !== 'object') return;
+
+                applyingRemoteSettings = true;
+                if (Array.isArray(s.vendors)) {
+                    vendors = s.vendors;
+                    vendors.forEach(v => { if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : []; });
+                    writeJson('lalitha_vendors', vendors);
+                }
+                if (Array.isArray(s.hiddenBrands)) { hiddenBrands = new Set(s.hiddenBrands); writeJson('lalitha_hidden_brands', s.hiddenBrands); }
+                if (Array.isArray(s.hiddenCategories)) { hiddenCategories = new Set(s.hiddenCategories); writeJson('lalitha_hidden_categories', s.hiddenCategories); }
+                if (Array.isArray(s.hiddenBrandCategories)) { hiddenBrandCategories = new Set(s.hiddenBrandCategories); writeJson('lalitha_hidden_brand_categories', s.hiddenBrandCategories); }
+                if (Array.isArray(s.hiddenVendorCategories)) { hiddenVendorCategories = new Set(s.hiddenVendorCategories); writeJson('lalitha_hidden_vendor_categories', s.hiddenVendorCategories); }
+                applyingRemoteSettings = false;
+
+                // Re-render whatever's currently on screen that this could affect.
+                renderTabs();
+                renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+                if (document.getElementById('settingsView_vendors') && !document.getElementById('settingsView_vendors').classList.contains('hidden')) renderVendorManageList();
+                if (document.getElementById('settingsView_brands') && !document.getElementById('settingsView_brands').classList.contains('hidden')) renderBrandManageList();
+                if (document.getElementById('settingsView_categories') && !document.getElementById('settingsView_categories').classList.contains('hidden')) renderCategoryManageList();
+                if (document.getElementById('vendorRequirementSection') && !document.getElementById('vendorRequirementSection').classList.contains('hidden')) {
+                    renderVendorSelectDropdown();
+                    renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
+                }
+            } catch (e) { applyingRemoteSettings = false; /* old script deployment or offline — keep local settings */ }
+        }
+
         // ---------- Brand / Category filters + hide/show ----------
         // Two independent filters shown side by side. Neither one narrows the other's
         // option list — picking a brand alone shows that brand across every category;
@@ -3805,15 +3907,15 @@
 
         let hiddenBrands = new Set(readJson('lalitha_hidden_brands', []));
         let hiddenCategories = new Set(readJson('lalitha_hidden_categories', []));
-        function saveHiddenBrands() { writeJson('lalitha_hidden_brands', Array.from(hiddenBrands)); }
-        function saveHiddenCategories() { writeJson('lalitha_hidden_categories', Array.from(hiddenCategories)); }
+        function saveHiddenBrands() { writeJson('lalitha_hidden_brands', Array.from(hiddenBrands)); if (!applyingRemoteSettings) pushSettingsToCloud(); }
+        function saveHiddenCategories() { writeJson('lalitha_hidden_categories', Array.from(hiddenCategories)); if (!applyingRemoteSettings) pushSettingsToCloud(); }
 
         // Per-brand category hiding — e.g. hide "Cosmetics" only for the "XYZ" brand,
         // while it stays visible for every other brand. Keys are "brand||category".
         let hiddenBrandCategories = new Set(readJson('lalitha_hidden_brand_categories', []));
         function bcKey(brand, cat) { return brand + '||' + cat; }
         function isCatHiddenForBrand(brand, cat) { return hiddenBrandCategories.has(bcKey(brand, cat)); }
-        function saveHiddenBrandCategories() { writeJson('lalitha_hidden_brand_categories', Array.from(hiddenBrandCategories)); pushCatalogToCloud(); }
+        function saveHiddenBrandCategories() { writeJson('lalitha_hidden_brand_categories', Array.from(hiddenBrandCategories)); if (!applyingRemoteSettings) pushSettingsToCloud(); }
         function toggleCategoryHiddenForBrand(brand, cat) {
             const key = bcKey(brand, cat);
             if (hiddenBrandCategories.has(key)) hiddenBrandCategories.delete(key);
@@ -3837,7 +3939,7 @@
         let hiddenVendorCategories = new Set(readJson('lalitha_hidden_vendor_categories', []));
         function vcKey(vendorId, cat) { return vendorId + '||' + cat; }
         function isCatHiddenForVendor(vendorId, cat) { return hiddenVendorCategories.has(vcKey(vendorId, cat)); }
-        function saveHiddenVendorCategories() { writeJson('lalitha_hidden_vendor_categories', Array.from(hiddenVendorCategories)); }
+        function saveHiddenVendorCategories() { writeJson('lalitha_hidden_vendor_categories', Array.from(hiddenVendorCategories)); if (!applyingRemoteSettings) pushSettingsToCloud(); }
         function toggleCategoryHiddenForVendor(vendorId, cat) {
             const key = vcKey(vendorId, cat);
             if (hiddenVendorCategories.has(key)) hiddenVendorCategories.delete(key); else hiddenVendorCategories.add(key);
@@ -4030,13 +4132,18 @@
             if (navigator.onLine) flushPendingQueue(false); // try to clear any queue left from last session
             window.addEventListener('online', () => flushPendingQueue(false));
 
-            if (navigator.onLine) syncCatalogFromCloud(); // pick up catalog edits made from the other branch
-            setInterval(() => {
+            if (navigator.onLine) { syncCatalogFromCloud(); syncSettingsFromCloud(); } // pick up catalog + vendor/hide-show edits made from the other branch
+            const pollRemoteChanges = () => {
                 // Skip while the catalog editor is open — openCatalogModal() already synced on
                 // open, and pulling again mid-edit could wipe out an unsaved edit in progress.
                 const catalogOpen = !document.getElementById('catalogModal').classList.contains('hidden');
-                if (navigator.onLine && !catalogOpen) syncCatalogFromCloud();
-            }, 60000); // keep polling so edits made on the other branch's phone show up without a manual reload
+                if (navigator.onLine && !catalogOpen) { syncCatalogFromCloud(); syncSettingsFromCloud(); }
+            };
+            setInterval(pollRemoteChanges, 20000); // ~15-20s: no push channel on this backend, so this is as close to instant as it gets
+            // Also sync the moment the app is brought back to the foreground — covers the
+            // common case of switching away and back without waiting for the next poll tick.
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pollRemoteChanges(); });
+            window.addEventListener('focus', pollRemoteChanges);
         }
 
         function openLogoPreview() {
@@ -4105,6 +4212,12 @@
             const onAudit = !document.getElementById('auditViewSection').classList.contains('hidden');
             document.getElementById('bottomActionBar').classList.toggle('hidden', !onAudit);
             setHeaderTitle('Packing Request', false);
+            // Convenience only: if this device is locked to a branch, default Source to
+            // it (still freely changeable) — doesn't touch Destination's own options.
+            const srcSel = document.getElementById('sourceBranch');
+            if (srcSel && lockedBranch && Array.from(srcSel.options).some(o => o.value === lockedBranch)) {
+                srcSel.value = lockedBranch;
+            }
         }
 
         function switchMode(mode) {
@@ -4327,8 +4440,8 @@
         }
 
         // ---------- Catalog manager / Settings ----------
-        const SETTINGS_VIEWS = ['menu', 'addItem', 'existing', 'categories', 'brands', 'vendors', 'vendorForm', 'excel', 'history'];
-        const SETTINGS_TITLES = { menu: 'Settings', addItem: 'Add Item', existing: 'Existing Items', categories: 'Categories', brands: 'Brands', vendors: 'Vendors', vendorForm: 'Vendor', excel: 'Import / Export Excel', history: 'Catalog History' };
+        const SETTINGS_VIEWS = ['menu', 'addItem', 'existing', 'categories', 'brands', 'branches', 'vendors', 'vendorForm', 'excel', 'history'];
+        const SETTINGS_TITLES = { menu: 'Settings', addItem: 'Add Item', existing: 'Existing Items', categories: 'Categories', brands: 'Brands', branches: 'Branches', vendors: 'Vendors', vendorForm: 'Vendor', excel: 'Import / Export Excel', history: 'Catalog History' };
 
         function switchSettingsView(view) {
             SETTINGS_VIEWS.forEach(v => {
@@ -4339,6 +4452,7 @@
             if (view === 'existing') renderCatalogEditorList();
             if (view === 'categories') { document.getElementById('newCategoryName').value = ''; document.getElementById('categorySearch').value = ''; renderCategoryManageList(); }
             if (view === 'brands') { document.getElementById('brandSearch').value = ''; renderBrandManageList(); }
+            if (view === 'branches') { document.getElementById('newBranchName').value = ''; renderBranchManageList(); renderDeviceBranchLockSelect(); }
             if (view === 'vendors') { document.getElementById('vendorSearch').value = ''; renderVendorManageList(); }
             if (view === 'history') renderCatalogHistoryList();
         }
@@ -4579,8 +4693,86 @@
             renderBrandManageList();
         }
 
+        // ---------- Branches (Gajuwaka / Kurmannapalem, editable) ----------
+        // The branch list and the device-lock choice both live only in this phone's
+        // localStorage — the list isn't pushed to the shared backend (same as the rest
+        // of Settings today), and the lock is explicitly per-device by design: two
+        // phones can each be locked to a different branch at the same time.
+        let branchList = readJson('lalitha_branches', ['Gajuwaka', 'Kurmannapalem']);
+        function saveBranchList() { writeJson('lalitha_branches', branchList); }
+        let lockedBranch = localStorage.getItem('lalitha_locked_branch') || '';
+        function setDeviceBranchLock(name) {
+            lockedBranch = name || '';
+            if (lockedBranch) localStorage.setItem('lalitha_locked_branch', lockedBranch);
+            else localStorage.removeItem('lalitha_locked_branch');
+            renderVendorBranchSelect();
+        }
+        function renderDeviceBranchLockSelect() {
+            const sel = document.getElementById('deviceBranchLockSelect');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Not locked — ask every time</option>' +
+                branchList.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+            sel.value = branchList.includes(lockedBranch) ? lockedBranch : '';
+        }
+        function renderBranchManageList() {
+            const container = document.getElementById('branchManageList');
+            if (!container) return;
+            const searchQ = '';
+            if (branchList.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-code-branch text-2xl text-slate-300 mb-2 block"></i>No branches yet — add one above.</div>`;
+                return;
+            }
+            container.innerHTML = branchList.map(b => `
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-slate-800 truncate">${esc(b)}</p>
+                        ${lockedBranch === b ? '<p class="text-[10px] font-semibold text-amber-600"><i class="fa-solid fa-lock mr-0.5"></i>Locked on this device</p>' : ''}
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="renameBranch('${esc(b)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteBranch('${esc(b)}')" class="text-red-600 bg-red-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function addNewBranch() {
+            const input = document.getElementById('newBranchName');
+            const name = input.value.trim();
+            if (!name) { alert("Please enter a branch name."); return; }
+            if (branchList.some(b => b.toLowerCase() === name.toLowerCase())) { alert(`"${name}" already exists as a branch.`); return; }
+            branchList.push(name);
+            saveBranchList();
+            input.value = '';
+            renderBranchManageList();
+            renderDeviceBranchLockSelect();
+            renderVendorBranchSelect();
+        }
+        function renameBranch(oldName) {
+            const newName = prompt(`Rename "${oldName}" to:`, oldName);
+            if (newName === null) return;
+            const trimmed = newName.trim();
+            if (!trimmed || trimmed === oldName) return;
+            if (branchList.some(b => b.toLowerCase() === trimmed.toLowerCase() && b !== oldName)) { alert(`"${trimmed}" already exists as a branch.`); return; }
+            branchList = branchList.map(b => b === oldName ? trimmed : b);
+            if (lockedBranch === oldName) setDeviceBranchLock(trimmed);
+            saveBranchList();
+            renderBranchManageList();
+            renderDeviceBranchLockSelect();
+            renderVendorBranchSelect();
+        }
+        function deleteBranch(name) {
+            if (branchList.length <= 1) { alert("At least one branch is required."); return; }
+            if (!confirm(`Delete the branch "${name}"?`)) return;
+            branchList = branchList.filter(b => b !== name);
+            saveBranchList();
+            if (lockedBranch === name) setDeviceBranchLock('');
+            renderBranchManageList();
+            renderDeviceBranchLockSelect();
+            renderVendorBranchSelect();
+        }
+
         // ---------- Vendors (name + mobile, for sending requirements directly) ----------
-        function saveVendors() { writeJson('lalitha_vendors', vendors); pushCatalogToCloud(); }
+        function saveVendors() { writeJson('lalitha_vendors', vendors); if (!applyingRemoteSettings) pushSettingsToCloud(); }
 
         function renderVendorManageList() {
             const container = document.getElementById('vendorManageList');
@@ -4933,8 +5125,34 @@
             document.getElementById('bottomActionBar').classList.add('hidden');
             document.getElementById('vendorRequirementSection').classList.remove('hidden');
             renderVendorSelectDropdown();
+            renderVendorBranchSelect();
             switchVendorMode('request');
             setHeaderTitle('Vendor Request', false);
+        }
+
+        // Branch picker for Vendor Request — locked-to-device branches auto-select and
+        // disable the dropdown; otherwise it remembers the last branch picked on this
+        // phone as a convenience default, but stays freely changeable.
+        function renderVendorBranchSelect() {
+            const sel = document.getElementById('vendorBranchSelect');
+            const note = document.getElementById('vendorBranchLockNote');
+            if (!sel) return;
+            sel.innerHTML = branchList.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+            const locked = branchList.includes(lockedBranch) ? lockedBranch : '';
+            if (locked) {
+                sel.value = locked;
+                sel.disabled = true;
+                if (note) note.classList.remove('hidden');
+            } else {
+                sel.disabled = false;
+                if (note) note.classList.add('hidden');
+                const last = localStorage.getItem('lalitha_last_vendor_branch');
+                sel.value = (last && branchList.includes(last)) ? last : (branchList[0] || '');
+            }
+        }
+        function onVendorBranchChange() {
+            const sel = document.getElementById('vendorBranchSelect');
+            if (sel && !sel.disabled) localStorage.setItem('lalitha_last_vendor_branch', sel.value);
         }
 
         function renderVendorSelectDropdown() {
@@ -5266,13 +5484,16 @@
             if (!vendor) { alert("Pick a vendor first — add one in Settings → Vendors if the list is empty."); return; }
             const merged = mergedVendorCart();
             if (merged.length === 0) { alert("Add at least one item to the cart first."); return; }
+            const branchSel = document.getElementById('vendorBranchSelect');
+            const branch = branchSel ? branchSel.value : '';
+            if (!branch) { alert("Pick a branch first."); return; }
             const staffRaw = document.getElementById('vendorStaffName').value.trim();
             const staff = fmtName(staffRaw) || 'Staff';
 
             const byCat = {};
             merged.forEach(i => { if (!byCat[i.cat]) byCat[i.cat] = []; byCat[i.cat].push(i); });
             let msg = `Request for ${vendor.name}\n`;
-            msg += `From: Lalitha Naturals · Staff: ${staff}\nDate: ${localDateStr(new Date())}\n\n`;
+            msg += `From: ${branch} · Staff: ${staff}\nDate: ${localDateStr(new Date())}\n\n`;
             Object.keys(byCat).forEach(cat => {
                 msg += `*${cat}*\n`;
                 byCat[cat].forEach(i => { msg += `• ${i.name} (${i.uom}) — Qty: ${i.reqQty}\n`; });
@@ -5280,7 +5501,7 @@
             });
             msg += `Please arrange the above at the earliest. Thank you.`;
 
-            vendorLedger.unshift({ id: 'vreq_' + Date.now(), time: Date.now(), vendorId: vendor.id, vendorName: vendor.name, mobile: vendor.mobile, staff, items: merged, message: msg });
+            vendorLedger.unshift({ id: 'vreq_' + Date.now(), time: Date.now(), vendorId: vendor.id, vendorName: vendor.name, mobile: vendor.mobile, branch, staff, items: merged, message: msg });
             saveVendorLedger();
 
             vendorCartLists[currentVendorId] = [];
@@ -5317,7 +5538,7 @@
                     <div class="flex justify-between items-start gap-2">
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-slate-800 truncate">${esc(entry.vendorName)}</p>
-                            <p class="text-[10px] text-slate-500">${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })} · Staff: ${esc(entry.staff)}</p>
+                            <p class="text-[10px] text-slate-500">${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}${entry.branch ? ' · ' + esc(entry.branch) : ''} · Staff: ${esc(entry.staff)}</p>
                         </div>
                         <span class="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200 shrink-0">${entry.items.length} item${entry.items.length === 1 ? '' : 's'}</span>
                     </div>
@@ -5342,7 +5563,7 @@
             pdf.text(`Vendor Request — ${entry.vendorName}`, marginX, y);
             y += 6;
             pdf.setFontSize(9); pdf.setFont(undefined, 'normal');
-            pdf.text(`${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}  ·  Staff: ${entry.staff || '-'}  ·  Mobile: ${entry.mobile || '-'}`, marginX, y);
+            pdf.text(`${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}${entry.branch ? '  ·  ' + entry.branch : ''}  ·  Staff: ${entry.staff || '-'}  ·  Mobile: ${entry.mobile || '-'}`, marginX, y);
             y += 7;
             pdf.setFontSize(9); pdf.setFont(undefined, 'bold');
             pdf.text('Item', marginX, y);
@@ -5503,10 +5724,11 @@
             // Pull the latest catalog (in case the other branch changed something) before
             // this device makes its own edits, so nobody overwrites someone else's change.
             if (navigator.onLine) {
-                await syncCatalogFromCloud();
+                await Promise.all([syncCatalogFromCloud(), syncSettingsFromCloud()]);
                 if (!document.getElementById('catalogModal').classList.contains('hidden')) {
                     sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
                     renderCatalogEditorList();
+                    renderAddItemFormAuxFields();
                 }
             }
         }
