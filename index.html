@@ -438,9 +438,9 @@
     </div>
 
     <!-- Settings Modal -->
-    <div id="catalogModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800 text-white px-4 py-3.5 flex justify-between items-center">
+    <div id="catalogModal" class="fixed inset-0 bg-slate-50 z-50 hidden flex flex-col">
+        <div class="bg-white w-full h-full flex flex-col">
+            <div class="bg-slate-800 text-white px-4 py-3.5 flex justify-between items-center shrink-0" style="padding-top: max(0.875rem, env(safe-area-inset-top));">
                 <h3 class="font-bold text-sm flex items-center gap-2">
                     <button id="settingsBackBtn" onclick="switchSettingsView('menu')" class="hidden text-white px-1.5 -ml-1 text-base"><i class="fa-solid fa-arrow-left"></i></button>
                     <i class="fa-solid fa-gear text-emerald-400 text-base"></i> <span id="settingsTitle">Settings</span>
@@ -696,7 +696,7 @@
                                 <select id="newVendorItemCategorySelect" onchange="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
                             </div>
                             <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
-                            <div id="newVendorItemPicker" class="max-h-40 overflow-y-auto space-y-1 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
+                            <div id="newVendorItemPicker" class="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
                             <p class="text-[10px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
                             <div id="newVendorItemChips" class="flex flex-wrap gap-1.5"></div>
                         </div>
@@ -4844,6 +4844,15 @@
                 <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle text-slate-200'}"></i>
             </button>`;
         }
+        // Compact, side-by-side variant of pickerRow for a 2-column grid (used by the
+        // item picker, which can have hundreds of entries — a single full-width column
+        // wasted half the available width and forced a tiny scroll box).
+        function pickerChip(label, picked, onClick) {
+            return `<button type="button" onclick="${onClick}" class="min-w-0 flex items-center justify-between gap-1.5 px-2.5 py-2.5 rounded-lg text-left border ${picked ? 'bg-cyan-50 border-cyan-300' : 'bg-white border-slate-200'}">
+                <span class="text-[11px] font-semibold text-slate-700 truncate">${label}</span>
+                <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle text-slate-200'} text-xs shrink-0"></i>
+            </button>`;
+        }
 
         function renderNewVendorBrandChips() {
             const container = document.getElementById('newVendorBrandChips');
@@ -4926,14 +4935,14 @@
                 });
             }
             if (results.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
+                container.innerHTML = '<p class="col-span-2 text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
             } else {
                 const shown = results.slice(0, newVendorItemPickerLimit);
                 let html = shown.map(item =>
-                    pickerRow(`${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span>`, newVendorSelectedItemIds.has(String(item.id)), `toggleNewVendorItemChip('${esc(item.id)}')`)
+                    pickerChip(`${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span>`, newVendorSelectedItemIds.has(String(item.id)), `toggleNewVendorItemChip('${esc(item.id)}')`)
                 ).join('');
                 if (results.length > shown.length) {
-                    html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="w-full text-center py-2 text-[11px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
+                    html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="col-span-2 text-center py-2 text-[11px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
                 }
                 container.innerHTML = html;
             }
@@ -4963,14 +4972,15 @@
         function vendorStepIdPart(step) {
             return step === 'brands' ? 'Brands' : step === 'categories' ? 'Categories' : 'Items';
         }
+        // True accordion — opening one step closes the other two, so the page doesn't
+        // keep growing taller as you go through Brands → Categories → Items (each one
+        // just replaces the last instead of stacking on top of it).
         function toggleVendorFormStep(step) {
             const part = vendorStepIdPart(step);
             const body = document.getElementById(`vendorFormStep${part}Body`);
-            const chevron = document.getElementById(`vendorFormStep${part}Chevron`);
             if (!body) return;
             const expanding = body.classList.contains('hidden');
-            body.classList.toggle('hidden', !expanding);
-            if (chevron) chevron.classList.toggle('rotate-180', expanding);
+            ['brands', 'categories', 'items'].forEach(s => setVendorFormStepExpanded(s, expanding && s === step));
         }
         function setVendorFormStepExpanded(step, expanded) {
             const part = vendorStepIdPart(step);
@@ -5061,9 +5071,10 @@
             renderNewVendorCategoryChips();
             renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
-            setVendorFormStepExpanded('brands', true);
-            setVendorFormStepExpanded('categories', newVendorSelectedCategories.size > 0);
-            setVendorFormStepExpanded('items', newVendorSelectedItemIds.size > 0);
+            // Open whichever step actually has picks (most specific first) — only one at
+            // a time, so the page doesn't open with all three stacked open at once.
+            const openStep = newVendorSelectedItemIds.size > 0 ? 'items' : (newVendorSelectedCategories.size > 0 ? 'categories' : 'brands');
+            ['brands', 'categories', 'items'].forEach(s => setVendorFormStepExpanded(s, s === openStep));
             const titleEl = document.getElementById('vendorFormTitle');
             const saveBtn = document.getElementById('vendorFormSaveBtn');
             if (titleEl) titleEl.textContent = 'Edit Vendor';
@@ -5808,8 +5819,24 @@
                                     <input type="text" id="edit_name_${item.id}" value="${esc(item.name)}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
                                     <input type="text" id="edit_uom_${item.id}" value="${esc(item.uom)}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
                                 </div>
-                                <div class="grid grid-cols-4 gap-2">
-                                    <input type="text" id="edit_brand_${item.id}" value="${esc(item.brand || DEFAULT_BRAND)}" placeholder="Brand" class="col-span-3 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
+                                        <select id="edit_cat_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                            ${Object.keys(inventoryData).map(c => `<option value="${esc(c)}" ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
+                                        <input type="text" id="edit_brand_${item.id}" value="${esc(item.brand || DEFAULT_BRAND)}" placeholder="Brand" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                                    <select id="edit_vendor_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                        <option value="">No vendor</option>
+                                        ${vendors.map(v => `<option value="${esc(v.id)}" ${Array.isArray(v.itemIds) && v.itemIds.some(x => String(x) === String(item.id)) ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}
+                                    </select>
                                 </div>
                                 <div class="flex justify-between items-center pt-1">
                                     <div class="flex items-center gap-1.5">
@@ -5852,6 +5879,12 @@
             }
         }
 
+        // Which vendor (if any) currently lists this item under itemIds — there's meant
+        // to be at most one at a time from the UI, so the first match is "the" vendor.
+        function findVendorForItem(id) {
+            return vendors.find(v => Array.isArray(v.itemIds) && v.itemIds.some(x => String(x) === String(id))) || null;
+        }
+
         // True if the edit form's fields differ from what's currently saved for this item.
         function catalogItemFormChanged(id) {
             const found = findCatalogItemById(id);
@@ -5860,12 +5893,17 @@
             const nameEl = document.getElementById(`edit_name_${id}`);
             const uomEl = document.getElementById(`edit_uom_${id}`);
             const brandEl = document.getElementById(`edit_brand_${id}`);
+            const catEl = document.getElementById(`edit_cat_${id}`);
+            const vendorEl = document.getElementById(`edit_vendor_${id}`);
             const minEl = document.getElementById(`edit_min_${id}`);
             if (!codeEl || !nameEl || !uomEl || !minEl) return false;
+            const currentVendor = findVendorForItem(id);
             return codeEl.value.trim() !== found.item.code ||
                 nameEl.value.trim() !== found.item.name ||
                 uomEl.value.trim() !== found.item.uom ||
                 (brandEl && brandEl.value.trim() !== (found.item.brand || DEFAULT_BRAND)) ||
+                (catEl && catEl.value !== found.cat) ||
+                (vendorEl && vendorEl.value !== (currentVendor ? currentVendor.id : '')) ||
                 parseInt(minEl.value, 10) !== found.item.min;
         }
 
@@ -5877,9 +5915,14 @@
             const uom = document.getElementById(`edit_uom_${id}`).value.trim();
             const brandEl = document.getElementById(`edit_brand_${id}`);
             const brand = brandEl ? (brandEl.value.trim() || DEFAULT_BRAND) : (found.item.brand || DEFAULT_BRAND);
+            const catEl = document.getElementById(`edit_cat_${id}`);
+            const newCat = catEl ? catEl.value : found.cat;
+            const vendorEl = document.getElementById(`edit_vendor_${id}`);
+            const newVendorId = vendorEl ? vendorEl.value : '';
             const min = parseInt(document.getElementById(`edit_min_${id}`).value, 10);
 
             if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Please check your inputs!"); return; }
+            if (!newCat || !inventoryData[newCat]) { alert("Please pick a category."); return; }
             if (code !== found.item.code) {
                 const dup = codeInUse(code, id);
                 if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return; }
@@ -5887,11 +5930,37 @@
 
             if (!catalogItemFormChanged(id)) { toggleEditItem(id); return; } // nothing changed, just close
 
-            if (!confirm(`Save changes to "${found.item.name}"?\n\n${found.item.code} → ${code}\n${found.item.name} → ${name}\n${found.item.uom} → ${uom}\nBrand ${found.item.brand || DEFAULT_BRAND} → ${brand}\nMin ${found.item.min} → ${min}`)) return;
+            const currentVendor = findVendorForItem(id);
+            const catChanged = newCat !== found.cat;
+            const vendorChanged = newVendorId !== (currentVendor ? currentVendor.id : '');
+            let confirmMsg = `Save changes to "${found.item.name}"?\n\n${found.item.code} → ${code}\n${found.item.name} → ${name}\n${found.item.uom} → ${uom}\nBrand ${found.item.brand || DEFAULT_BRAND} → ${brand}\nMin ${found.item.min} → ${min}`;
+            if (catChanged) confirmMsg += `\nCategory ${found.cat} → ${newCat}`;
+            if (vendorChanged) confirmMsg += `\nVendor ${currentVendor ? currentVendor.name : 'None'} → ${newVendorId ? (vendors.find(v => v.id === newVendorId) || {}).name : 'None'}`;
+            if (!confirm(confirmMsg)) return;
 
-            inventoryData[found.cat][found.index] = { ...found.item, code, name, uom, brand, min };
+            const updatedItem = { ...found.item, code, name, uom, brand, min };
+
+            if (catChanged) {
+                inventoryData[found.cat].splice(found.index, 1);
+                inventoryData[newCat].push(updatedItem);
+            } else {
+                inventoryData[found.cat][found.index] = updatedItem;
+            }
+
+            if (vendorChanged) {
+                if (currentVendor) currentVendor.itemIds = currentVendor.itemIds.filter(x => String(x) !== String(id));
+                if (newVendorId) {
+                    const nv = vendors.find(v => v.id === newVendorId);
+                    if (nv) {
+                        if (!Array.isArray(nv.itemIds)) nv.itemIds = [];
+                        nv.itemIds.push(String(id));
+                    }
+                }
+                saveVendors();
+            }
+
             saveInventory();
-            logCatalogHistory('Edited item', `${found.item.name} (${found.item.uom}) — ${found.item.code}→${code}, ${found.item.name}→${name}, ${found.item.uom}→${uom}, Brand ${found.item.brand || DEFAULT_BRAND}→${brand}, Min ${found.item.min}→${min}`);
+            logCatalogHistory('Edited item', `${found.item.name} (${found.item.uom}) — ${found.item.code}→${code}, ${found.item.name}→${name}, ${found.item.uom}→${uom}, Brand ${found.item.brand || DEFAULT_BRAND}→${brand}, Category ${found.cat}→${newCat}, Min ${found.item.min}→${min}`);
             renderCatalogEditorList();
             renderBrandFilter();
             alert("Item updated successfully!");
