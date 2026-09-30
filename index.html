@@ -700,9 +700,7 @@
                             <i id="vendorFormStepItemsChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
                         </button>
                         <div id="vendorFormStepItemsBody" class="hidden px-3.5 pb-3.5 space-y-2">
-                            <div class="flex gap-1.5">
-                                <select id="newVendorItemCategorySelect" onchange="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
-                            </div>
+                            <p id="newVendorItemScopeNote" class="hidden text-[10px] font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-lg px-2.5 py-1.5"></p>
                             <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
                             <div class="flex justify-end gap-3">
                                 <button type="button" onclick="selectAllVendorItems()" class="text-[11px] font-bold text-cyan-700">Select all shown</button>
@@ -4869,7 +4867,10 @@
         function renderNewVendorBrandChips() {
             const container = document.getElementById('newVendorBrandChips');
             if (!container) return;
-            const brands = allBrandsInCatalog();
+            // A brand hidden in Settings shouldn't be offered here either — same rule as
+            // the main catalog view. A brand already picked for this vendor stays picked
+            // even if it's later hidden; it just can't be picked fresh from this list.
+            const brands = allBrandsInCatalog().filter(b => !hiddenBrands.has(b) || newVendorSelectedBrands.has(b));
             if (brands.length === 0) {
                 container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No brands yet — add an item first.</p>';
                 return;
@@ -4885,18 +4886,16 @@
             newVendorItemPickerLimit = 150;
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
-            renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
             // Cascade: picking a brand jumps straight to its categories, so you go
             // brand → categories → items → Save, then repeat for the next brand.
             if (adding) ['brands', 'categories', 'items'].forEach(s => setVendorFormStepExpanded(s, s === 'categories'));
         }
         function selectAllVendorBrands() {
-            allBrandsInCatalog().forEach(b => newVendorSelectedBrands.add(b));
+            allBrandsInCatalog().filter(b => !hiddenBrands.has(b)).forEach(b => newVendorSelectedBrands.add(b));
             newVendorItemPickerLimit = 150;
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
-            renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
         }
         function clearAllVendorBrands() {
@@ -4904,17 +4903,21 @@
             newVendorItemPickerLimit = 150;
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
-            renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
         }
 
         // Categories that actually exist for the currently picked brand(s) — or every
-        // category in the catalog if no brand is picked yet.
+        // category in the catalog if no brand is picked yet. Drops anything hidden in
+        // Settings (globally, or specifically for one of the picked brands) — same as
+        // brands, a category already picked stays picked even if hidden afterward.
         function categoriesForSelectedVendorBrands() {
             const brands = Array.from(newVendorSelectedBrands);
-            return Object.keys(inventoryData).filter(cat =>
-                inventoryData[cat].some(item => brands.length === 0 || brands.includes(item.brand || DEFAULT_BRAND))
-            ).sort((a, b) => a.localeCompare(b));
+            return Object.keys(inventoryData).filter(cat => {
+                if (newVendorSelectedCategories.has(cat)) return true;
+                if (hiddenCategories.has(cat)) return false;
+                if (brands.length && brands.every(b => isCatHiddenForBrand(b, cat))) return false;
+                return inventoryData[cat].some(item => brands.length === 0 || brands.includes(item.brand || DEFAULT_BRAND));
+            }).sort((a, b) => a.localeCompare(b));
         }
 
         function renderNewVendorCategoryChips() {
@@ -4937,8 +4940,6 @@
             if (!adding) newVendorSelectedCategories.delete(cat); else newVendorSelectedCategories.add(cat);
             newVendorItemPickerLimit = 150;
             renderNewVendorCategoryChips();
-            const catSel = document.getElementById('newVendorItemCategorySelect');
-            if (catSel && newVendorSelectedCategories.size === 1) catSel.value = Array.from(newVendorSelectedCategories)[0];
             renderVendorFormItemPicker();
             // Cascade: picking a category jumps straight to its items.
             if (adding) ['brands', 'categories', 'items'].forEach(s => setVendorFormStepExpanded(s, s === 'items'));
@@ -4956,23 +4957,18 @@
             renderVendorFormItemPicker();
         }
 
-        function renderVendorFormItemCategorySelect() {
-            const sel = document.getElementById('newVendorItemCategorySelect');
-            if (!sel) return;
-            const cats = categoriesForSelectedVendorBrands();
-            sel.innerHTML = `<option value="">All categories</option>` + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
-        }
-
         // The scrollable list of individual items to tap and add — filtered by the picked
-        // brand(s)/category and by the search box.
+        // brand(s) and by the search box. If any categories were picked in step 2, the
+        // list is automatically scoped to just those — no separate category filter here,
+        // since that would just repeat the choice already made one step up.
         let newVendorItemPickerLimit = 150;
         function vendorItemPickerResults() {
             const brands = Array.from(newVendorSelectedBrands);
-            const catFilter = document.getElementById('newVendorItemCategorySelect') ? document.getElementById('newVendorItemCategorySelect').value : '';
+            const catsPicked = Array.from(newVendorSelectedCategories);
             const q = (document.getElementById('newVendorItemSearch') ? document.getElementById('newVendorItemSearch').value : '').trim().toLowerCase();
             let results = [];
             for (const cat in inventoryData) {
-                if (catFilter && cat !== catFilter) continue;
+                if (catsPicked.length && !catsPicked.includes(cat)) continue;
                 inventoryData[cat].forEach(item => {
                     if (item.hidden) return;
                     const b = item.brand || DEFAULT_BRAND;
@@ -4986,6 +4982,16 @@
         function renderVendorFormItemPicker() {
             const container = document.getElementById('newVendorItemPicker');
             if (!container) return;
+            const scopeNote = document.getElementById('newVendorItemScopeNote');
+            if (scopeNote) {
+                const cats = Array.from(newVendorSelectedCategories);
+                if (cats.length) {
+                    scopeNote.classList.remove('hidden');
+                    scopeNote.innerHTML = `<i class="fa-solid fa-filter mr-1"></i>Showing items only from: ${cats.map(esc).join(', ')}`;
+                } else {
+                    scopeNote.classList.add('hidden');
+                }
+            }
             const results = vendorItemPickerResults();
             if (results.length === 0) {
                 container.innerHTML = '<p class="col-span-2 text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
@@ -5072,7 +5078,6 @@
             if (searchEl) searchEl.value = '';
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
-            renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
             const titleEl = document.getElementById('vendorFormTitle');
             const saveBtn = document.getElementById('vendorFormSaveBtn');
@@ -5134,7 +5139,6 @@
             if (searchEl) searchEl.value = '';
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
-            renderVendorFormItemCategorySelect();
             renderVendorFormItemPicker();
             // Open whichever step actually has picks (most specific first) — only one at
             // a time, so the page doesn't open with all three stacked open at once.
