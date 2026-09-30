@@ -18,12 +18,20 @@
 // Bump this version string any time you redeploy new shell files (index.html,
 // icons, local library files, etc.) so old caches from previous versions get
 // cleaned up automatically and everyone picks up the fresh files.
-const CACHE_VERSION = 'lalitha-shell-v1';
+//
+// v2 (2026-10-01): bumped to flush out a stale cached index.html that could
+// get served whenever a network fetch was slow/flaky - this was the actual
+// cause of a phone showing an old app-logic bug (an outdated sync timeout
+// message) even though the live file on GitHub had already been fixed. See
+// also: index.html requests are now NEVER served from cache at all (below).
+const CACHE_VERSION = 'lalitha-shell-v2';
 
 // Only the genuinely static, rarely-changing "app shell" files go here.
 // These are same-origin files that sit next to this service worker.
+// index.html is deliberately NOT listed here - it's handled separately
+// above as "never cache, never serve from cache" since it's the file that
+// contains all the app's logic and changes often.
 const SHELL_FILES = [
-    './index.html',
     './manifest.json',
     './icon-192.png',
     './icon-512.png',
@@ -123,8 +131,25 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // The HTML document itself (index.html / a plain navigation to "/") is
+    // special-cased: NEVER serve it from cache, not even as an offline
+    // fallback. This is the file that contains all the app's JS logic, and
+    // this app gets fixed/updated often - serving a stale cached copy of it
+    // (which is exactly what caused a real bug: a phone silently running
+    // days-old sync logic while looking like it had the latest fixes) is
+    // worse than a plain "you're offline" error. Icons/manifest/library
+    // files below are still safe to fall back to since they rarely change.
+    const isHtmlDocument = request.mode === 'navigate' ||
+        (request.destination === 'document') ||
+        url.pathname.endsWith('/index.html') ||
+        url.pathname === '/' || url.pathname.endsWith('/');
+    if (isHtmlDocument) {
+        event.respondWith(fetch(request));
+        return;
+    }
+
     // Rule #2: network-first, cache as a last-resort fallback for same-origin
-    // static app-shell files (index.html, icons, local JS libraries, etc.)
+    // static app-shell files (icons, local JS libraries, etc. - not the HTML).
     event.respondWith((async () => {
         try {
             // Always try the real network first so users get fresh content.
