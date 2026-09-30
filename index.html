@@ -8042,6 +8042,20 @@
         })();
 
         window.onload = initApp;
+
+        // Register the service worker (enables a proper "Install app" prompt on
+        // Chrome/Android instead of just a bookmark shortcut). This runs
+        // independently on window 'load' and never blocks or delays initApp()
+        // or the splash screen above - if it fails, the app still works
+        // completely normally, it just won't offer a home-screen install.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => {
+                    // Non-fatal: app still works fully without a service worker, this only affects "Add to Home Screen"/install prompts
+                    console.warn('Service worker registration failed (app still works normally):', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
