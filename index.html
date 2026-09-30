@@ -47,18 +47,20 @@
         /* Skeleton loading placeholders (Ledger Sheets etc.) */
         .skeleton-block { background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: skeletonPulse 1.4s ease-in-out infinite; border-radius: 0.5rem; }
         @keyframes skeletonPulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        /* Long-press rows: kill native text-selection highlight + iOS copy/lookup callout
-           so the custom long-press gesture isn't fighting the browser's own one. Scrolling
-           stays intact — "manipulation" only drops double-tap-zoom/300ms delay, not panning.
-           The number input inside these rows manages its own selection regardless of an
-           ancestor's user-select, so it's unaffected and still focuses/edits normally. */
-        .no-select-longpress {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-            touch-action: manipulation;
+        /* Swipe-to-reveal item settings: the gear button sits behind the row content,
+           revealed as the content is dragged rightward (see attachSwipeReveal()). The
+           wrapper clips the gear button until then and keeps the row's own rounded
+           corners on the outside. */
+        .swipe-row-wrap { position: relative; overflow: hidden; border-radius: 0.75rem; }
+        .swipe-row-gear {
+            position: absolute; inset: 0; left: 0; width: 64px; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            background: #334155; color: #fff; font-size: 1.05rem; border: 0;
         }
+        /* Explicit z-index (rather than relying on DOM order) so the row content always
+           hit-tests above the gear button while hidden behind it (translateX(0)), and the
+           gear becomes tappable only once the content has actually slid away from it. */
+        .swipe-row-content { position: relative; z-index: 2; will-change: transform; }
         /* Swipe-back page-slide transition: outgoing view slides out to the right while
            the incoming view slides in from the left, mirroring the swipe's own direction.
            Applied briefly by handleBackGesture()/navigateBack helpers, then cleaned up. */
@@ -69,6 +71,40 @@
         @media (prefers-reduced-motion: reduce) {
             .view-slide-back-out, .view-slide-back-in { animation: none !important; }
         }
+        /* Splash / logo intro shown once on initial page load (see #appSplash below).
+           Pure CSS animation, gated purely visual — never blocks app init underneath. */
+        #appSplash {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(160deg, #047857 0%, #065f46 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 14px;
+            transition: opacity 300ms ease, visibility 300ms ease;
+        }
+        #appSplash.splash-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        #appSplash .splash-logo-box {
+            width: 92px; height: 92px; border-radius: 1.25rem; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            animation: splashLogoPop 620ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        #appSplash .splash-logo-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        #appSplash .splash-brand {
+            text-align: center; color: #fff;
+            animation: splashBrandIn 500ms ease-out 320ms both;
+        }
+        #appSplash .splash-brand h2 { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; margin: 0; }
+        #appSplash .splash-brand p { font-size: 11px; color: #a7f3d0; margin: 2px 0 0; }
+        @keyframes splashLogoPop {
+            0% { transform: scale(0.6); opacity: 0; }
+            60% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes splashBrandIn {
+            0% { transform: translateY(6px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #appSplash .splash-logo-box, #appSplash .splash-brand { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
         @media print {
             @page { size: A4; margin: 4mm; }
             body { margin: 0; padding: 0; background: #fff; width: 210mm; }
@@ -77,6 +113,17 @@
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-28" onclick="closeAllDropdowns(event)">
+
+    <!-- Splash: brand/logo intro shown once on initial page load only (not on internal
+         navigation). Purely a visual overlay — app content underneath renders/loads
+         normally in parallel; see hideAppSplash() near initApp(). -->
+    <div id="appSplash" aria-hidden="true">
+        <div class="splash-logo-box"><img src="./logo.png" alt=""></div>
+        <div class="splash-brand">
+            <h2>LALITHA NATURALS</h2>
+            <p>Branch Transfer</p>
+        </div>
+    </div>
 
     <!-- Toast: brief non-blocking feedback -->
     <div id="appToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] text-center"></div>
@@ -896,6 +943,47 @@
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end gap-2">
                 <button onclick="closeReceiveCheckModal()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">Cancel</button>
                 <button onclick="confirmMarkReceived()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Confirm Received</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Single-item settings popup, opened by swiping an item row and tapping its gear
+         icon — edits only that one item, using the same save logic as the Existing Items
+         editor (see commitCatalogItemEdit). -->
+    <div id="itemSettingsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
+                <h3 id="itemSettingsPopupTitle" class="font-bold text-xs flex items-center gap-2 pr-2"><i class="fa-solid fa-gear text-emerald-400"></i> Item Settings</h3>
+                <button onclick="closeItemSettingsPopup()" class="text-white text-lg font-bold px-2 shrink-0">&times;</button>
+            </div>
+            <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-2.5 text-xs">
+                <div class="grid grid-cols-4 gap-2">
+                    <input type="text" id="itemSettingsPopupCode" placeholder="Code" class="col-span-1 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center">
+                    <input type="text" id="itemSettingsPopupName" placeholder="Name" class="col-span-2 bg-white border border-slate-300 rounded-lg p-2 font-semibold">
+                    <input type="text" id="itemSettingsPopupUom" placeholder="UOM" class="col-span-1 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
+                        <select id="itemSettingsPopupCat" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
+                        <input type="text" id="itemSettingsPopupBrand" placeholder="Brand" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                    <select id="itemSettingsPopupVendor" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"></select>
+                </div>
+                <div class="flex items-center gap-1.5 pt-1">
+                    <span class="text-[10px] text-slate-500 font-bold">Min (reorder qty):</span>
+                    <input type="number" id="itemSettingsPopupMin" class="w-16 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center">
+                </div>
+            </div>
+            <div class="bg-white border-t border-slate-200 p-3 flex justify-end gap-2">
+                <button onclick="closeItemSettingsPopup()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">Cancel</button>
+                <button onclick="saveItemSettingsPopup()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Save</button>
             </div>
         </div>
     </div>
@@ -4284,6 +4372,7 @@
                 ['successModal', closeSuccessModalManually],
                 ['vendorCartPreviewModal', closeVendorCartPreview],
                 ['previewModal', closeStaffCheckModal],
+                ['itemSettingsModal', closeItemSettingsPopup],
             ];
             for (const [id, fn] of modalCloseMap) {
                 if (isOpen(id)) { fn(); return; }
@@ -4485,53 +4574,155 @@
             return auditMode === 'available' ? Math.max(0, item.min - v) : Math.max(0, v);
         }
 
-        // Long-press an item row to jump straight to editing it in Settings, instead of
-        // hunting for it in the Existing Items list. Cancelled on scroll (movement past a
-        // small threshold) or on release before the hold completes, so it never interferes
-        // with the normal tap-to-focus-quantity-input behavior.
-        function attachLongPress(el, itemId) {
-            if (!el) return;
-            let timer = null, startX = 0, startY = 0, fired = false;
-            const THRESHOLD = 10, HOLD_MS = 550;
-            const clear = () => { if (timer) { clearTimeout(timer); timer = null; } };
-            el.addEventListener('touchstart', (e) => {
-                if (!e.touches || !e.touches.length) return;
-                fired = false;
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                clear();
-                timer = setTimeout(() => {
-                    fired = true;
-                    openItemEditFromRow(itemId);
-                }, HOLD_MS);
-            }, { passive: true });
-            el.addEventListener('touchmove', (e) => {
-                if (!timer || !e.touches || !e.touches.length) return;
-                const dx = e.touches[0].clientX - startX;
-                const dy = e.touches[0].clientY - startY;
-                if (Math.sqrt(dx * dx + dy * dy) > THRESHOLD) clear();
-            }, { passive: true });
-            el.addEventListener('touchend', clear, { passive: true });
-            el.addEventListener('touchcancel', clear, { passive: true });
-            // Belt-and-braces on top of the .no-select-longpress CSS (user-select: none +
-            // -webkit-touch-callout: none): some browsers still fire a "contextmenu" event
-            // after a long press even with those set, which would pop the native
-            // copy/lookup menu. Suppressing it here doesn't affect scrolling or the tap-to-
-            // focus-quantity-input behavior, which never triggers a contextmenu.
-            el.addEventListener('contextmenu', (e) => e.preventDefault());
+        // ---------- Swipe-to-reveal item settings ----------
+        // Dragging an item row rightward reveals a gear button behind it (anchored to
+        // that one row) instead of the old long-press, which fought iOS's native text-
+        // selection/copy callout on real phones. Tapping the gear opens a small popup
+        // scoped to just that item (see openItemSettingsPopup) instead of the full
+        // Existing Items list.
+        const SWIPE_REVEAL_WIDTH = 64;     // px the row shifts to reveal the gear button (matches .swipe-row-gear width)
+        const SWIPE_REVEAL_MAX = 88;       // small rubber-band overdrag cap
+        const SWIPE_REVEAL_THRESHOLD = 45; // px of drag needed to snap open on release
+        const SWIPE_MOVE_THRESHOLD = 8;    // px before we decide horizontal-drag vs. vertical-scroll
+        const SWIPE_EDGE_GUARD = 24;       // touches starting this close to the left edge are left to the page swipe-back gesture
+
+        let activeSwipeReveal = null; // { contentEl } — the one row currently showing its gear button
+
+        function resetSwipeReveal(contentEl) {
+            if (!contentEl) return;
+            contentEl.style.transition = 'transform 180ms ease';
+            contentEl.style.transform = 'translateX(0px)';
+            contentEl.dataset.revealed = '0';
         }
 
-        // Opens Settings → Existing Items with the given item's edit form expanded and
-        // scrolled into view.
-        async function openItemEditFromRow(itemId) {
+        function closeActiveSwipeReveal() {
+            if (activeSwipeReveal) {
+                resetSwipeReveal(activeSwipeReveal.contentEl);
+                activeSwipeReveal = null;
+            }
+        }
+
+        // wrapEl clips the gear button until revealed; contentEl is the actual row that
+        // gets dragged/translated. itemId is only used to open the right item's popup.
+        function attachSwipeReveal(wrapEl, contentEl, itemId) {
+            if (!wrapEl || !contentEl) return;
+            let startX = 0, startY = 0, dx = 0, dragging = false, decided = false, horizontal = false;
+
+            contentEl.addEventListener('touchstart', (e) => {
+                if (!e.touches || e.touches.length !== 1) return;
+                const t = e.touches[0];
+                // Don't compete with the page-level edge swipe-back gesture — leave touches
+                // that start right at the screen's left edge alone entirely.
+                if (t.clientX <= SWIPE_EDGE_GUARD) { dragging = false; return; }
+                startX = t.clientX; startY = t.clientY; dx = 0;
+                dragging = true; decided = false; horizontal = false;
+                contentEl.style.transition = 'none';
+            }, { passive: true });
+
+            contentEl.addEventListener('touchmove', (e) => {
+                if (!dragging || !e.touches || !e.touches.length) return;
+                const t = e.touches[0];
+                const curDx = t.clientX - startX;
+                const curDy = t.clientY - startY;
+                if (!decided) {
+                    if (Math.abs(curDx) < SWIPE_MOVE_THRESHOLD && Math.abs(curDy) < SWIPE_MOVE_THRESHOLD) return;
+                    decided = true;
+                    horizontal = Math.abs(curDx) > Math.abs(curDy);
+                    // Vertical intent — this is a normal list scroll, hand it straight back
+                    // to the browser and stop tracking this gesture as a swipe.
+                    if (!horizontal) { dragging = false; return; }
+                }
+                if (!horizontal) return;
+                e.preventDefault(); // we've claimed this gesture as a horizontal swipe
+                const alreadyOpen = contentEl.dataset.revealed === '1';
+                let raw = curDx + (alreadyOpen ? SWIPE_REVEAL_WIDTH : 0);
+                raw = Math.max(0, Math.min(raw, SWIPE_REVEAL_MAX));
+                dx = raw;
+                contentEl.style.transform = `translateX(${raw}px)`;
+            }, { passive: false });
+
+            const finish = () => {
+                if (!dragging) return;
+                dragging = false;
+                if (!horizontal) return;
+                contentEl.style.transition = 'transform 180ms ease';
+                if (dx >= SWIPE_REVEAL_THRESHOLD) {
+                    contentEl.style.transform = `translateX(${SWIPE_REVEAL_WIDTH}px)`;
+                    if (contentEl.dataset.revealed !== '1') hapticTap();
+                    contentEl.dataset.revealed = '1';
+                    if (activeSwipeReveal && activeSwipeReveal.contentEl !== contentEl) resetSwipeReveal(activeSwipeReveal.contentEl);
+                    activeSwipeReveal = { contentEl };
+                } else {
+                    resetSwipeReveal(contentEl);
+                    if (activeSwipeReveal && activeSwipeReveal.contentEl === contentEl) activeSwipeReveal = null;
+                }
+            };
+            contentEl.addEventListener('touchend', finish, { passive: true });
+            contentEl.addEventListener('touchcancel', () => {
+                dragging = false;
+                resetSwipeReveal(contentEl);
+                if (activeSwipeReveal && activeSwipeReveal.contentEl === contentEl) activeSwipeReveal = null;
+            }, { passive: true });
+
+            // Tapping the row again while its gear is revealed puts it back, rather than
+            // requiring another swipe.
+            contentEl.addEventListener('click', () => {
+                if (contentEl.dataset.revealed === '1') {
+                    resetSwipeReveal(contentEl);
+                    if (activeSwipeReveal && activeSwipeReveal.contentEl === contentEl) activeSwipeReveal = null;
+                }
+            });
+        }
+
+        // ---------- Single-item settings popup (opened from the swipe gear button) ----------
+        let itemSettingsPopupId = null;
+
+        function openItemSettingsPopup(itemId) {
+            const found = findCatalogItemById(itemId);
+            if (!found) return;
+            const item = found.item;
+            itemSettingsPopupId = itemId;
             hapticTap();
-            await openCatalogModal();
-            switchSettingsView('existing');
-            const viewDiv = document.getElementById(`view_mode_${itemId}`);
-            const editDiv = document.getElementById(`edit_mode_${itemId}`);
-            if (editDiv && editDiv.classList.contains('hidden')) toggleEditItem(itemId);
-            const row = document.getElementById(`catalog_row_${itemId}`);
-            if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            document.getElementById('itemSettingsPopupTitle').innerText = `${item.name} — Item Settings`;
+            document.getElementById('itemSettingsPopupCode').value = item.code;
+            document.getElementById('itemSettingsPopupName').value = item.name;
+            document.getElementById('itemSettingsPopupUom').value = item.uom;
+            document.getElementById('itemSettingsPopupBrand').value = item.brand || DEFAULT_BRAND;
+            document.getElementById('itemSettingsPopupMin').value = item.min;
+
+            const catSel = document.getElementById('itemSettingsPopupCat');
+            catSel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}" ${c === found.cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
+
+            const currentVendor = findVendorForItem(itemId);
+            const vendorSel = document.getElementById('itemSettingsPopupVendor');
+            vendorSel.innerHTML = `<option value="">No vendor</option>` +
+                vendors.map(v => `<option value="${esc(v.id)}" ${currentVendor && currentVendor.id === v.id ? 'selected' : ''}>${esc(v.name)}</option>`).join('');
+
+            document.getElementById('itemSettingsModal').classList.remove('hidden');
+        }
+
+        function closeItemSettingsPopup() {
+            document.getElementById('itemSettingsModal').classList.add('hidden');
+            itemSettingsPopupId = null;
+        }
+
+        function saveItemSettingsPopup() {
+            if (itemSettingsPopupId === null) return;
+            const fields = {
+                code: document.getElementById('itemSettingsPopupCode').value.trim(),
+                name: document.getElementById('itemSettingsPopupName').value.trim(),
+                uom: document.getElementById('itemSettingsPopupUom').value.trim(),
+                brand: document.getElementById('itemSettingsPopupBrand').value.trim() || DEFAULT_BRAND,
+                cat: document.getElementById('itemSettingsPopupCat').value,
+                vendorId: document.getElementById('itemSettingsPopupVendor').value,
+                min: parseInt(document.getElementById('itemSettingsPopupMin').value, 10),
+            };
+            const ok = commitCatalogItemEdit(itemSettingsPopupId, fields, { confirmFirst: false, refreshRowLists: true });
+            if (ok) {
+                hapticTap();
+                closeItemSettingsPopup();
+            }
         }
 
         function renderItems(filter = "") {
@@ -4594,28 +4785,35 @@
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
 
                 return `
-                    <div id="row_${item.id}" class="no-select-longpress bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
-                                <span id="need_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
-                                ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
-                                ${showBrandTag ? `<span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
-                                <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
+                    <div class="swipe-row-wrap">
+                        <button type="button" onclick="openItemSettingsPopup(${item.id})" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
+                        <div id="row_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
+                                    <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                    <span id="need_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
+                                    ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
+                                    ${showBrandTag ? `<span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
+                                    <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
+                                </div>
+                                <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
+                                <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
                             </div>
-                            <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
-                            <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
-                        </div>
-                        <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
-                            <button onclick="updateStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
-                            <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
-                            <button onclick="updateStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform">+</button>
+                            <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
+                                <button onclick="updateStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
+                                <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
+                                <button onclick="updateStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform">+</button>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
-            itemsToDisplay.forEach(item => attachLongPress(document.getElementById(`row_${item.id}`), item.id));
+            activeSwipeReveal = null;
+            itemsToDisplay.forEach(item => {
+                const rowEl = document.getElementById(`row_${item.id}`);
+                attachSwipeReveal(rowEl ? rowEl.parentElement : null, rowEl, item.id);
+            });
         }
 
         // Updates one item row in place (input value + Need badge) instead of rebuilding
@@ -4637,7 +4835,9 @@
             badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " +
                 (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
             const row = document.getElementById(`row_${id}`);
-            if (row) row.className = "bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
+            // Keep "swipe-row-content" — dropping it here would strip the position/z-index
+            // that keeps this row stacked above its (hidden-until-swiped) gear button.
+            if (row) row.className = "swipe-row-content bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
             const countedBadge = document.getElementById(`counted_${id}`);
             if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
         }
@@ -5598,27 +5798,34 @@
                 const inputDisplayVal = hasCount ? vendorShelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
                 return `
-                    <div id="vrow_${item.id}" class="no-select-longpress bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
-                                <span id="vneed_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
-                                ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
-                                <span id="vcounted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-cyan-700"><i class="fa-solid fa-circle-check"></i></span>
+                    <div class="swipe-row-wrap">
+                        <button type="button" onclick="openItemSettingsPopup(${item.id})" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
+                        <div id="vrow_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
+                                    <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                    <span id="vneed_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
+                                    ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
+                                    <span id="vcounted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-cyan-700"><i class="fa-solid fa-circle-check"></i></span>
+                                </div>
+                                <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
+                                <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
                             </div>
-                            <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
-                            <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
-                        </div>
-                        <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
-                            <button onclick="updateVendorStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
-                            <input type="number" inputmode="numeric" min="0" id="vstock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setVendorStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
-                            <button onclick="updateVendorStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-cyan-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-cyan-700 active:scale-90 transition-transform">+</button>
+                            <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
+                                <button onclick="updateVendorStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
+                                <input type="number" inputmode="numeric" min="0" id="vstock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setVendorStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
+                                <button onclick="updateVendorStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-cyan-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-cyan-700 active:scale-90 transition-transform">+</button>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
-            itemsToDisplay.forEach(item => attachLongPress(document.getElementById(`vrow_${item.id}`), item.id));
+            activeSwipeReveal = null;
+            itemsToDisplay.forEach(item => {
+                const rowEl = document.getElementById(`vrow_${item.id}`);
+                attachSwipeReveal(rowEl ? rowEl.parentElement : null, rowEl, item.id);
+            });
         }
 
         function patchVendorRow(id) {
@@ -5634,7 +5841,9 @@
             badge.innerHTML = `Need: ${need}`;
             badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " + (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
             const row = document.getElementById(`vrow_${id}`);
-            if (row) row.className = "bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
+            // Keep "swipe-row-content" — dropping it here would strip the position/z-index
+            // that keeps this row stacked above its (hidden-until-swiped) gear button.
+            if (row) row.className = "swipe-row-content bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
             const countedBadge = document.getElementById(`vcounted_${id}`);
             if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
         }
@@ -6232,36 +6441,45 @@
                 parseInt(minEl.value, 10) !== found.item.min;
         }
 
-        function saveCatalogItem(id) {
+        // Shared by saveCatalogItem (the full Existing Items editor) and
+        // saveItemSettingsPopup (the per-row swipe-to-reveal popup), so every edit path
+        // goes through one place — validates, checks for a duplicate code, optionally
+        // confirms, applies the change to inventoryData/vendors, saves + syncs, and logs
+        // it. Returns true on success (including a no-op "nothing changed" close), false
+        // if validation failed or the user cancelled the confirm dialog.
+        function commitCatalogItemEdit(id, fields, opts = {}) {
+            const { confirmFirst = true, refreshRowLists = false } = opts;
             const found = findCatalogItemById(id);
-            if (!found) return;
-            const code = document.getElementById(`edit_code_${id}`).value.trim();
-            const name = document.getElementById(`edit_name_${id}`).value.trim();
-            const uom = document.getElementById(`edit_uom_${id}`).value.trim();
-            const brandEl = document.getElementById(`edit_brand_${id}`);
-            const brand = brandEl ? (brandEl.value.trim() || DEFAULT_BRAND) : (found.item.brand || DEFAULT_BRAND);
-            const catEl = document.getElementById(`edit_cat_${id}`);
-            const newCat = catEl ? catEl.value : found.cat;
-            const vendorEl = document.getElementById(`edit_vendor_${id}`);
-            const newVendorId = vendorEl ? vendorEl.value : '';
-            const min = parseInt(document.getElementById(`edit_min_${id}`).value, 10);
+            if (!found) return false;
 
-            if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Please check your inputs!"); return; }
-            if (!newCat || !inventoryData[newCat]) { alert("Please pick a category."); return; }
+            const code = (fields.code || '').trim();
+            const name = (fields.name || '').trim();
+            const uom = (fields.uom || '').trim();
+            const brand = (fields.brand || '').trim() || DEFAULT_BRAND;
+            const newCat = fields.cat;
+            const newVendorId = fields.vendorId || '';
+            const min = fields.min;
+
+            if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Please check your inputs!"); return false; }
+            if (!newCat || !inventoryData[newCat]) { alert("Please pick a category."); return false; }
             if (code !== found.item.code) {
                 const dup = codeInUse(code, id);
-                if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return; }
+                if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return false; }
             }
-
-            if (!catalogItemFormChanged(id)) { toggleEditItem(id); return; } // nothing changed, just close
 
             const currentVendor = findVendorForItem(id);
             const catChanged = newCat !== found.cat;
             const vendorChanged = newVendorId !== (currentVendor ? currentVendor.id : '');
-            let confirmMsg = `Save changes to "${found.item.name}"?\n\n${found.item.code} → ${code}\n${found.item.name} → ${name}\n${found.item.uom} → ${uom}\nBrand ${found.item.brand || DEFAULT_BRAND} → ${brand}\nMin ${found.item.min} → ${min}`;
-            if (catChanged) confirmMsg += `\nCategory ${found.cat} → ${newCat}`;
-            if (vendorChanged) confirmMsg += `\nVendor ${currentVendor ? currentVendor.name : 'None'} → ${newVendorId ? (vendors.find(v => v.id === newVendorId) || {}).name : 'None'}`;
-            if (!confirm(confirmMsg)) return;
+            const nothingChanged = code === found.item.code && name === found.item.name && uom === found.item.uom &&
+                brand === (found.item.brand || DEFAULT_BRAND) && !catChanged && !vendorChanged && min === found.item.min;
+            if (nothingChanged) return true;
+
+            if (confirmFirst) {
+                let confirmMsg = `Save changes to "${found.item.name}"?\n\n${found.item.code} → ${code}\n${found.item.name} → ${name}\n${found.item.uom} → ${uom}\nBrand ${found.item.brand || DEFAULT_BRAND} → ${brand}\nMin ${found.item.min} → ${min}`;
+                if (catChanged) confirmMsg += `\nCategory ${found.cat} → ${newCat}`;
+                if (vendorChanged) confirmMsg += `\nVendor ${currentVendor ? currentVendor.name : 'None'} → ${newVendorId ? (vendors.find(v => v.id === newVendorId) || {}).name : 'None'}`;
+                if (!confirm(confirmMsg)) return false;
+            }
 
             const updatedItem = { ...found.item, code, name, uom, brand, min };
 
@@ -6288,7 +6506,39 @@
             logCatalogHistory('Edited item', `${found.item.name} (${found.item.uom}) — ${found.item.code}→${code}, ${found.item.name}→${name}, ${found.item.uom}→${uom}, Brand ${found.item.brand || DEFAULT_BRAND}→${brand}, Category ${found.cat}→${newCat}, Min ${found.item.min}→${min}`);
             renderCatalogEditorList();
             renderBrandFilter();
-            alert("Item updated successfully!");
+
+            // The full editor refreshes the Packing/Vendor lists only when its modal
+            // closes (closeCatalogModal); the swipe popup opens over those lists directly,
+            // so it needs them updated immediately.
+            if (refreshRowLists) {
+                renderTabs();
+                if (document.getElementById('searchBox')) renderItems(document.getElementById('searchBox').value);
+                if (document.getElementById('vendorRequirementSection') && !document.getElementById('vendorRequirementSection').classList.contains('hidden')) {
+                    renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
+                }
+            }
+
+            return true;
+        }
+
+        function saveCatalogItem(id) {
+            const found = findCatalogItemById(id);
+            if (!found) return;
+            if (!catalogItemFormChanged(id)) { toggleEditItem(id); return; } // nothing changed, just close
+
+            const code = document.getElementById(`edit_code_${id}`).value.trim();
+            const name = document.getElementById(`edit_name_${id}`).value.trim();
+            const uom = document.getElementById(`edit_uom_${id}`).value.trim();
+            const brandEl = document.getElementById(`edit_brand_${id}`);
+            const brand = brandEl ? (brandEl.value.trim() || DEFAULT_BRAND) : (found.item.brand || DEFAULT_BRAND);
+            const catEl = document.getElementById(`edit_cat_${id}`);
+            const cat = catEl ? catEl.value : found.cat;
+            const vendorEl = document.getElementById(`edit_vendor_${id}`);
+            const vendorId = vendorEl ? vendorEl.value : '';
+            const min = parseInt(document.getElementById(`edit_min_${id}`).value, 10);
+
+            const ok = commitCatalogItemEdit(id, { code, name, uom, brand, cat, vendorId, min }, { confirmFirst: true });
+            if (ok) alert("Item updated successfully!");
         }
 
         // ---------- Excel import / export ----------
@@ -7122,6 +7372,7 @@
             document.querySelectorAll('[id^="dropdown_"]').forEach(el => el.classList.add('hidden'));
             const staffList = document.getElementById('staffDropdownList');
             if (staffList) staffList.classList.add('hidden');
+            closeActiveSwipeReveal();
         }
 
         // ---------- Ledger insights ----------
@@ -7545,6 +7796,21 @@
             btn.onclick = () => { clearTimeout(undoToastTimer); hide(); if (onUndo) onUndo(); };
             undoToastTimer = setTimeout(hide, 5000);
         }
+
+        // Splash/logo intro: purely a visual overlay on initial page load, timed on its
+        // own — independent of initApp()/window.onload so it never delays (or is delayed
+        // by) actual app startup/data loading happening underneath it. Runs once per real
+        // page load only; internal navigation (showHomeSection etc.) never touches this.
+        (function () {
+            const splash = document.getElementById('appSplash');
+            if (!splash) return;
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const holdMs = reduceMotion ? 150 : 1100;
+            setTimeout(() => {
+                splash.classList.add('splash-hide');
+                setTimeout(() => splash.remove(), 320);
+            }, holdMs);
+        })();
 
         window.onload = initApp;
     </script>
