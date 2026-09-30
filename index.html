@@ -1018,7 +1018,56 @@
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), timeoutMs);
             const opts = Object.assign({}, options, { signal: controller.signal });
-            return fetch(url, opts).finally(() => clearTimeout(timer));
+            // Tag the timeout onto AbortErrors so classifySyncError_() can report exactly
+            // how long the request actually waited before giving up, instead of just "timed out".
+            return fetch(url, opts).catch(err => {
+                if (err && err.name === 'AbortError') err._timeoutMs = timeoutMs;
+                throw err;
+            }).finally(() => clearTimeout(timer));
+        }
+
+        // ---------- Sync error diagnostics ----------
+        // Turns whatever fetch/JSON actually threw (or a non-ok response) into a short,
+        // genuinely distinguishing technical detail — not another generic phrase — so a
+        // screenshot of a failure gives enough to diagnose the real cause instead of
+        // guessing again. See task notes: AbortError = timeout, TypeError "Failed to
+        // fetch"/NetworkError = real network/CORS-level failure before any response,
+        // non-ok response = reached the server but got a bad status, SyntaxError =
+        // response came back but wasn't valid JSON (HTML error page, sign-in redirect,
+        // truncated body), anything else = its own name + message as a fallback.
+        function classifySyncError_(err, res) {
+            if (err && err.name === 'AbortError') {
+                const secs = err._timeoutMs ? Math.round(err._timeoutMs / 1000) : '?';
+                return `Timed out after ${secs}s`;
+            }
+            if (err && (err instanceof TypeError || /Failed to fetch|NetworkError/i.test(err.message || ''))) {
+                return `NetworkError: ${err.message || 'Failed to fetch'}`;
+            }
+            if (err && err.name === 'SyntaxError') {
+                return 'Unexpected response: not valid data (not JSON)';
+            }
+            if (res && !res.ok) {
+                return `Server error: HTTP ${res.status}`;
+            }
+            if (err) {
+                return `${err.name || 'Error'}: ${err.message || String(err)}`;
+            }
+            return 'Unexpected response: not valid data';
+        }
+
+        // Stores the most recent sync failure's real detail (with timestamp, which sync
+        // function it came from, the exact URL, and GET/POST) so it's available for a
+        // future screenshot/inspection, and logs it to the console for live debugging.
+        function recordSyncErrorDetail_(context, method, url, err, res) {
+            const detail = classifySyncError_(err, res);
+            // `context` (e.g. "Settings pull", "Catalog push") already names the direction,
+            // so the label is just "<context> failed — <detail>" without repeating it.
+            const label = `${context} failed — ${detail}`;
+            console.error('[Sync]', label, '| url:', url, '| error:', err || res);
+            try {
+                writeJson('lalitha_last_sync_error_detail', { label, detail, context, method, url, time: Date.now() });
+            } catch (e) { /* localStorage full/unavailable — diagnostics are best-effort */ }
+            return { label, detail };
         }
 
         // Bump this when catalog names/codes are corrected in code so phones can migrate.
@@ -3990,17 +4039,18 @@
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'catalog', action: 'save_catalog', catalog: inventoryData, version: CATALOG_VERSION })
-                }, 20000).catch(() => {});
-            } catch (e) { /* ignore */ }
+                }, 20000).catch(err => { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, err); });
+            } catch (e) { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, e); }
         }
 
         // Best-effort pull of the shared catalog on load, so an edit made on one branch's
         // device shows up on the other. Falls back to the local copy on any error (old
         // script deployment, offline, etc.) rather than blocking startup.
         async function syncCatalogFromCloud() {
+            const url = GOOGLE_SCRIPT_URL + '?type=catalog';
             try {
-                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=catalog', {}, 28000);
-                if (!res.ok) { recordSyncFailure(); return false; }
+                const res = await fetchWithTimeout(url, {}, 28000);
+                if (!res.ok) { recordSyncErrorDetail_('Catalog pull', 'GET', url, null, res); recordSyncFailure(); return false; }
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
                     recordSyncSuccess(); // reached the backend and got a valid catalog reply
@@ -4019,7 +4069,7 @@
                     return true;
                 }
                 return false;
-            } catch (e) { recordSyncFailure(); /* old script deployment or offline — keep local catalog */ return false; }
+            } catch (e) { recordSyncErrorDetail_('Catalog pull', 'GET', url, e); recordSyncFailure(); /* old script deployment or offline — keep local catalog */ return false; }
         }
 
         // Best-effort push of vendors + all the hide/show toggles to the shared backend,
@@ -4058,8 +4108,8 @@
                         settings: settingsPayload,
                         version: Date.now()
                     })
-                }, 20000).then(() => verifySettingsPush_(settingsPayload)).catch(() => {});
-            } catch (e) { /* ignore */ }
+                }, 20000).then(() => verifySettingsPush_(settingsPayload)).catch(err => { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, err); });
+            } catch (e) { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, e); }
         }
 
         // Reads settings straight back from the cloud and checks that every vendor we
@@ -4072,14 +4122,15 @@
         // not as a confirmed failure, so this never cries wolf.
         async function verifySettingsPush_(pushedSettings, attempt) {
             attempt = attempt || 1;
+            const url = GOOGLE_SCRIPT_URL + '?type=settings';
             try {
                 // Give Apps Script a moment to commit. A single check shortly after the
                 // write can race a slower commit and look like a failure when it actually
                 // just hadn't landed yet — so on a first-attempt mismatch, wait longer and
                 // check once more before concluding it really failed.
                 await new Promise(resolve => setTimeout(resolve, attempt === 1 ? 1500 : 2500));
-                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=settings', {}, 28000);
-                if (!res.ok) return;
+                const res = await fetchWithTimeout(url, {}, 28000);
+                if (!res.ok) { recordSyncErrorDetail_('Settings push verify', 'GET', url, null, res); return; }
                 const data = await res.json();
                 const cloudVendors = (data && data.settings && Array.isArray(data.settings.vendors)) ? data.settings.vendors : null;
                 if (!cloudVendors) return; // old deployment with no settings support yet — nothing to compare
@@ -4087,12 +4138,13 @@
                 const missing = (pushedSettings.vendors || []).filter(v => !cloudVendorIds.has(String(v.id)));
                 if (missing.length) {
                     if (attempt < 2) { verifySettingsPush_(pushedSettings, attempt + 1); return; }
-                    showToast(`⚠ Vendor sync may have failed to save (${missing.map(v => v.name).join(', ')}). Check your connection and try again.`);
+                    const { detail } = recordSyncErrorDetail_('Settings push verify', 'GET', url, new Error('vendor(s) not found after push'));
+                    showToast(`⚠ Vendor sync may have failed to save (${missing.map(v => v.name).join(', ')}). Check your connection and try again. (${detail})`);
                     recordSyncFailure();
                 } else {
                     recordSyncSuccess(); // confirmed the push actually landed
                 }
-            } catch (e) { /* can't verify right now — stay silent, don't false-alarm */ }
+            } catch (e) { recordSyncErrorDetail_('Settings push verify', 'GET', url, e); /* can't verify right now — stay silent, don't false-alarm */ }
         }
 
         // Best-effort pull of vendors + hide/show toggles. Called on Settings-open, on a
@@ -4100,9 +4152,10 @@
         // so "instant" here means within one poll interval (~15-20s), not literally live.
         let applyingRemoteSettings = false;
         async function syncSettingsFromCloud() {
+            const url = GOOGLE_SCRIPT_URL + '?type=settings';
             try {
-                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=settings', {}, 28000);
-                if (!res.ok) { recordSyncFailure(); return false; }
+                const res = await fetchWithTimeout(url, {}, 28000);
+                if (!res.ok) { recordSyncErrorDetail_('Settings pull', 'GET', url, null, res); recordSyncFailure(); return false; }
                 const data = await res.json();
                 const s = data && data.settings;
                 if (!s || typeof s !== 'object') return false;
@@ -4133,7 +4186,7 @@
                 }
                 if (document.getElementById('settingsView_branches') && !document.getElementById('settingsView_branches').classList.contains('hidden') && typeof renderBranchManageList === 'function') renderBranchManageList();
                 return true;
-            } catch (e) { applyingRemoteSettings = false; recordSyncFailure(); /* old script deployment or offline — keep local settings */ return false; }
+            } catch (e) { applyingRemoteSettings = false; recordSyncErrorDetail_('Settings pull', 'GET', url, e); recordSyncFailure(); /* old script deployment or offline — keep local settings */ return false; }
         }
 
         // ---------- Brand / Category filters + hide/show ----------
@@ -7130,7 +7183,7 @@
                         writeJson('lalitha_cached_sheets', sheets.filter(s => s && Array.isArray(s.items)));
                         return true;
                     }
-                } catch (e) { /* try again */ }
+                } catch (e) { recordSyncErrorDetail_('Ledger confirm', 'GET', GOOGLE_SCRIPT_URL, e); /* try again */ }
             }
             return false;
         }
@@ -7243,7 +7296,12 @@
             const failed = syncCheckedThisSession && readJson('lalitha_last_sync_failed', false);
             let text, failState;
             if (failed) {
-                text = "Sync failed — tap to retry";
+                // Append the real technical detail from the most recent failed attempt so a
+                // screenshot of this banner is enough to diagnose the cause — without cluttering
+                // the message with jargon in normal (successful) use, since this only shows when
+                // something has actually gone wrong.
+                const errDetail = readJson('lalitha_last_sync_error_detail', null);
+                text = errDetail && errDetail.detail ? `Sync failed — tap to retry (${errDetail.detail})` : "Sync failed — tap to retry";
                 failState = true;
             } else if (!last) {
                 text = "Not synced yet";
@@ -7294,12 +7352,19 @@
                     writeJson('lalitha_last_sync_failed', true);
                     syncCheckedThisSession = true;
                     updateLastSyncedText();
-                    showToast('⚠ Sync failed — check your connection and try again.');
+                    // syncCatalogFromCloud()/syncSettingsFromCloud() already recorded the
+                    // specific reason (whichever failed last) via recordSyncErrorDetail_ —
+                    // surface it here rather than the generic phrase.
+                    const errDetail = readJson('lalitha_last_sync_error_detail', null);
+                    showToast(errDetail && errDetail.detail
+                        ? `⚠ Sync failed — check your connection and try again. (${errDetail.detail})`
+                        : '⚠ Sync failed — check your connection and try again.');
                 }
             } catch (e) {
                 writeJson('lalitha_last_sync_failed', true);
                 syncCheckedThisSession = true;
-                showToast('⚠ Sync failed — check your connection and try again.');
+                const { detail } = recordSyncErrorDetail_('Manual sync', 'GET', GOOGLE_SCRIPT_URL, e);
+                showToast(`⚠ Sync failed — check your connection and try again. (${detail})`);
             } finally {
                 isManualSyncing = false;
                 if (icon) icon.classList.remove('fa-spin');
@@ -7318,11 +7383,14 @@
                     body: JSON.stringify({ type: 'transit', action: 'save_transit', transit })
                 }, 20000);
             } catch (err) {
-                return { sent: false, reason: 'network' };
+                const { detail } = recordSyncErrorDetail_('Transit push', 'POST', GOOGLE_SCRIPT_URL, err);
+                return { sent: false, reason: 'network', detail };
             }
             const checkFn = predicate || (s => s && s.id === transit.id && Array.isArray(s.items) && s.items.length === transit.items.length);
             const ok = await confirmSaved(checkFn);
-            return ok ? { sent: true } : { sent: false, reason: 'unverified' };
+            if (ok) return { sent: true };
+            const errDetail = readJson('lalitha_last_sync_error_detail', null);
+            return { sent: false, reason: 'unverified', detail: errDetail && errDetail.context === 'Ledger confirm' ? errDetail.detail : null };
         }
 
         async function dispatchTransitSheet() {
@@ -7364,9 +7432,10 @@
                 // phone and let it retry automatically (or via the Ledger's Retry button)
                 // instead of making the staff member babysit a spinner or lose the count.
                 enqueuePending(newTransit);
-                const msg = result.reason === 'network'
+                let msg = result.reason === 'network'
                     ? "No internet connection right now. Your entries are saved on this phone and will send automatically once you're back online — or tap \"Pending\" in the Ledger to retry now."
                     : "Could not confirm the record reached Google Sheets. Your entries are saved on this phone and will retry automatically (this will not create a duplicate) — or tap \"Pending\" in the Ledger to retry now.";
+                if (result.detail) msg += `\n\n(Technical detail: ${result.detail})`;
                 alert(msg);
             }
 
@@ -7482,6 +7551,7 @@
 
             try {
                 const response = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {}, 28000);
+                if (!response.ok) { const { detail } = recordSyncErrorDetail_('Ledger pull', 'GET', GOOGLE_SCRIPT_URL, null, response); recordSyncFailure(); container.innerHTML = cachedOk.length === 0 ? `<div class="text-center py-6 text-red-500 text-sm">Failed to load records. Check connection. (${detail})</div>` : container.innerHTML; return; }
                 const sheets = await response.json();
                 if (!Array.isArray(sheets)) throw new Error("Unexpected server reply");
                 const clean = sheets.filter(s => s && Array.isArray(s.items));
@@ -7489,8 +7559,10 @@
                 recordSyncSuccess();
                 renderTransitList(clean, targetDateStr);
             } catch (err) {
+                const { detail } = recordSyncErrorDetail_('Ledger pull', 'GET', GOOGLE_SCRIPT_URL, err);
+                recordSyncFailure();
                 if (cachedOk.length === 0) {
-                    container.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to load records. Check connection.</div>`;
+                    container.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to load records. Check connection. (${detail})</div>`;
                 }
             }
         }
@@ -7718,9 +7790,10 @@
 
             if (!result.sent) {
                 enqueuePending(updated);
-                const msg = result.reason === 'network'
+                let msg = result.reason === 'network'
                     ? "No internet connection right now. This will be marked Received automatically once you're back online — or tap \"Pending\" to retry now."
                     : "Could not confirm the status change yet. It's saved on this phone and will retry automatically — or tap \"Pending\" to retry now.";
+                if (result.detail) msg += `\n\n(Technical detail: ${result.detail})`;
                 alert(msg);
             }
             renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value);
@@ -7739,7 +7812,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'transit', action: 'delete_transit', transitId: id })
                 }, 20000);
-            } catch (err) { alert("Error deleting record."); }
+            } catch (err) {
+                const { detail } = recordSyncErrorDetail_('Delete transit', 'POST', GOOGLE_SCRIPT_URL, err);
+                alert(`Error deleting record. (${detail})`);
+            }
         }
 
         // ---------- Share / Print ----------
