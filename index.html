@@ -3997,24 +3997,64 @@
         // Best-effort push of vendors + all the hide/show toggles to the shared backend,
         // kept separate from the catalog blob (see GoogleAppsScript-Full.gs). Debounced
         // slightly isn't needed — these are rare, deliberate edits, not per-keystroke.
+        //
+        // IMPORTANT: this fetch runs with mode:'no-cors' (needed so the browser doesn't
+        // block the request over CORS — Apps Script web apps don't return CORS headers).
+        // The tradeoff is that a 'no-cors' fetch's promise ALWAYS resolves as if it
+        // succeeded, even if the server actually threw an exception or rejected the
+        // request — the app has zero visibility into whether the write really landed.
+        // A concrete way that can happen here: everything under settings (every vendor's
+        // full item-picks list + every hide/show toggle) is stored as ONE Script
+        // Properties value, and Apps Script caps a single property value at ~9KB. As
+        // more vendors/items get assigned over time that blob grows, and the vendor that
+        // tips it over the limit fails to save with NO error shown anywhere — it just
+        // silently doesn't take. To catch that (and any other silent failure, e.g. a
+        // stale/un-redeployed script), verifySettingsPush_() below reads the settings
+        // straight back with a normal fetch (not no-cors, so we CAN see failures) a
+        // moment later and warns the user if what we just tried to save isn't there.
         function pushSettingsToCloud() {
+            const settingsPayload = {
+                vendors,
+                hiddenBrands: Array.from(hiddenBrands),
+                hiddenCategories: Array.from(hiddenCategories),
+                hiddenBrandCategories: Array.from(hiddenBrandCategories),
+                hiddenVendorCategories: Array.from(hiddenVendorCategories)
+            };
             try {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: 'settings', action: 'save_settings',
-                        settings: {
-                            vendors,
-                            hiddenBrands: Array.from(hiddenBrands),
-                            hiddenCategories: Array.from(hiddenCategories),
-                            hiddenBrandCategories: Array.from(hiddenBrandCategories),
-                            hiddenVendorCategories: Array.from(hiddenVendorCategories)
-                        },
+                        settings: settingsPayload,
                         version: Date.now()
                     })
-                }).catch(() => {});
+                }).then(() => verifySettingsPush_(settingsPayload)).catch(() => {});
             } catch (e) { /* ignore */ }
+        }
+
+        // Reads settings straight back from the cloud and checks that every vendor we
+        // just tried to save (by id) is actually present. If any are missing, the push
+        // silently failed server-side (most likely: the combined settings blob is over
+        // Apps Script's ~9KB per-property limit, or the deployed script is out of date)
+        // — warn the user so it doesn't go unnoticed for hours like a silent failure
+        // otherwise would. Never throws — a failed verification read (offline, old
+        // deployment with no 'settings' support) is treated the same as "can't tell",
+        // not as a confirmed failure, so this never cries wolf.
+        async function verifySettingsPush_(pushedSettings) {
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1200)); // give Apps Script a moment to commit
+                const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
+                if (!res.ok) return;
+                const data = await res.json();
+                const cloudVendors = (data && data.settings && Array.isArray(data.settings.vendors)) ? data.settings.vendors : null;
+                if (!cloudVendors) return; // old deployment with no settings support yet — nothing to compare
+                const cloudVendorIds = new Set(cloudVendors.map(v => String(v.id)));
+                const missing = (pushedSettings.vendors || []).filter(v => !cloudVendorIds.has(String(v.id)));
+                if (missing.length) {
+                    showToast(`⚠ Vendor sync may have failed to save (${missing.map(v => v.name).join(', ')}). Check your connection and try again.`);
+                }
+            } catch (e) { /* can't verify right now — stay silent, don't false-alarm */ }
         }
 
         // Best-effort pull of vendors + hide/show toggles. Called on Settings-open, on a
@@ -6460,7 +6500,18 @@
             const newVendorId = fields.vendorId || '';
             const min = fields.min;
 
-            if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Please check your inputs!"); return false; }
+            // NOTE: UOM is intentionally NOT required here. A large share of the catalog
+            // (hundreds of items, mostly the "Ln ..." in-house items) was seeded with a
+            // blank UOM and has always had one. Hard-requiring it used to silently block
+            // saving ANY change (e.g. just bumping Min) on those items with a generic
+            // "Please check your inputs!" alert that didn't say what was wrong. Code,
+            // Name and Min are the fields that actually matter for the app to function,
+            // so only those are required; UOM can be filled in later if/when known.
+            const missing = [];
+            if (!code) missing.push('Code');
+            if (!name) missing.push('Name');
+            if (isNaN(min) || min < 0) missing.push('Min (must be a number, 0 or higher)');
+            if (missing.length) { alert(`Please fix the following before saving:\n\n${missing.join('\n')}`); return false; }
             if (!newCat || !inventoryData[newCat]) { alert("Please pick a category."); return false; }
             if (code !== found.item.code) {
                 const dup = codeInUse(code, id);
@@ -6812,12 +6863,14 @@
 
         let torchTrack = null;
         let torchOn = false;
+        let scanHandled = false; // set true the instant a scan in this session has been acted on
 
         function openScannerModal(mode = 'search') {
             if (typeof ZXing === 'undefined') { alert("Scanner library did not load. Check your internet connection and refresh."); return; }
             scannerTargetMode = mode;
             lastScannedCode = null;
             lastScanTime = 0;
+            scanHandled = false; // guard so a burst of duplicate ZXing decode events only acts once per scan
             torchTrack = null;
             torchOn = false;
             document.getElementById('torchToggleBtn').classList.add('hidden');
@@ -6871,54 +6924,53 @@
             lastScannedCode = scannedCode;
             lastScanTime = now;
 
+            // ZXing can report several rapid duplicate decode events for the same read while
+            // the camera is still pointed at the code. Once we've acted on a scan in this
+            // session (which closes the modal), ignore anything further until it's reopened.
+            if (scanHandled) return;
+            scanHandled = true;
+
+            // Recognize the code instantly: close the scanner right away (reusing the same
+            // cleanup as a manual close, so the camera/stream is always released), drop the
+            // value into whatever field this scan was for, and give a quick non-blocking
+            // confirmation — no extra tap required.
+            closeScannerModal();
+            hapticTap();
+
             if (scannerTargetMode === 'newItem') {
-                document.getElementById('newItemCode').value = scannedCode;
-                closeScannerModal();
+                const el = document.getElementById('newItemCode');
+                if (el) { el.value = scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
+                showToast(`Scanned: ${scannedCode}`);
             } else if (scannerTargetMode === 'catalogSearch') {
                 const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
+                const el = document.getElementById('catalogSearch');
+                if (el) { el.value = scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); }
+                renderCatalogEditorList();
                 if (match) {
-                    // Found it — close the scanner and drop straight into editing this item.
-                    closeScannerModal();
-                    document.getElementById('catalogSearch').value = scannedCode;
-                    renderCatalogEditorList();
                     const row = document.getElementById(`catalog_row_${match.id}`);
                     if (row) row.scrollIntoView({ block: 'center' });
                     toggleEditItem(match.id);
+                    showToast(`Scanned: ${match.name}`);
                 } else {
-                    document.getElementById('catalogSearch').value = scannedCode;
-                    renderCatalogEditorList();
-                    const statusEl = document.getElementById('scanStatus');
-                    if (statusEl) {
-                        statusEl.innerHTML = `<span style="color:#dc2626;font-weight:bold;">No item matches ${esc(scannedCode)}</span> — ready to scan again`;
-                    }
+                    showToast(`Scanned: ${scannedCode} — no match found`);
                 }
             } else if (scannerTargetMode.startsWith('edit_')) {
                 const inputEl = document.getElementById(scannerTargetMode.replace('edit_', 'edit_code_'));
-                if (inputEl) inputEl.value = scannedCode;
-                closeScannerModal();
+                if (inputEl) { inputEl.value = scannedCode; inputEl.dispatchEvent(new Event('input', { bubbles: true })); inputEl.dispatchEvent(new Event('change', { bubbles: true })); }
+                showToast(`Scanned: ${scannedCode}`);
             } else if (scannerTargetMode === 'vendorSearch') {
-                // Vendor Requirement's search — keep scanning, same as the main audit flow.
-                document.getElementById('vendorSearchBox').value = scannedCode;
+                const el = document.getElementById('vendorSearchBox');
+                if (el) { el.value = scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); }
                 renderVendorItems(scannedCode);
                 const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
-                const statusEl = document.getElementById('scanStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = match
-                        ? `<span style="color:#059669;font-weight:bold;">&#10003; ${esc(match.name)} (${esc(match.uom)})</span> — ready for next item`
-                        : `<span style="color:#dc2626;font-weight:bold;">No item matches ${esc(scannedCode)}</span> — ready for next item`;
-                }
+                showToast(match ? `Scanned: ${match.name} (${match.uom})` : `Scanned: ${scannedCode} — no match found`);
             } else {
-                // Main audit flow: keep the camera open and scanning instead of closing the
-                // modal, so the next item can be scanned straight away with no extra tap.
-                document.getElementById('searchBox').value = scannedCode;
+                // Main item search.
+                const el = document.getElementById('searchBox');
+                if (el) { el.value = scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); }
                 renderItems(scannedCode);
                 const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
-                const statusEl = document.getElementById('scanStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = match
-                        ? `<span style="color:#059669;font-weight:bold;">&#10003; ${esc(match.name)} (${esc(match.uom)})</span> — ready for next item`
-                        : `<span style="color:#dc2626;font-weight:bold;">No item matches ${esc(scannedCode)}</span> — ready for next item`;
-                }
+                showToast(match ? `Scanned: ${match.name} (${match.uom})` : `Scanned: ${scannedCode} — no match found`);
             }
         }
 
