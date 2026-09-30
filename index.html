@@ -36,6 +36,10 @@
         .capitalize-first { text-transform: capitalize; }
         .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
         .scrollbar-none::-webkit-scrollbar { display: none; }
+        /* Inline validation: shake + red ring on the offending field instead of a
+           blocking alert() popup, for the common "you missed a required field" case. */
+        @keyframes fieldShake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
+        .field-error { animation: fieldShake 0.4s ease-in-out; border-color: #dc2626 !important; box-shadow: 0 0 0 2px rgba(220,38,38,0.25) !important; }
         @media print {
             @page { size: A4; margin: 4mm; }
             body { margin: 0; padding: 0; background: #fff; width: 210mm; }
@@ -82,6 +86,15 @@
                 <p class="text-xs text-indigo-100 font-semibold relative">Hello 👋</p>
                 <h2 class="text-xl font-bold mt-0.5 relative">Lalitha Naturals</h2>
                 <p class="text-[11px] text-indigo-100 mt-1 relative" id="homeDateLabel"></p>
+            </div>
+
+            <!-- Today strip: quick at-a-glance sync/queue status, no need to open Ledger
+                 Sheets just to check whether anything's stuck. -->
+            <div class="flex items-center justify-between bg-white rounded-xl px-3.5 py-2 border border-slate-200 shadow-sm text-[11px]">
+                <span class="font-semibold text-slate-500"><i class="fa-solid fa-rotate text-slate-400 mr-1"></i><span id="homeLastSyncedText">Not synced yet</span></span>
+                <button id="homePendingQueueBtn" onclick="showPackingRequirementSection(); switchMode('packing'); flushPendingQueue(true);" class="hidden font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-300">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i><span id="homePendingQueueCount">0</span> pending
+                </button>
             </div>
 
             <p class="text-[11px] font-bold text-slate-500 uppercase px-1">What do you want to do?</p>
@@ -320,6 +333,7 @@
                         <button id="vendorSearchBoxClear" onclick="document.getElementById('vendorSearchBox').value=''; renderVendorItems('');" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search"><i class="fa-solid fa-circle-xmark text-sm"></i></button>
                     </div>
                     <button onclick="openScannerModal('vendorSearch')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
+                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-4 py-3 rounded-xl text-xs shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear text-sm"></i></button>
                 </div>
 
                 <!-- Brand Filter — exactly one brand at a time -->
@@ -621,20 +635,20 @@
                 <div id="settingsView_branches" class="hidden space-y-2.5">
                     <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 border-l-4 border-l-rose-500 shadow-sm space-y-2.5">
                         <p class="text-[11px] text-slate-500">Add a branch — it shows up wherever a branch is picked (Vendor Request, Branch Transfer).</p>
                         <div class="flex gap-1.5">
-                            <input type="text" id="newBranchName" placeholder="Branch name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
+                            <input type="text" id="newBranchName" placeholder="Branch name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-400">
                             <button onclick="addNewBranch()" class="px-4 py-3 bg-rose-600 text-white font-bold rounded-xl text-sm shadow">Add</button>
                         </div>
                     </div>
 
                     <div id="branchManageList" class="space-y-1.5"></div>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 border-l-4 border-l-rose-500 shadow-sm space-y-2">
                         <p class="text-xs font-bold text-slate-700"><i class="fa-solid fa-lock text-amber-500 mr-1"></i> Lock this device to a branch</p>
                         <p class="text-[11px] text-slate-500">When set, Vendor Request always uses this branch on this phone and skips asking each time. This choice stays on this device only — it does not change on other phones.</p>
-                        <select id="deviceBranchLockSelect" onchange="setDeviceBranchLock(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <select id="deviceBranchLockSelect" onchange="setDeviceBranchLock(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-400">
                             <option value="">Not locked — ask every time</option>
                         </select>
                     </div>
@@ -4388,11 +4402,12 @@
 
             container.innerHTML = itemsToDisplay.map((item) => {
                 const need = needFor(item);
-                const inputDisplayVal = shelfStock[item.id] !== undefined ? shelfStock[item.id] : '';
+                const hasCount = shelfStock[item.id] !== undefined;
+                const inputDisplayVal = hasCount ? shelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
 
                 return `
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
+                    <div id="row_${item.id}" class="bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
@@ -4400,6 +4415,7 @@
                                 <span id="need_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
                                 ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
                                 ${showBrandTag ? `<span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
+                                <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
                             </div>
                             <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
                             <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
@@ -4427,10 +4443,15 @@
             if (!input || !badge) return; // row not currently on screen (different category/filter)
 
             const need = needFor(item);
-            input.value = shelfStock[id] !== undefined ? shelfStock[id] : '';
+            const hasCount = shelfStock[id] !== undefined;
+            input.value = hasCount ? shelfStock[id] : '';
             badge.innerHTML = `Need: ${need}`;
             badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " +
                 (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+            const row = document.getElementById(`row_${id}`);
+            if (row) row.className = "bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
+            const countedBadge = document.getElementById(`counted_${id}`);
+            if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
         }
 
         function updateStock(id, change) {
@@ -4530,7 +4551,7 @@
         function addNewCategory() {
             const input = document.getElementById('newCategoryName');
             const name = input.value.trim();
-            if (!name) { alert("Please enter a category name."); return; }
+            if (!name) { flagFieldError('newCategoryName', "Enter a category name first."); return; }
             const exists = Object.keys(inventoryData).some(c => c.toLowerCase() === name.toLowerCase());
             if (exists) { alert(`"${name}" already exists as a category.`); return; }
 
@@ -4748,7 +4769,7 @@
         function addNewBranch() {
             const input = document.getElementById('newBranchName');
             const name = input.value.trim();
-            if (!name) { alert("Please enter a branch name."); return; }
+            if (!name) { flagFieldError('newBranchName', "Enter a branch name first."); return; }
             if (branchList.some(b => b.toLowerCase() === name.toLowerCase())) { alert(`"${name}" already exists as a branch.`); return; }
             branchList.push(name);
             saveBranchList();
@@ -5385,16 +5406,18 @@
 
             container.innerHTML = itemsToDisplay.map(item => {
                 const need = needForVendor(item);
-                const inputDisplayVal = vendorShelfStock[item.id] !== undefined ? vendorShelfStock[item.id] : '';
+                const hasCount = vendorShelfStock[item.id] !== undefined;
+                const inputDisplayVal = hasCount ? vendorShelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
                 return `
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2.5">
+                    <div id="vrow_${item.id}" class="bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
                                 <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
                                 <span id="vneed_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
                                 ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
+                                <span id="vcounted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-cyan-700"><i class="fa-solid fa-circle-check"></i></span>
                             </div>
                             <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
                             <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
@@ -5417,9 +5440,14 @@
             const badge = document.getElementById(`vneed_${id}`);
             if (!input || !badge) return;
             const need = needForVendor(found);
-            input.value = vendorShelfStock[id] !== undefined ? vendorShelfStock[id] : '';
+            const hasCount = vendorShelfStock[id] !== undefined;
+            input.value = hasCount ? vendorShelfStock[id] : '';
             badge.innerHTML = `Need: ${need}`;
             badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " + (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+            const row = document.getElementById(`vrow_${id}`);
+            if (row) row.className = "bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
+            const countedBadge = document.getElementById(`vcounted_${id}`);
+            if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
         }
 
         function updateVendorStock(id, delta) {
@@ -5566,7 +5594,13 @@
             if (merged.length === 0) { alert("Add at least one item to the cart first."); return; }
             const branchSel = document.getElementById('vendorBranchSelect');
             const branch = branchSel ? branchSel.value : '';
-            if (!branch) { alert("Pick a branch first."); return; }
+            if (!branch) {
+                // The field being flagged sits on the page behind this cart preview
+                // modal, so close the modal first or the shake would be invisible.
+                closeVendorCartPreview();
+                flagFieldError('vendorBranchSelect', "Pick a branch first.");
+                return;
+            }
             const staffRaw = document.getElementById('vendorStaffName').value.trim();
             const staff = fmtName(staffRaw) || 'Staff';
 
@@ -5605,6 +5639,30 @@
             if (mode === 'ledger') renderVendorLedgerList();
         }
 
+        // Groups a chronological list of {time, ...} entries into day buckets, in the
+        // order the entries already come in (both ledgers are already newest-first).
+        // Label is "Today" / "Yesterday" / a plain date for anything older.
+        function dayLabelFor(ms) {
+            const d = new Date(ms);
+            const dayStr = localDateStr(d);
+            const today = localDateStr(new Date());
+            const yesterday = localDateStr(new Date(Date.now() - 86400000));
+            if (dayStr === today) return 'Today';
+            if (dayStr === yesterday) return 'Yesterday';
+            return d.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+        }
+        function groupByDay(entries, timeField) {
+            const groups = [];
+            let current = null;
+            entries.forEach(entry => {
+                const label = dayLabelFor(entry[timeField]);
+                if (!current || current.label !== label) { current = { label, items: [] }; groups.push(current); }
+                current.items.push(entry);
+            });
+            return groups;
+        }
+        const dateHeaderClass = "sticky top-14 z-10 -mx-3.5 px-3.5 py-1.5 bg-slate-50/95 backdrop-blur-sm text-[10px] font-extrabold uppercase tracking-wide text-slate-500 border-b border-slate-200";
+
         function renderVendorLedgerList() {
             const container = document.getElementById('vendorLedgerList');
             if (!container) return;
@@ -5613,7 +5671,11 @@
                 return;
             }
             const printAllBtn = `<button onclick="printVendorLedgerPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Vendor Ledger (PDF)</button>`;
-            container.innerHTML = printAllBtn + vendorLedger.map(entry => `
+            const groups = groupByDay(vendorLedger, 'time');
+            container.innerHTML = printAllBtn + groups.map(group => `
+                <div class="${dateHeaderClass}">${esc(group.label)}</div>
+                <div class="space-y-2.5">
+                ${group.items.map(entry => `
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-1.5">
                     <div class="flex justify-between items-start gap-2">
                         <div class="min-w-0">
@@ -5626,6 +5688,8 @@
                         <button onclick="resendVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Resend</button>
                         <button onclick="printVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-slate-100 text-slate-700 border border-slate-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print</button>
                     </div>
+                </div>
+                `).join('')}
                 </div>
             `).join('');
         }
@@ -6216,7 +6280,10 @@
             const vendorId = document.getElementById('newItemVendor').value; // optional
             const min = parseInt(document.getElementById('newItemMin').value, 10);
 
-            if (!code || !name || !uom || isNaN(min) || min < 0) { alert("Fill all fields!"); return; }
+            if (!code) { flagFieldError('newItemCode', "Fill in the missing fields."); return; }
+            if (!name) { flagFieldError('newItemName', "Fill in the missing fields."); return; }
+            if (!uom) { flagFieldError('newItemUom', "Fill in the missing fields."); return; }
+            if (isNaN(min) || min < 0) { flagFieldError('newItemMin', "Fill in the missing fields."); return; }
             const dup = codeInUse(code, null);
             if (dup) { alert(`Code ${code} is already used by ${dup.name} (${dup.uom}). Please use a unique code.`); return; }
 
@@ -6446,8 +6513,7 @@
 
             const staffNameInput = document.getElementById('staffNameInput').value.trim();
             if (!staffNameInput) {
-                alert("Staff Name is mandatory! Please enter the staff name before dispatching.");
-                document.getElementById('staffNameInput').focus();
+                flagFieldError('staffNameInput', "Staff Name is mandatory before dispatching.");
                 return;
             }
 
@@ -6514,12 +6580,13 @@
         }
 
         function updatePendingQueueUI() {
+            const n = getPendingQueue().length;
             const btn = document.getElementById('pendingQueueBtn');
             const countEl = document.getElementById('pendingQueueCount');
-            if (!btn || !countEl) return;
-            const n = getPendingQueue().length;
-            countEl.textContent = n;
-            btn.classList.toggle('hidden', n === 0);
+            if (btn && countEl) { countEl.textContent = n; btn.classList.toggle('hidden', n === 0); }
+            const homeBtn = document.getElementById('homePendingQueueBtn');
+            const homeCountEl = document.getElementById('homePendingQueueCount');
+            if (homeBtn && homeCountEl) { homeCountEl.textContent = n; homeBtn.classList.toggle('hidden', n === 0); }
         }
 
         let isFlushingQueue = false;
@@ -6555,12 +6622,17 @@
         }
 
         function updateLastSyncedText() {
-            const el = document.getElementById('lastSyncedText');
-            if (!el) return;
             const last = readJson('lalitha_last_synced', null);
-            if (!last) { el.textContent = "Not synced yet"; return; }
-            const mins = Math.max(0, Math.round((Date.now() - last) / 60000));
-            el.textContent = mins < 1 ? "Synced just now" : mins === 1 ? "Synced 1 min ago" : `Synced ${mins} min ago`;
+            let text;
+            if (!last) { text = "Not synced yet"; }
+            else {
+                const mins = Math.max(0, Math.round((Date.now() - last) / 60000));
+                text = mins < 1 ? "Synced just now" : mins === 1 ? "Synced 1 min ago" : `Synced ${mins} min ago`;
+            }
+            const el = document.getElementById('lastSyncedText');
+            if (el) el.textContent = text;
+            const homeEl = document.getElementById('homeLastSyncedText');
+            if (homeEl) homeEl.textContent = text;
         }
 
         // Sends one transit record and verifies it actually landed (see confirmSaved's note
@@ -6770,7 +6842,10 @@
                 return;
             }
 
-            container.innerHTML = filtered.map((s, idx) => {
+            // Grouping by day only makes sense while a name/item search is spanning every
+            // cached date — the normal single-date view is already all one day, so a
+            // sticky "Today" header there would just be noise on top of the date picker.
+            const renderCard = (s, idx) => {
                 const sheetDateObj = new Date(s.time);
                 const dateStr = sheetDateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
                 const timeStr = sheetDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -6819,7 +6894,16 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            };
+            if (query) {
+                const groups = groupByDay(filtered, 'time');
+                container.innerHTML = groups.map(group => `
+                    <div class="${dateHeaderClass}">${esc(group.label)}</div>
+                    <div class="space-y-3">${group.items.map((s, i) => renderCard(s, i)).join('')}</div>
+                `).join('');
+            } else {
+                container.innerHTML = filtered.map((s, idx) => renderCard(s, idx)).join('');
+            }
             window._latestCloudSheets = filtered;
         }
 
@@ -7202,6 +7286,23 @@
         // ---------- Toast: quick, non-blocking feedback (instead of alert() popups that
         // stop and wait for a tap) — keeps fast add/scan workflows moving. ----------
         let toastTimer = null;
+        // Flags a required field inline (shake + red ring + focus + a small toast)
+        // instead of a blocking alert() popup — used for the common "you missed a
+        // required field" case. Returns true if it could find and flag the field, so
+        // callers can fall back to alert() only when there's genuinely nowhere to point.
+        function flagFieldError(elId, msg) {
+            const el = document.getElementById(elId);
+            if (!el) return false;
+            el.classList.remove('field-error');
+            void el.offsetWidth; // restart the animation if it's already mid-shake
+            el.classList.add('field-error');
+            el.addEventListener('animationend', () => el.classList.remove('field-error'), { once: true });
+            el.focus({ preventScroll: false });
+            if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (msg) showToast(msg);
+            return true;
+        }
+
         function showToast(msg) {
             const el = document.getElementById('appToast');
             if (!el) { console.log(msg); return; }
