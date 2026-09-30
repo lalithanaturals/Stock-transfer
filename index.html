@@ -126,10 +126,10 @@
     </div>
 
     <!-- Toast: brief non-blocking feedback -->
-    <div id="appToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] text-center"></div>
-    <div id="appUndoToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-xs font-bold pl-4 pr-2 py-2 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] flex items-center gap-3">
+    <div id="appToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] text-center"></div>
+    <div id="appUndoToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-sm font-bold pl-4 pr-2 py-2 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] flex items-center gap-3">
         <span id="appUndoToastMsg"></span>
-        <button id="appUndoToastBtn" class="bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg text-[11px] font-extrabold uppercase tracking-wide">Undo</button>
+        <button id="appUndoToastBtn" class="bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg text-[13px] font-extrabold uppercase tracking-wide">Undo</button>
     </div>
 
     <!-- Header -->
@@ -139,13 +139,13 @@
                 <img src="./logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
             </div>
             <div>
-                <h1 id="headerTitle" class="text-xs font-bold tracking-wide">LALITHA NATURALS</h1>
-                <p class="text-[10px] text-emerald-100 flex items-center gap-1"><span id="headerSubtitle">Branch Transfer</span><i id="headerHomeChevron" class="hidden fa-solid fa-house text-[9px] opacity-80"></i></p>
+                <h1 id="headerTitle" class="text-sm font-bold tracking-wide">LALITHA NATURALS</h1>
+                <p class="text-[13px] text-emerald-100 flex items-center gap-1"><span id="headerSubtitle">Branch Transfer</span><i id="headerHomeChevron" class="hidden fa-solid fa-house text-[12px] opacity-80"></i></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <div id="liveTime" class="text-[11px] font-medium text-emerald-100"></div>
-            <button onclick="confirmReload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-xs border border-emerald-600" title="Refresh">
+            <div id="liveTime" class="text-[13px] font-medium text-emerald-100"></div>
+            <button onclick="confirmReload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-sm border border-emerald-600" title="Refresh">
                 <i class="fa-solid fa-arrows-rotate"></i>
             </button>
         </div>
@@ -159,38 +159,38 @@
             <div class="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
                 <div class="absolute -right-2 bottom-2 w-16 h-16 bg-white/10 rounded-full"></div>
-                <p class="text-xs text-indigo-100 font-semibold relative">Hello 👋</p>
+                <p class="text-sm text-indigo-100 font-semibold relative">Hello 👋</p>
                 <h2 class="text-xl font-bold mt-0.5 relative">Lalitha Naturals</h2>
-                <p class="text-[11px] text-indigo-100 mt-1 relative" id="homeDateLabel"></p>
+                <p class="text-[13px] text-indigo-100 mt-1 relative" id="homeDateLabel"></p>
             </div>
 
             <!-- Today strip: quick at-a-glance sync/queue status, no need to open Ledger
                  Sheets just to check whether anything's stuck. -->
-            <div class="flex items-center justify-between bg-white rounded-xl px-3.5 py-2 border border-slate-200 shadow-sm text-[11px]">
+            <div class="flex items-center justify-between bg-white rounded-xl px-3.5 py-2 border border-slate-200 shadow-sm text-[13px]">
                 <span class="font-semibold text-slate-500"><i class="fa-solid fa-rotate text-slate-400 mr-1"></i><span id="homeLastSyncedText">Not synced yet</span></span>
                 <button id="homePendingQueueBtn" onclick="showPackingRequirementSection(); switchMode('packing'); flushPendingQueue(true);" class="hidden font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-300">
                     <i class="fa-solid fa-triangle-exclamation mr-1"></i><span id="homePendingQueueCount">0</span> pending
                 </button>
             </div>
 
-            <p class="text-[11px] font-bold text-slate-500 uppercase px-1">What do you want to do?</p>
+            <p class="text-[13px] font-bold text-slate-500 uppercase px-1">What do you want to do?</p>
 
             <button onclick="showPackingRequirementSection()" class="relative w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
-                <span id="homePackingCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-emerald-900 text-[10px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
+                <span id="homePackingCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-emerald-900 text-[12px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
                 <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-box-open"></i></div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold">Packing Request</p>
-                    <p class="text-[11px] text-emerald-50 mt-0.5">Shelf counts, branch transfer & dispatch — in-store, Lalitha Naturals only</p>
+                    <p class="text-[13px] text-emerald-50 mt-0.5">Shelf counts, branch transfer & dispatch — in-store, Lalitha Naturals only</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-white/70"></i>
             </button>
 
             <button onclick="showVendorRequirementSection()" class="relative w-full bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
-                <span id="homeVendorCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-cyan-900 text-[10px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
+                <span id="homeVendorCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-cyan-900 text-[12px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
                 <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-cart-shopping"></i></div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold">Vendor Request</p>
-                    <p class="text-[11px] text-cyan-50 mt-0.5">Build a per-vendor order cart from the full catalog & send on WhatsApp</p>
+                    <p class="text-[13px] text-cyan-50 mt-0.5">Build a per-vendor order cart from the full catalog & send on WhatsApp</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-white/70"></i>
             </button>
@@ -198,11 +198,11 @@
             <div class="grid grid-cols-2 gap-3 pt-1">
                 <button onclick="openCatalogModal()" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm flex items-center gap-2.5 text-left">
                     <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-sm"><i class="fa-solid fa-gear"></i></div>
-                    <span class="text-xs font-bold text-slate-700">Settings</span>
+                    <span class="text-sm font-bold text-slate-700">Settings</span>
                 </button>
                 <button onclick="showPackingRequirementSection(); switchMode('packing');" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm flex items-center gap-2.5 text-left">
                     <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm"><i class="fa-solid fa-receipt"></i></div>
-                    <span class="text-xs font-bold text-slate-700">Ledger Sheets</span>
+                    <span class="text-sm font-bold text-slate-700">Ledger Sheets</span>
                 </button>
             </div>
         </div>
@@ -212,10 +212,10 @@
 
                 <!-- Mode Switcher Tabs -->
         <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1.5">
-            <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
+            <button onclick="switchMode('audit')" id="tabAuditBtn" class="py-2.5 rounded-lg text-sm font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-clipboard-check text-sm"></i> Audit & Check
             </button>
-            <button onclick="switchMode('packing')" id="tabPackingBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5">
+            <button onclick="switchMode('packing')" id="tabPackingBtn" class="py-2.5 rounded-lg text-sm font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-truck-fast text-sm"></i> Ledger Sheets
             </button>
         </div>
@@ -224,24 +224,24 @@
         <div id="auditViewSection" class="space-y-3">
 
             <!-- Edit-mode banner -->
-            <div id="editBanner" class="hidden bg-amber-50 border border-amber-300 text-amber-900 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-bold">
+            <div id="editBanner" class="hidden bg-amber-50 border border-amber-300 text-amber-900 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 text-sm font-bold">
                 <span><i class="fa-solid fa-pen-to-square mr-1"></i> Editing a sent record</span>
-                <button onclick="cancelEdit()" class="bg-white border border-amber-300 text-amber-800 px-3 py-1.5 rounded-lg text-[11px] font-bold">Cancel edit</button>
+                <button onclick="cancelEdit()" class="bg-white border border-amber-300 text-amber-800 px-3 py-1.5 rounded-lg text-[13px] font-bold">Cancel edit</button>
             </div>
 
             <!-- Branch & Staff Card -->
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Source</label>
-                        <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Source</label>
+                        <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                             <option value="Gajuwaka">Gajuwaka</option>
                             <option value="Kurmannapalem">Kurmannapalem</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Destination</label>
-                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Destination</label>
+                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                             <option value="Kurmannapalem Packing">Kurmannapalem Pkg</option>
                             <option value="Gajuwaka Packing">Gajuwaka Pkg</option>
                         </select>
@@ -250,27 +250,27 @@
 
                 <div class="grid grid-cols-2 gap-2.5 items-center">
                     <div class="relative">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
                         <div class="relative flex items-center">
-                            <input type="text" id="staffNameInput" placeholder="Required..." onclick="event.stopPropagation(); toggleStaffDropdown(true)" onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
-                            <button onclick="toggleStaffDropdown(event)" class="absolute right-2.5 text-slate-400 text-xs"><i class="fa-solid fa-chevron-down"></i></button>
+                            <input type="text" id="staffNameInput" placeholder="Required..." onclick="event.stopPropagation(); toggleStaffDropdown(true)" onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none capitalize-first">
+                            <button onclick="toggleStaffDropdown(event)" class="absolute right-2.5 text-slate-400 text-sm"><i class="fa-solid fa-chevron-down"></i></button>
                         </div>
                         <!-- Staff Name Dropdown List -->
                         <div id="staffDropdownList" onclick="event.stopPropagation()" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-40 overflow-y-auto p-1 space-y-0.5"></div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
                         <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
-                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white">Available</button>
-                            <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600">Missing</button>
+                            <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-2 rounded-lg text-sm font-bold transition bg-emerald-600 text-white">Available</button>
+                            <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-2 rounded-lg text-sm font-bold transition bg-transparent text-slate-600">Missing</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Staff Remarks / Notes Input -->
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Remarks / Notes (Optional)</label>
-                    <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
+                    <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Staff Remarks / Notes (Optional)</label>
+                    <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
                 </div>
             </div>
 
@@ -278,17 +278,17 @@
             <div class="space-y-2.5">
                 <div class="flex gap-2">
                     <div class="relative flex-1">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-xs">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-sm">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
                         <input type="text" id="searchBox" placeholder="Search item or code..."
-                            class="w-full pl-10 pr-9 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
+                            class="w-full pl-10 pr-9 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
                         <button id="searchBoxClear" onclick="clearSearchBox()" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search">
                             <i class="fa-solid fa-circle-xmark text-sm"></i>
                         </button>
                     </div>
-                    <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
-                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-4 py-3 rounded-xl text-xs shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear text-sm"></i></button>
+                    <button onclick="openScannerModal('search')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
+                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-4 py-3 rounded-xl text-sm shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear text-sm"></i></button>
                 </div>
 
                 <!-- Packing Requirement is always Lalitha Naturals only — no Brand filter needed. -->
@@ -298,20 +298,20 @@
 
                 <!-- Results bar -->
                 <div class="flex justify-between items-center bg-white px-3.5 py-2 rounded-xl border border-slate-200">
-                    <span id="resultsCountLabel" class="text-[11px] font-bold text-slate-600">0 items</span>
-                    <button onclick="clearShownCounts()" class="text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">Clear Shown Counts</button>
+                    <span id="resultsCountLabel" class="text-[13px] font-bold text-slate-600">0 items</span>
+                    <button onclick="clearShownCounts()" class="text-[13px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">Clear Shown Counts</button>
                 </div>
 
                 <!-- Dispatch List — batches items across brands before one combined dispatch -->
                 <div class="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
-                        <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-layer-group mr-1 text-slate-400"></i>Dispatch List: <span id="dispatchListCount">0</span> item(s)</span>
+                        <span class="text-[13px] font-bold text-slate-600"><i class="fa-solid fa-layer-group mr-1 text-slate-400"></i>Dispatch List: <span id="dispatchListCount">0</span> item(s)</span>
                         <div class="flex gap-1.5 shrink-0">
-                            <button onclick="addCurrentToDispatchList()" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200"><i class="fa-solid fa-plus mr-1"></i>Add to List</button>
-                            <button id="clearDispatchListBtn" onclick="clearDispatchList()" class="hidden text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">Clear List</button>
+                            <button onclick="addCurrentToDispatchList()" class="text-[13px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200"><i class="fa-solid fa-plus mr-1"></i>Add to List</button>
+                            <button id="clearDispatchListBtn" onclick="clearDispatchList()" class="hidden text-[13px] font-bold text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">Clear List</button>
                         </div>
                     </div>
-                    <div id="dispatchListBrandBreakdown" class="hidden text-[10px] text-slate-500"></div>
+                    <div id="dispatchListBrandBreakdown" class="hidden text-[13px] text-slate-500"></div>
                 </div>
             </div>
 
@@ -323,24 +323,24 @@
         <div id="packingViewSection" class="hidden space-y-3">
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400">Ledger Date</label>
-                    <input type="date" id="lookupDateInput" onchange="loadTransitSheets(false)" class="bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-bold mt-1 outline-none">
+                    <label class="block text-[13px] font-bold uppercase text-slate-400">Ledger Date</label>
+                    <input type="date" id="lookupDateInput" onchange="loadTransitSheets(false)" class="bg-slate-50 border border-slate-300 rounded-xl p-2 text-sm font-bold mt-1 outline-none">
                 </div>
                 <div class="flex items-center gap-2.5">
-                    <button onclick="openInsightsModal()" class="bg-purple-50 text-purple-700 border border-purple-200 px-3 py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-chart-simple mr-1"></i> Insights</button>
-                    <button onclick="loadTransitSheets(true)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i> Sync</button>
-                    <div id="mobileSheetCount" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">0 records</div>
+                    <button onclick="openInsightsModal()" class="bg-purple-50 text-purple-700 border border-purple-200 px-3 py-2 rounded-xl text-sm font-bold"><i class="fa-solid fa-chart-simple mr-1"></i> Insights</button>
+                    <button onclick="loadTransitSheets(true)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl text-sm font-bold"><i class="fa-solid fa-rotate mr-1"></i> Sync</button>
+                    <div id="mobileSheetCount" class="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">0 records</div>
                 </div>
             </div>
             <div class="relative">
-                <input type="text" id="ledgerSearchBox" placeholder="Search item or staff name (searches all dates)..." oninput="renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value)" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 pr-9 text-xs font-semibold outline-none">
+                <input type="text" id="ledgerSearchBox" placeholder="Search item or staff name (searches all dates)..." oninput="renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value)" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 pr-9 text-sm font-semibold outline-none">
                 <button id="ledgerSearchClear" onclick="document.getElementById('ledgerSearchBox').value=''; renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value);" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search">
                     <i class="fa-solid fa-circle-xmark text-sm"></i>
                 </button>
             </div>
             <div class="flex items-center justify-between px-1">
-                <span id="lastSyncedText" class="text-[10px] text-slate-400 font-semibold">Not synced yet</span>
-                <button id="pendingQueueBtn" onclick="flushPendingQueue(true)" class="hidden text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-300">
+                <span id="lastSyncedText" class="text-[13px] text-slate-400 font-semibold">Not synced yet</span>
+                <button id="pendingQueueBtn" onclick="flushPendingQueue(true)" class="hidden text-[13px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-300">
                     <i class="fa-solid fa-triangle-exclamation mr-1"></i><span id="pendingQueueCount">0</span> pending — tap to retry
                 </button>
             </div>
@@ -372,10 +372,10 @@
 
                 <!-- Mode Switcher Tabs: Request vs Vendor Ledger -->
         <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 gap-1.5">
-            <button onclick="switchVendorMode('request')" id="vTabRequestBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-cyan-600 text-white shadow-sm flex items-center justify-center gap-1.5">
+            <button onclick="switchVendorMode('request')" id="vTabRequestBtn" class="py-2.5 rounded-lg text-sm font-bold transition bg-cyan-600 text-white shadow-sm flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-cart-shopping text-sm"></i> Request
             </button>
-            <button onclick="switchVendorMode('ledger')" id="vTabLedgerBtn" class="py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5">
+            <button onclick="switchVendorMode('ledger')" id="vTabLedgerBtn" class="py-2.5 rounded-lg text-sm font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-receipt text-sm"></i> Vendor Ledger
             </button>
         </div>
@@ -386,29 +386,29 @@
             <!-- Vendor + Staff Card -->
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Vendor</label>
+                    <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Vendor</label>
                     <div class="flex gap-1.5">
-                        <select id="vendorReqPageSelect" onchange="onVendorPageVendorChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                        <select id="vendorReqPageSelect" onchange="onVendorPageVendorChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
                         <button onclick="editCurrentVendorFromRequestPage()" class="bg-cyan-600 text-white w-10 rounded-xl shadow-sm shrink-0" title="Edit Vendor"><i class="fa-solid fa-pen"></i></button>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Branch <span class="text-red-500">*</span></label>
+                    <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Branch <span class="text-red-500">*</span></label>
                     <div class="flex items-center gap-1.5">
-                        <select id="vendorBranchSelect" onchange="onVendorBranchChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
-                        <span id="vendorBranchLockNote" class="hidden text-[10px] font-bold text-amber-600 shrink-0 px-1.5"><i class="fa-solid fa-lock"></i></span>
+                        <select id="vendorBranchSelect" onchange="onVendorBranchChange()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
+                        <span id="vendorBranchLockNote" class="hidden text-[13px] font-bold text-amber-600 shrink-0 px-1.5"><i class="fa-solid fa-lock"></i></span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5 items-center">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Staff Name</label>
-                        <input type="text" id="vendorStaffName" placeholder="Optional..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none capitalize-first">
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Staff Name</label>
+                        <input type="text" id="vendorStaffName" placeholder="Optional..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none capitalize-first">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Mode</label>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Mode</label>
                         <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
-                            <button onclick="setVendorAuditMode('available')" id="vModeAvailBtn" class="py-2 rounded-lg text-xs font-bold transition bg-cyan-600 text-white">Available</button>
-                            <button onclick="setVendorAuditMode('shortage')" id="vModeShortBtn" class="py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600">Missing</button>
+                            <button onclick="setVendorAuditMode('available')" id="vModeAvailBtn" class="py-2 rounded-lg text-sm font-bold transition bg-cyan-600 text-white">Available</button>
+                            <button onclick="setVendorAuditMode('shortage')" id="vModeShortBtn" class="py-2 rounded-lg text-sm font-bold transition bg-transparent text-slate-600">Missing</button>
                         </div>
                     </div>
                 </div>
@@ -418,37 +418,37 @@
             <div class="space-y-2.5">
                 <div class="flex gap-2">
                     <div class="relative flex-1">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-xs"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" id="vendorSearchBox" placeholder="Search item or code..." oninput="renderVendorItems(this.value)" class="w-full pl-10 pr-9 py-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="vendorSearchBox" placeholder="Search item or code..." oninput="renderVendorItems(this.value)" class="w-full pl-10 pr-9 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm">
                         <button id="vendorSearchBoxClear" onclick="document.getElementById('vendorSearchBox').value=''; renderVendorItems('');" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search"><i class="fa-solid fa-circle-xmark text-sm"></i></button>
                     </div>
-                    <button onclick="openScannerModal('vendorSearch')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-xs shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
-                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-4 py-3 rounded-xl text-xs shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear text-sm"></i></button>
+                    <button onclick="openScannerModal('vendorSearch')" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm shadow-sm"><i class="fa-solid fa-barcode text-sm"></i></button>
+                    <button onclick="openCatalogModal()" class="bg-slate-800 text-white px-4 py-3 rounded-xl text-sm shadow-sm" title="Master Catalog"><i class="fa-solid fa-gear text-sm"></i></button>
                 </div>
 
                 <!-- Brand Filter — exactly one brand at a time -->
                 <div class="bg-white px-2.5 py-2 rounded-xl border border-slate-200">
-                    <label class="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase mb-1"><i class="fa-solid fa-tag text-[9px]"></i> Brand</label>
-                    <select id="vendorBrandFilterSelect" onchange="setVendorActiveBrand(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-cyan-500"></select>
+                    <label class="flex items-center gap-1 text-[12px] font-bold text-slate-400 uppercase mb-1"><i class="fa-solid fa-tag text-[12px]"></i> Brand</label>
+                    <select id="vendorBrandFilterSelect" onchange="setVendorActiveBrand(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-cyan-500"></select>
                 </div>
 
                 <div id="vendorCategoryTabs" class="flex overflow-x-auto gap-1.5 pb-1 scrollbar-none"></div>
 
                 <div class="flex justify-between items-center bg-white px-3.5 py-2 rounded-xl border border-slate-200">
-                    <span id="vendorResultsCountLabel" class="text-[11px] font-bold text-slate-600">0 items</span>
-                    <button onclick="clearVendorShownCounts()" class="text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">Clear Shown Counts</button>
+                    <span id="vendorResultsCountLabel" class="text-[13px] font-bold text-slate-600">0 items</span>
+                    <button onclick="clearVendorShownCounts()" class="text-[13px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200">Clear Shown Counts</button>
                 </div>
 
                 <!-- Cart -->
                 <div class="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
-                        <span class="text-[11px] font-bold text-slate-600"><i class="fa-solid fa-cart-shopping mr-1 text-cyan-500"></i>Cart: <span id="vendorCartCount">0</span> item(s)</span>
+                        <span class="text-[13px] font-bold text-slate-600"><i class="fa-solid fa-cart-shopping mr-1 text-cyan-500"></i>Cart: <span id="vendorCartCount">0</span> item(s)</span>
                         <div class="flex gap-1.5 shrink-0">
-                            <button onclick="addCurrentToVendorCart()" class="text-[11px] font-bold text-cyan-700 bg-cyan-50 px-2.5 py-1.5 rounded-lg border border-cyan-200"><i class="fa-solid fa-plus mr-1"></i>Add to Cart</button>
-                            <button id="clearVendorCartBtn" onclick="clearVendorCart()" class="hidden text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">Clear</button>
+                            <button onclick="addCurrentToVendorCart()" class="text-[13px] font-bold text-cyan-700 bg-cyan-50 px-2.5 py-1.5 rounded-lg border border-cyan-200"><i class="fa-solid fa-plus mr-1"></i>Add to Cart</button>
+                            <button id="clearVendorCartBtn" onclick="clearVendorCart()" class="hidden text-[13px] font-bold text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">Clear</button>
                         </div>
                     </div>
-                    <div id="vendorCartCatBreakdown" class="hidden text-[10px] text-slate-500"></div>
+                    <div id="vendorCartCatBreakdown" class="hidden text-[13px] text-slate-500"></div>
                 </div>
             </div>
 
@@ -458,7 +458,7 @@
 
         <!-- VENDOR LEDGER VIEW -->
         <div id="vendorLedgerView" class="hidden space-y-3">
-            <p class="text-[11px] text-slate-500 px-0.5">Every vendor requirement you've submitted from this device — kept separate from Packing's Ledger Sheets.</p>
+            <p class="text-[13px] text-slate-500 px-0.5">Every vendor requirement you've submitted from this device — kept separate from Packing's Ledger Sheets.</p>
             <div id="vendorLedgerList" class="space-y-2.5"></div>
         </div>
 
@@ -470,11 +470,11 @@
     <!-- Bottom Action Bar for Vendor Requirement -->
     <div id="vendorBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
-            <button onclick="openVendorCartPreview()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
-                <span id="vendorBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-cyan-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
+            <button onclick="openVendorCartPreview()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[13px] shadow flex flex-col items-center justify-center gap-1">
+                <span id="vendorBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-cyan-500 text-white text-[13px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">0</span>
                 <i class="fa-solid fa-cart-shopping text-sm"></i> View Cart
             </button>
-            <button onclick="openVendorCartPreview()" class="bg-cyan-700 text-white font-bold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+            <button onclick="openVendorCartPreview()" class="bg-cyan-700 text-white font-bold py-3 rounded-xl text-[13px] shadow flex flex-col items-center justify-center gap-1">
                 <i class="fa-brands fa-whatsapp text-sm"></i> Submit
             </button>
         </div>
@@ -483,11 +483,11 @@
     <!-- Bottom Action Bar (Only visible/active on Packing Requirement → Audit view) -->
     <div id="bottomActionBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
-            <button onclick="openStaffCheckModal()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
-                <span id="packingBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-emerald-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">0</span>
+            <button onclick="openStaffCheckModal()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[13px] shadow flex flex-col items-center justify-center gap-1">
+                <span id="packingBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-emerald-500 text-white text-[13px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">0</span>
                 <i class="fa-solid fa-cart-shopping text-sm"></i> View Cart
             </button>
-            <button onclick="confirmAndDispatchTransit()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-[11px] shadow flex flex-col items-center justify-center gap-1">
+            <button onclick="confirmAndDispatchTransit()" id="dispatchBtn" class="bg-emerald-700 text-white font-bold py-3 rounded-xl text-[13px] shadow flex flex-col items-center justify-center gap-1">
                 <i class="fa-solid fa-paper-plane text-sm"></i> Dispatch
             </button>
         </div>
@@ -503,7 +503,7 @@
             <div id="vendorCartPreviewBody" class="p-3.5 overflow-y-auto bg-slate-50 flex-1"></div>
             <div class="p-3.5 bg-white border-t border-slate-200 shrink-0 space-y-1.5">
                 <button onclick="submitVendorRequirement()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl text-sm shadow flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp"></i> Submit & Send to Vendor</button>
-                <button onclick="clearVendorCartFromPreview()" class="w-full py-2.5 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2"><i class="fa-solid fa-trash"></i> Clear Cart</button>
+                <button onclick="clearVendorCartFromPreview()" class="w-full py-2.5 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-trash"></i> Clear Cart</button>
             </div>
         </div>
     </div>
@@ -511,7 +511,7 @@
     <!-- Sync Loading Screen Overlay -->
     <div id="syncLoadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4 space-y-3">
         <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <div id="syncLoadingText" class="text-white text-xs font-bold tracking-wide">Saving to Google Sheets...</div>
+        <div id="syncLoadingText" class="text-white text-sm font-bold tracking-wide">Saving to Google Sheets...</div>
     </div>
 
     <!-- Post-Submission Success & Print/Share Options Modal -->
@@ -522,20 +522,20 @@
             </div>
             <div>
                 <h3 class="font-bold text-sm text-slate-900">Successfully Dispatched!</h3>
-                <p class="text-[11px] text-slate-500 mt-0.5">Confirmed in Google Sheets. Use options below:</p>
+                <p class="text-[13px] text-slate-500 mt-0.5">Confirmed in Google Sheets. Use options below:</p>
             </div>
             <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="triggerSuccessAction('pdf')" class="py-2.5 bg-slate-800 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <button onclick="triggerSuccessAction('pdf')" class="py-2.5 bg-slate-800 text-white font-semibold rounded-xl text-sm shadow flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-file-pdf"></i> Print / PDF
                 </button>
-                <button onclick="triggerSuccessAction('whatsapp')" class="py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                <button onclick="triggerSuccessAction('whatsapp')" class="py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-sm shadow flex items-center justify-center gap-1.5">
                     <i class="fa-brands fa-whatsapp"></i> WhatsApp
                 </button>
-                <button onclick="triggerSuccessAction('thermal')" class="py-2.5 bg-amber-700 text-white font-semibold rounded-xl text-xs shadow flex items-center justify-center gap-1.5 col-span-2">
+                <button onclick="triggerSuccessAction('thermal')" class="py-2.5 bg-amber-700 text-white font-semibold rounded-xl text-sm shadow flex items-center justify-center gap-1.5 col-span-2">
                     <i class="fa-solid fa-receipt"></i> Thermal Receipt
                 </button>
             </div>
-            <button onclick="closeSuccessModalManually()" class="w-full py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">
+            <button onclick="closeSuccessModalManually()" class="w-full py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-sm">
                 Close & View Ledger
             </button>
         </div>
@@ -561,12 +561,12 @@
                     </div>
 
                     <div data-settings-group="catalog" class="space-y-2.5">
-                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Catalog</p>
+                        <p class="text-[13px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Catalog</p>
                         <button data-settings-item="add item new" onclick="switchSettingsView('addItem')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
                             <div class="w-12 h-12 rounded-xl text-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus-circle"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Add Item</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Add a new item — brand, category & vendor</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Add a new item — brand, category & vendor</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
@@ -574,7 +574,7 @@
                             <div class="w-12 h-12 rounded-xl text-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-list"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Existing Items</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">View, edit, remove, or scan to find an item</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">View, edit, remove, or scan to find an item</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
@@ -582,7 +582,7 @@
                             <div class="w-12 h-12 rounded-xl text-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-folder-plus"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Categories</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Add, rename, hide, or remove a category</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Add, rename, hide, or remove a category</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
@@ -590,43 +590,43 @@
                             <div class="w-12 h-12 rounded-xl text-lg bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-tag"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Brands</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Rename or hide a brand</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Rename or hide a brand</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
                     </div>
 
                     <div data-settings-group="vendors" class="space-y-2.5">
-                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Vendors</p>
+                        <p class="text-[13px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Vendors</p>
                         <button data-settings-item="vendors add edit brand category items" onclick="switchSettingsView('vendors')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
                             <div class="w-12 h-12 rounded-xl text-lg bg-cyan-100 text-cyan-700 flex items-center justify-center"><i class="fa-solid fa-truck-fast"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Vendors</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Add/edit vendors — brands, categories & items supplied</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Add/edit vendors — brands, categories & items supplied</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
                     </div>
 
                     <div data-settings-group="branches" class="space-y-2.5">
-                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Branches</p>
+                        <p class="text-[13px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Branches</p>
                         <button data-settings-item="branches add rename delete lock device" onclick="switchSettingsView('branches')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
                             <div class="w-12 h-12 rounded-xl text-lg bg-rose-100 text-rose-700 flex items-center justify-center"><i class="fa-solid fa-code-branch"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Branches</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Add/rename branches & lock this device to one</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Add/rename branches & lock this device to one</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
                     </div>
 
                     <div data-settings-group="data" class="space-y-2.5">
-                        <p class="text-[10px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Data</p>
+                        <p class="text-[13px] font-extrabold uppercase tracking-wide text-slate-400 px-1">Data</p>
                         <button data-settings-item="import export excel upload download" onclick="switchSettingsView('excel')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
                             <div class="w-12 h-12 rounded-xl text-lg bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Import / Export Excel</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Download a sample file, edit it, upload to update every item</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Download a sample file, edit it, upload to update every item</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
@@ -634,71 +634,71 @@
                             <div class="w-12 h-12 rounded-xl text-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-slate-800">Catalog History</p>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Recent catalog changes made from this phone</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Recent catalog changes made from this phone</p>
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
                     </div>
 
-                    <p id="settingsMenuNoResults" class="hidden text-center text-slate-400 text-xs py-4">No settings match your search.</p>
+                    <p id="settingsMenuNoResults" class="hidden text-center text-slate-400 text-sm py-4">No settings match your search.</p>
                 </div>
 
                 <!-- Add Item view -->
                 <div id="settingsView_addItem" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
                     <div class="grid grid-cols-2 gap-2.5">
-                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
                         <div class="flex gap-1.5">
-                            <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
-                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-barcode"></i></button>
+                            <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-sm"><i class="fa-solid fa-barcode"></i></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2.5">
-                        <input type="text" id="newItemName" placeholder="Item Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
-                        <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <input type="text" id="newItemName" placeholder="Item Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                        <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-2.5">
-                        <input type="text" id="newItemBrand" list="newItemBrandList" placeholder="Brand" value="Lalitha Naturals" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <input type="text" id="newItemBrand" list="newItemBrandList" placeholder="Brand" value="Lalitha Naturals" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                         <datalist id="newItemBrandList"></datalist>
-                        <input type="number" id="newItemMin" placeholder="Min" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none">
+                        <input type="number" id="newItemMin" placeholder="Min" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
-                        <select id="newItemVendor" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none"></select>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                        <select id="newItemVendor" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
                     </div>
-                    <button onclick="addNewCatalogItem()" class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow">Save</button>
+                    <button onclick="addNewCatalogItem()" class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-sm shadow">Save</button>
                     </div>
                 </div>
 
                 <!-- Existing Items view -->
                 <div id="settingsView_existing" class="hidden space-y-2">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
-                    <h4 id="catalogCountHeader" class="text-xs font-bold text-slate-700">Existing Items</h4>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <h4 id="catalogCountHeader" class="text-sm font-bold text-slate-700">Existing Items</h4>
                     <div class="flex gap-1.5">
                         <div class="relative flex-1">
-                            <input type="text" id="catalogSearch" placeholder="Filter items..." oninput="renderCatalogEditorList()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 pr-9 text-xs font-semibold outline-none">
+                            <input type="text" id="catalogSearch" placeholder="Filter items..." oninput="renderCatalogEditorList()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 pr-9 text-sm font-semibold outline-none">
                             <button id="catalogSearchClear" onclick="clearCatalogSearch()" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear filter">
                                 <i class="fa-solid fa-circle-xmark text-sm"></i>
                             </button>
                         </div>
-                        <button onclick="openScannerModal('catalogSearch')" class="bg-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-xs shadow-sm" title="Scan to filter"><i class="fa-solid fa-barcode text-sm"></i></button>
+                        <button onclick="openScannerModal('catalogSearch')" class="bg-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-sm shadow-sm" title="Scan to filter"><i class="fa-solid fa-barcode text-sm"></i></button>
                     </div>
                     <div class="flex gap-1.5">
-                        <select id="catalogCategoryFilter" onchange="renderCatalogEditorList()" class="flex-1 bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
+                        <select id="catalogCategoryFilter" onchange="renderCatalogEditorList()" class="flex-1 bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
                             <option value="">All categories</option>
                         </select>
-                        <button id="dupOnlyToggle" onclick="toggleDupOnlyFilter()" class="px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-[11px] font-bold text-slate-600 shrink-0" title="Show only items with a duplicate code">Duplicates only</button>
+                        <button id="dupOnlyToggle" onclick="toggleDupOnlyFilter()" class="px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-[13px] font-bold text-slate-600 shrink-0" title="Show only items with a duplicate code">Duplicates only</button>
                     </div>
                     <div id="catalogEditorList" class="space-y-2 max-h-72 overflow-y-auto"></div>
-                    <button onclick="printCatalogPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Catalog (PDF)</button>
+                    <button onclick="printCatalogPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Catalog (PDF)</button>
                 </div>
 
                 <!-- Categories view -->
                 <div id="settingsView_categories" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
-                        <p class="text-[11px] text-slate-500">Add a new category — it'll show up in the Category filter and as a choice under "Add Item". Tap the eye icon to hide a category from the main list without deleting it.</p>
+                        <p class="text-[13px] text-slate-500">Add a new category — it'll show up in the Category filter and as a choice under "Add Item". Tap the eye icon to hide a category from the main list without deleting it.</p>
                         <div class="flex gap-1.5">
                             <input type="text" id="newCategoryName" placeholder="Category name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                             <button onclick="addNewCategory()" class="px-4 py-3 bg-amber-500 text-white font-bold rounded-xl text-sm shadow">Add</button>
@@ -713,7 +713,7 @@
 
                 <!-- Brands view -->
                 <div id="settingsView_brands" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="relative">
                         <input type="text" id="brandSearch" placeholder="Search brands..." oninput="renderBrandManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
                         <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -723,10 +723,10 @@
 
                 <!-- Branches view -->
                 <div id="settingsView_branches" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
 
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 border-l-4 border-l-rose-500 shadow-sm space-y-2.5">
-                        <p class="text-[11px] text-slate-500">Add a branch — it shows up wherever a branch is picked (Vendor Request, Branch Transfer).</p>
+                        <p class="text-[13px] text-slate-500">Add a branch — it shows up wherever a branch is picked (Vendor Request, Branch Transfer).</p>
                         <div class="flex gap-1.5">
                             <input type="text" id="newBranchName" placeholder="Branch name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-400">
                             <button onclick="addNewBranch()" class="px-4 py-3 bg-rose-600 text-white font-bold rounded-xl text-sm shadow">Add</button>
@@ -736,9 +736,9 @@
                     <div id="branchManageList" class="space-y-1.5"></div>
 
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 border-l-4 border-l-rose-500 shadow-sm space-y-2">
-                        <p class="text-xs font-bold text-slate-700"><i class="fa-solid fa-lock text-amber-500 mr-1"></i> Lock this device to a branch</p>
-                        <p class="text-[11px] text-slate-500">When set, Vendor Request always uses this branch on this phone and skips asking each time. This choice stays on this device only — it does not change on other phones.</p>
-                        <select id="deviceBranchLockSelect" onchange="setDeviceBranchLock(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-400">
+                        <p class="text-sm font-bold text-slate-700"><i class="fa-solid fa-lock text-amber-500 mr-1"></i> Lock this device to a branch</p>
+                        <p class="text-[13px] text-slate-500">When set, Vendor Request always uses this branch on this phone and skips asking each time. This choice stays on this device only — it does not change on other phones.</p>
+                        <select id="deviceBranchLockSelect" onchange="setDeviceBranchLock(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-400">
                             <option value="">Not locked — ask every time</option>
                         </select>
                     </div>
@@ -746,7 +746,7 @@
 
                 <!-- Vendors view -->
                 <div id="settingsView_vendors" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <button onclick="openVendorFormPage()" class="w-full py-3 bg-cyan-600 text-white font-bold rounded-xl text-sm shadow flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Add Vendor</button>
                     <div class="relative">
                         <input type="text" id="vendorSearch" placeholder="Search vendors..." oninput="renderVendorManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
@@ -757,7 +757,7 @@
 
                 <!-- Vendor Add/Edit — full page, own back button (returns to the Vendors list) -->
                 <div id="settingsView_vendorForm" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('vendors')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Vendors</button>
+                    <button onclick="switchSettingsView('vendors')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Vendors</button>
                     <p id="vendorFormTitle" class="text-sm font-bold text-slate-800 px-1">Add Vendor</p>
 
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
@@ -771,13 +771,13 @@
                          full-width rows with a check mark to pick — no nested scroll boxes. -->
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                         <button type="button" onclick="toggleVendorFormStep('brands')" class="w-full p-3.5 flex items-center justify-between text-left">
-                            <span class="text-[10px] font-bold uppercase text-slate-400">1. Brands supplied</span>
-                            <i id="vendorFormStepBrandsChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform rotate-180"></i>
+                            <span class="text-[13px] font-bold uppercase text-slate-400">1. Brands supplied</span>
+                            <i id="vendorFormStepBrandsChevron" class="fa-solid fa-chevron-down text-slate-400 text-sm transition-transform rotate-180"></i>
                         </button>
                         <div id="vendorFormStepBrandsBody" class="px-3.5 pb-3.5 space-y-2">
                             <div class="flex justify-end gap-3">
-                                <button type="button" onclick="selectAllVendorBrands()" class="text-[11px] font-bold text-cyan-700">Select all</button>
-                                <button type="button" onclick="clearAllVendorBrands()" class="text-[11px] font-bold text-red-600">Clear all</button>
+                                <button type="button" onclick="selectAllVendorBrands()" class="text-[13px] font-bold text-cyan-700">Select all</button>
+                                <button type="button" onclick="clearAllVendorBrands()" class="text-[13px] font-bold text-red-600">Clear all</button>
                             </div>
                             <div id="newVendorBrandChips" class="space-y-1"></div>
                         </div>
@@ -785,14 +785,14 @@
 
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                         <button type="button" onclick="toggleVendorFormStep('categories')" class="w-full p-3.5 flex items-center justify-between text-left">
-                            <span class="text-[10px] font-bold uppercase text-slate-400">2. Categories supplied <span class="text-slate-300 font-semibold normal-case">(optional)</span></span>
-                            <i id="vendorFormStepCategoriesChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
+                            <span class="text-[13px] font-bold uppercase text-slate-400">2. Categories supplied <span class="text-slate-300 font-semibold normal-case">(optional)</span></span>
+                            <i id="vendorFormStepCategoriesChevron" class="fa-solid fa-chevron-down text-slate-400 text-sm transition-transform"></i>
                         </button>
                         <div id="vendorFormStepCategoriesBody" class="hidden px-3.5 pb-3.5 space-y-2">
-                            <p class="text-[10px] text-slate-400">Pick a brand above first — its categories show up here. Leave none selected to supply every category under the picked brand(s).</p>
+                            <p class="text-[13px] text-slate-400">Pick a brand above first — its categories show up here. Leave none selected to supply every category under the picked brand(s).</p>
                             <div class="flex justify-end gap-3">
-                                <button type="button" onclick="selectAllVendorCategories()" class="text-[11px] font-bold text-cyan-700">Select all</button>
-                                <button type="button" onclick="clearAllVendorCategories()" class="text-[11px] font-bold text-red-600">Clear all</button>
+                                <button type="button" onclick="selectAllVendorCategories()" class="text-[13px] font-bold text-cyan-700">Select all</button>
+                                <button type="button" onclick="clearAllVendorCategories()" class="text-[13px] font-bold text-red-600">Clear all</button>
                             </div>
                             <div id="newVendorCategoryChips" class="space-y-1"></div>
                         </div>
@@ -800,18 +800,18 @@
 
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                         <button type="button" onclick="toggleVendorFormStep('items')" class="w-full p-3.5 flex items-center justify-between text-left">
-                            <span class="text-[10px] font-bold uppercase text-slate-400">3. Specific items <span class="text-slate-300 font-semibold normal-case">(optional)</span></span>
-                            <i id="vendorFormStepItemsChevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform"></i>
+                            <span class="text-[13px] font-bold uppercase text-slate-400">3. Specific items <span class="text-slate-300 font-semibold normal-case">(optional)</span></span>
+                            <i id="vendorFormStepItemsChevron" class="fa-solid fa-chevron-down text-slate-400 text-sm transition-transform"></i>
                         </button>
                         <div id="vendorFormStepItemsBody" class="hidden px-3.5 pb-3.5 space-y-2">
-                            <p id="newVendorItemScopeNote" class="hidden text-[10px] font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-lg px-2.5 py-1.5"></p>
-                            <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold outline-none">
+                            <p id="newVendorItemScopeNote" class="hidden text-[13px] font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-lg px-2.5 py-1.5"></p>
+                            <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
                             <div class="flex justify-end gap-3">
-                                <button type="button" onclick="selectAllVendorItems()" class="text-[11px] font-bold text-cyan-700">Select all shown</button>
-                                <button type="button" onclick="clearAllVendorItems()" class="text-[11px] font-bold text-red-600">Clear all</button>
+                                <button type="button" onclick="selectAllVendorItems()" class="text-[13px] font-bold text-cyan-700">Select all shown</button>
+                                <button type="button" onclick="clearAllVendorItems()" class="text-[13px] font-bold text-red-600">Clear all</button>
                             </div>
                             <div id="newVendorItemPicker" class="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
-                            <p class="text-[10px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
+                            <p class="text-[13px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
                             <div id="newVendorItemChips" class="flex flex-wrap gap-1.5"></div>
                         </div>
                     </div>
@@ -824,26 +824,26 @@
 
                 <!-- Excel Import/Export view -->
                 <div id="settingsView_excel" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
-                        <p class="text-[11px] text-slate-500">Download the file below any time you want a fresh copy — it doubles as the sample/template, already filled with every current item. Change values, add rows, or add new items, then upload it here to update everything at once.</p>
-                        <button onclick="exportCatalogExcel()" class="w-full px-3 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Download Sample / Current Catalog</button>
-                        <button onclick="document.getElementById('catalogImportFile').click()" class="w-full px-3 py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-file-arrow-up"></i> Upload Excel to Update All Items</button>
+                        <p class="text-[13px] text-slate-500">Download the file below any time you want a fresh copy — it doubles as the sample/template, already filled with every current item. Change values, add rows, or add new items, then upload it here to update everything at once.</p>
+                        <button onclick="exportCatalogExcel()" class="w-full px-3 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Download Sample / Current Catalog</button>
+                        <button onclick="document.getElementById('catalogImportFile').click()" class="w-full px-3 py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-file-arrow-up"></i> Upload Excel to Update All Items</button>
                         <input type="file" id="catalogImportFile" accept=".xlsx,.xls" class="hidden" onchange="importCatalogExcel(event)">
-                        <p class="text-[10px] text-slate-400">A backup of the current catalog downloads automatically right before an upload is applied, so you can always undo by re-uploading that backup.</p>
+                        <p class="text-[13px] text-slate-400">A backup of the current catalog downloads automatically right before an upload is applied, so you can always undo by re-uploading that backup.</p>
                     </div>
                 </div>
 
                 <!-- Catalog History view -->
                 <div id="settingsView_history" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-xs font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
-                    <p class="text-[10px] text-slate-400">Only shows changes made from this phone — an edit made on the other branch's phone won't appear here.</p>
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <p class="text-[13px] text-slate-400">Only shows changes made from this phone — an edit made on the other branch's phone won't appear here.</p>
                     <div id="catalogHistoryList" class="space-y-1.5"></div>
                 </div>
 
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end items-center">
-                <button onclick="closeCatalogModal()" class="px-5 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs">Done</button>
+                <button onclick="closeCatalogModal()" class="px-5 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-sm">Done</button>
             </div>
         </div>
     </div>
@@ -853,7 +853,7 @@
     <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden p-4 space-y-3 text-center">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-xs text-slate-900"><i class="fa-solid fa-barcode mr-1"></i> Scan Barcode</h3>
+                <h3 class="font-bold text-sm text-slate-900"><i class="fa-solid fa-barcode mr-1"></i> Scan Barcode</h3>
                 <button onclick="closeScannerModal()" class="text-slate-600 text-lg font-bold">&times;</button>
             </div>
             <div class="relative bg-black rounded-xl overflow-hidden h-56 flex items-center justify-center">
@@ -862,8 +862,8 @@
                     <i class="fa-solid fa-bolt"></i>
                 </button>
             </div>
-            <p id="scanStatus" class="text-xs text-slate-600">Align barcode inside frame...</p>
-            <button onclick="closeScannerModal()" class="w-full py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Close</button>
+            <p id="scanStatus" class="text-sm text-slate-600">Align barcode inside frame...</p>
+            <button onclick="closeScannerModal()" class="w-full py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-sm">Close</button>
         </div>
     </div>
 
@@ -871,15 +871,15 @@
     <div id="thermalModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="bg-amber-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-receipt mr-1"></i> 80mm Receipt</h3>
+                <h3 class="font-bold text-sm"><i class="fa-solid fa-receipt mr-1"></i> 80mm Receipt</h3>
                 <button onclick="closeThermalPreview()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3.5 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
-                <div id="thermalPaper" class="bg-white shadow p-3 w-[270px] text-slate-900 font-mono text-[10px] leading-tight rounded border border-slate-300"></div>
+                <div id="thermalPaper" class="bg-white shadow p-3 w-[270px] text-slate-900 font-mono text-[13px] leading-tight rounded border border-slate-300"></div>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex gap-2.5">
-                <button onclick="closeThermalPreview()" class="flex-1 py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs">Cancel</button>
-                <button onclick="triggerThermalPrint()" class="flex-1 py-2.5 bg-amber-800 text-white font-semibold rounded-xl text-xs shadow"><i class="fa-solid fa-print"></i> Print</button>
+                <button onclick="closeThermalPreview()" class="flex-1 py-2.5 bg-slate-200 text-slate-800 font-semibold rounded-xl text-sm">Cancel</button>
+                <button onclick="triggerThermalPrint()" class="flex-1 py-2.5 bg-amber-800 text-white font-semibold rounded-xl text-sm shadow"><i class="fa-solid fa-print"></i> Print</button>
             </div>
         </div>
     </div>
@@ -888,15 +888,15 @@
     <div id="previewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-cart-shopping text-white mr-1"></i> View Cart</h3>
+                <h3 class="font-bold text-sm"><i class="fa-solid fa-cart-shopping text-white mr-1"></i> View Cart</h3>
                 <button onclick="closeStaffCheckModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3.5 overflow-y-auto bg-slate-100 flex-1 flex justify-center">
                 <div id="previewPaper" class="bg-white shadow p-3 w-full text-slate-900 rounded border border-slate-300"></div>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-between gap-2">
-                <button onclick="clearDispatchListFromPreview()" class="px-4 py-2.5 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl text-xs flex items-center gap-1.5"><i class="fa-solid fa-trash"></i> Clear Cart</button>
-                <button onclick="closeStaffCheckModal()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Close</button>
+                <button onclick="clearDispatchListFromPreview()" class="px-4 py-2.5 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl text-sm flex items-center gap-1.5"><i class="fa-solid fa-trash"></i> Clear Cart</button>
+                <button onclick="closeStaffCheckModal()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-sm">Close</button>
             </div>
         </div>
     </div>
@@ -910,22 +910,22 @@
     <div id="insightsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-chart-simple text-white mr-1"></i> Ledger Insights</h3>
+                <h3 class="font-bold text-sm"><i class="fa-solid fa-chart-simple text-white mr-1"></i> Ledger Insights</h3>
                 <button onclick="closeInsightsModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
             <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-4">
-                <p class="text-[10px] text-slate-400">Based on the records currently cached on this phone (tap Sync first for the latest).</p>
+                <p class="text-[13px] text-slate-400">Based on the records currently cached on this phone (tap Sync first for the latest).</p>
                 <div>
-                    <h4 class="text-xs font-bold text-slate-700 mb-2"><i class="fa-solid fa-users mr-1 text-blue-600"></i> Staff Activity — last 7 days</h4>
+                    <h4 class="text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-users mr-1 text-blue-600"></i> Staff Activity — last 7 days</h4>
                     <div id="staffInsightsList" class="space-y-1.5"></div>
                 </div>
                 <div>
-                    <h4 class="text-xs font-bold text-slate-700 mb-2"><i class="fa-solid fa-arrow-trend-up mr-1 text-red-600"></i> Most Frequently Needed — last 30 days</h4>
+                    <h4 class="text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-arrow-trend-up mr-1 text-red-600"></i> Most Frequently Needed — last 30 days</h4>
                     <div id="trendInsightsList" class="space-y-1.5"></div>
                 </div>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end">
-                <button onclick="closeInsightsModal()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Close</button>
+                <button onclick="closeInsightsModal()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-sm">Close</button>
             </div>
         </div>
     </div>
@@ -933,16 +933,16 @@
     <div id="receiveCheckModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center">
-                <h3 class="font-bold text-xs"><i class="fa-solid fa-circle-check text-white mr-1"></i> Confirm Received Quantities</h3>
+                <h3 class="font-bold text-sm"><i class="fa-solid fa-circle-check text-white mr-1"></i> Confirm Received Quantities</h3>
                 <button onclick="closeReceiveCheckModal()" class="text-white text-lg font-bold px-2">&times;</button>
             </div>
-            <div class="p-3 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-800">
+            <div class="p-3 bg-amber-50 border-b border-amber-200 text-[13px] text-amber-800">
                 Enter what actually arrived for each item. Defaults to the sent quantity — edit any that don't match.
             </div>
             <div id="receiveCheckList" class="p-3 overflow-y-auto bg-slate-50 flex-1 space-y-1.5"></div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end gap-2">
-                <button onclick="closeReceiveCheckModal()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">Cancel</button>
-                <button onclick="confirmMarkReceived()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Confirm Received</button>
+                <button onclick="closeReceiveCheckModal()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-sm">Cancel</button>
+                <button onclick="confirmMarkReceived()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-sm">Confirm Received</button>
             </div>
         </div>
     </div>
@@ -953,10 +953,10 @@
     <div id="itemSettingsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center">
-                <h3 id="itemSettingsPopupTitle" class="font-bold text-xs flex items-center gap-2 pr-2"><i class="fa-solid fa-gear text-emerald-400"></i> Item Settings</h3>
+                <h3 id="itemSettingsPopupTitle" class="font-bold text-sm flex items-center gap-2 pr-2"><i class="fa-solid fa-gear text-emerald-400"></i> Item Settings</h3>
                 <button onclick="closeItemSettingsPopup()" class="text-white text-lg font-bold px-2 shrink-0">&times;</button>
             </div>
-            <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-2.5 text-xs">
+            <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-2.5 text-sm">
                 <div class="grid grid-cols-4 gap-2">
                     <input type="text" id="itemSettingsPopupCode" placeholder="Code" class="col-span-1 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center">
                     <input type="text" id="itemSettingsPopupName" placeholder="Name" class="col-span-2 bg-white border border-slate-300 rounded-lg p-2 font-semibold">
@@ -964,26 +964,26 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
+                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
                         <select id="itemSettingsPopupCat" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"></select>
                     </div>
                     <div>
-                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
+                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
                         <input type="text" id="itemSettingsPopupBrand" placeholder="Brand" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                    <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
                     <select id="itemSettingsPopupVendor" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"></select>
                 </div>
                 <div class="flex items-center gap-1.5 pt-1">
-                    <span class="text-[10px] text-slate-500 font-bold">Min (reorder qty):</span>
+                    <span class="text-[13px] text-slate-500 font-bold">Min (reorder qty):</span>
                     <input type="number" id="itemSettingsPopupMin" class="w-16 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center">
                 </div>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end gap-2">
-                <button onclick="closeItemSettingsPopup()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">Cancel</button>
-                <button onclick="saveItemSettingsPopup()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Save</button>
+                <button onclick="closeItemSettingsPopup()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-sm">Cancel</button>
+                <button onclick="saveItemSettingsPopup()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-sm">Save</button>
             </div>
         </div>
     </div>
@@ -4189,8 +4189,8 @@
         function categoryTabClass(cat) {
             const active = activeCategoryFilter === cat;
             return active
-                ? "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition shadow-sm bg-emerald-600 text-white"
-                : "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition border bg-white text-slate-700 border-slate-200";
+                ? "px-3.5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition shadow-sm bg-emerald-600 text-white"
+                : "px-3.5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition border bg-white text-slate-700 border-slate-200";
         }
 
         function renderCategoryTabs() {
@@ -4205,7 +4205,7 @@
             }
             const tabs = ['All Categories', ...cats];
             if (cats.length === 0) {
-                container.innerHTML = `<span class="text-[11px] font-semibold text-slate-400 px-1 py-2">No categories have items for "${esc(activeBrand)}".</span>`;
+                container.innerHTML = `<span class="text-[13px] font-semibold text-slate-400 px-1 py-2">No categories have items for "${esc(activeBrand)}".</span>`;
                 return;
             }
             container.innerHTML = tabs.map(cat => `
@@ -4516,8 +4516,8 @@
             if (mode === 'audit') {
                 document.getElementById('auditViewSection').classList.remove('hidden');
                 document.getElementById('packingViewSection').classList.add('hidden');
-                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
+                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-sm font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-sm font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
                 bottomBar.classList.remove('hidden');
                 if (!editingTransitId) activeMobilePayload = null;
             } else {
@@ -4527,8 +4527,8 @@
                 }
                 document.getElementById('auditViewSection').classList.add('hidden');
                 document.getElementById('packingViewSection').classList.remove('hidden');
-                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-xs font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
+                document.getElementById('tabPackingBtn').className = "py-2.5 rounded-lg text-sm font-bold transition bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+                document.getElementById('tabAuditBtn').className = "py-2.5 rounded-lg text-sm font-bold transition bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5";
                 bottomBar.classList.add('hidden');
                 loadTransitSheets(false);
             }
@@ -4537,11 +4537,11 @@
         function setAuditMode(mode) {
             auditMode = mode;
             if (mode === 'available') {
-                document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white";
-                document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
+                document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-sm font-bold transition bg-emerald-600 text-white";
+                document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-sm font-bold transition bg-transparent text-slate-600";
             } else {
-                document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-amber-600 text-white";
-                document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition bg-transparent text-slate-600";
+                document.getElementById('modeShortBtn').className = "py-2 rounded-lg text-sm font-bold transition bg-amber-600 text-white";
+                document.getElementById('modeAvailBtn').className = "py-2 rounded-lg text-sm font-bold transition bg-transparent text-slate-600";
             }
             renderItems(document.getElementById('searchBox').value);
         }
@@ -4568,7 +4568,7 @@
             if (isEvent && !dropdown.classList.contains('hidden')) { dropdown.classList.add('hidden'); return; }
 
             dropdown.innerHTML = list.map((name, i) => `
-                <div class="flex justify-between items-center px-3 py-2 hover:bg-slate-100 rounded-lg cursor-pointer text-xs font-bold text-slate-700">
+                <div class="flex justify-between items-center px-3 py-2 hover:bg-slate-100 rounded-lg cursor-pointer text-sm font-bold text-slate-700">
                     <span onclick="selectStaffName(${i})" class="flex-1">${esc(name)}</span>
                     <button onclick="removeStaffName(event, ${i})" class="text-red-500 hover:text-red-700 px-2 py-0.5 font-bold text-sm" title="Remove">&times;</button>
                 </div>
@@ -4814,7 +4814,7 @@
                 if (activeBrand !== 'All Brands') bits.push(`brand "${esc(activeBrand)}"`);
                 if (activeCategoryFilter !== 'All Categories') bits.push(`category "${esc(activeCategoryFilter)}"`);
                 const note = bits.length ? ` for ${bits.join(' + ')}` : '';
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-2 block"></i>No items found${note}.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-2 block"></i>No items found${note}.</div>`;
                 return;
             }
 
@@ -4830,15 +4830,15 @@
                         <div id="row_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                    <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
-                                    <span id="need_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
-                                    ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
-                                    ${showBrandTag ? `<span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
-                                    <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
+                                    <span class="text-[13px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
+                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                    <span id="need_${item.id}" class="text-[13px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
+                                    ${showCatTag ? `<span class="text-[13px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
+                                    ${showBrandTag ? `<span class="text-[13px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
+                                    <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[13px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
                                 </div>
-                                <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
-                                <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
+                                <h3 class="text-base font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
+                                <p class="text-sm text-slate-500 font-medium">${esc(item.uom)}</p>
                             </div>
                             <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
                                 <button onclick="updateStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
@@ -4872,7 +4872,7 @@
             const hasCount = shelfStock[id] !== undefined;
             input.value = hasCount ? shelfStock[id] : '';
             badge.innerHTML = `Need: ${need}`;
-            badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " +
+            badge.className = "text-[13px] font-extrabold px-2 py-0.5 rounded-md border " +
                 (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
             const row = document.getElementById(`row_${id}`);
             // Keep "swipe-row-content" — dropping it here would strip the position/z-index
@@ -4928,19 +4928,19 @@
             if (!container) return;
             const log = readJson('lalitha_catalog_history', []);
             if (!log.length) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-xl border">No changes logged yet on this phone.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm bg-white rounded-xl border">No changes logged yet on this phone.</div>`;
                 return;
             }
             container.innerHTML = log.map(entry => {
                 const d = new Date(entry.time);
                 const when = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
                 return `
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-xs">
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-sm">
                         <div class="flex justify-between gap-2">
                             <strong class="text-slate-800">${esc(entry.action)}</strong>
-                            <span class="text-slate-400 text-[10px] shrink-0">${esc(when)}</span>
+                            <span class="text-slate-400 text-[13px] shrink-0">${esc(when)}</span>
                         </div>
-                        <p class="text-slate-500 text-[11px]">${esc(entry.detail)}</p>
+                        <p class="text-slate-500 text-[13px]">${esc(entry.detail)}</p>
                     </div>
                 `;
             }).join('');
@@ -4954,7 +4954,7 @@
             const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
             const cats = Object.keys(inventoryData).filter(cat => !q || cat.toLowerCase().includes(q));
             if (cats.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-xs">No categories match "${esc(q)}".</p>`;
+                container.innerHTML = `<p class="text-center text-slate-400 py-3 text-sm">No categories match "${esc(q)}".</p>`;
                 return;
             }
             container.innerHTML = cats.map(cat => {
@@ -4963,8 +4963,8 @@
                 return `
                     <div class="bg-white p-3.5 rounded-xl border ${hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} flex items-center justify-between gap-2">
                         <div class="min-w-0">
-                            <p class="text-sm font-bold text-slate-800 truncate">${esc(cat)} ${hidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
-                            <p class="text-[11px] text-slate-500">${count} item${count === 1 ? '' : 's'}</p>
+                            <p class="text-sm font-bold text-slate-800 truncate">${esc(cat)} ${hidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
+                            <p class="text-[13px] text-slate-500">${count} item${count === 1 ? '' : 's'}</p>
                         </div>
                         <div class="flex gap-2 shrink-0">
                             <button onclick="toggleCategoryHidden('${esc(cat)}')" class="${hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="${hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
@@ -5071,7 +5071,7 @@
             const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
             const brands = Object.keys(counts).filter(b => !q || b.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b));
             if (brands.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs"><i class="fa-solid fa-tags text-2xl text-slate-300 mb-2 block"></i>${q ? `No brands match "${esc(q)}".` : 'No brands yet — add an item to create one.'}</div>`;
+                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-sm"><i class="fa-solid fa-tags text-2xl text-slate-300 mb-2 block"></i>${q ? `No brands match "${esc(q)}".` : 'No brands yet — add an item to create one.'}</div>`;
                 return;
             }
             container.innerHTML = brands.map(brand => {
@@ -5086,8 +5086,8 @@
                     <div class="bg-white rounded-xl border ${hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} overflow-hidden">
                         <div class="p-3.5 flex items-center justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="text-sm font-bold text-slate-800 truncate">${esc(brand)} ${hidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
-                                <p class="text-[11px] text-slate-500">${counts[brand]} item${counts[brand] === 1 ? '' : 's'}</p>
+                                <p class="text-sm font-bold text-slate-800 truncate">${esc(brand)} ${hidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden)</span>' : ''}</p>
+                                <p class="text-[13px] text-slate-500">${counts[brand]} item${counts[brand] === 1 ? '' : 's'}</p>
                             </div>
                             <div class="flex gap-2 shrink-0">
                                 <button onclick="toggleBrandCatsExpanded('${esc(brand)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this brand"><i class="fa-solid fa-layer-group"></i></button>
@@ -5097,16 +5097,16 @@
                         </div>
                         ${expanded ? `
                             <div class="border-t border-slate-100 bg-slate-50 p-3 space-y-1.5">
-                                <p class="text-[11px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(brand)}" — it stays visible for other brands.</p>
+                                <p class="text-[13px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(brand)}" — it stays visible for other brands.</p>
                                 ${catsForBrand.map(cat => {
                                     const catHidden = isCatHiddenForBrand(brand, cat);
                                     return `
                                         <div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
-                                            <span class="text-xs font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''}</span>
+                                            <span class="text-sm font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''}</span>
                                             <button onclick="toggleCategoryHiddenForBrand('${esc(brand)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center shrink-0"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                         </div>
                                     `;
-                                }).join('') || '<p class="text-[11px] text-slate-400 px-0.5">No categories for this brand.</p>'}
+                                }).join('') || '<p class="text-[13px] text-slate-400 px-0.5">No categories for this brand.</p>'}
                             </div>
                         ` : ''}
                     </div>
@@ -5178,14 +5178,14 @@
             if (!container) return;
             const searchQ = '';
             if (branchList.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-code-branch text-2xl text-slate-300 mb-2 block"></i>No branches yet — add one above.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-sm bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-code-branch text-2xl text-slate-300 mb-2 block"></i>No branches yet — add one above.</div>`;
                 return;
             }
             container.innerHTML = branchList.map(b => `
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
                     <div class="min-w-0">
                         <p class="text-sm font-bold text-slate-800 truncate">${esc(b)}</p>
-                        ${lockedBranch === b ? '<p class="text-[10px] font-semibold text-amber-600"><i class="fa-solid fa-lock mr-0.5"></i>Locked on this device</p>' : ''}
+                        ${lockedBranch === b ? '<p class="text-[13px] font-semibold text-amber-600"><i class="fa-solid fa-lock mr-0.5"></i>Locked on this device</p>' : ''}
                     </div>
                     <div class="flex gap-2 shrink-0">
                         <button onclick="renameBranch('${esc(b)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
@@ -5240,7 +5240,7 @@
             const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
             const list = vendors.filter(v => !q || v.name.toLowerCase().includes(q) || v.mobile.includes(q));
             if (list.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs"><i class="fa-solid fa-truck-fast text-2xl text-slate-300 mb-2 block"></i>${q ? `No vendors match "${esc(q)}".` : 'No vendors added yet — tap "+ Add Vendor" above.'}</div>`;
+                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-sm"><i class="fa-solid fa-truck-fast text-2xl text-slate-300 mb-2 block"></i>${q ? `No vendors match "${esc(q)}".` : 'No vendors added yet — tap "+ Add Vendor" above.'}</div>`;
                 return;
             }
             container.innerHTML = list.map(v => {
@@ -5255,9 +5255,9 @@
                     <div class="p-3.5 flex items-center justify-between gap-2">
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-slate-800 truncate">${esc(v.name)}</p>
-                            <p class="text-[11px] text-slate-500">${esc(v.mobile)}${brandsArr.length ? ` · <span class="text-cyan-700 font-bold">${brandsArr.map(esc).join(', ')}</span>` : ''}</p>
-                            <p class="text-[10px] text-slate-400 mt-0.5">${Array.isArray(v.categories) && v.categories.length ? `${v.categories.length} categor${v.categories.length === 1 ? 'y' : 'ies'}` : 'All categories'}${Array.isArray(v.itemIds) && v.itemIds.length ? ` · ${v.itemIds.length} specific item${v.itemIds.length === 1 ? '' : 's'}` : ''}</p>
-                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-0.5"></i> ${lastOrderedLabelForVendor(v.id)}</p>
+                            <p class="text-[13px] text-slate-500">${esc(v.mobile)}${brandsArr.length ? ` · <span class="text-cyan-700 font-bold">${brandsArr.map(esc).join(', ')}</span>` : ''}</p>
+                            <p class="text-[13px] text-slate-400 mt-0.5">${Array.isArray(v.categories) && v.categories.length ? `${v.categories.length} categor${v.categories.length === 1 ? 'y' : 'ies'}` : 'All categories'}${Array.isArray(v.itemIds) && v.itemIds.length ? ` · ${v.itemIds.length} specific item${v.itemIds.length === 1 ? '' : 's'}` : ''}</p>
+                            <p class="text-[13px] text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-0.5"></i> ${lastOrderedLabelForVendor(v.id)}</p>
                         </div>
                         <div class="flex gap-2 shrink-0">
                             <button onclick="toggleVendorCatsExpanded('${esc(v.id)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this vendor"><i class="fa-solid fa-layer-group"></i></button>
@@ -5267,16 +5267,16 @@
                     </div>
                     ${expanded ? `
                         <div class="border-t border-slate-100 bg-slate-50 p-3 space-y-1.5">
-                            <p class="text-[11px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(v.name)}" — it stays visible for other vendors.</p>
+                            <p class="text-[13px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(v.name)}" — it stays visible for other vendors.</p>
                             ${catsForVendor.map(cat => {
                                 const catHidden = isCatHiddenForVendor(v.id, cat);
                                 return `
                                     <div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
-                                        <span class="text-xs font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[10px] font-semibold text-slate-400">(hidden for this vendor)</span>' : ''}</span>
+                                        <span class="text-sm font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden for this vendor)</span>' : ''}</span>
                                         <button onclick="toggleCategoryHiddenForVendor('${esc(v.id)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center shrink-0"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                     </div>
                                 `;
-                            }).join('') || '<p class="text-[11px] text-slate-400 px-0.5">No categories for this vendor.</p>'}
+                            }).join('') || '<p class="text-[13px] text-slate-400 px-0.5">No categories for this vendor.</p>'}
                         </div>
                     ` : ''}
                 </div>
@@ -5299,7 +5299,7 @@
         // wrapped pill chips, and it flows with the page instead of scrolling inside a box.
         function pickerRow(label, picked, onClick) {
             return `<button type="button" onclick="${onClick}" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-left border ${picked ? 'bg-cyan-50 border-cyan-300' : 'bg-white border-slate-200'}">
-                <span class="text-xs font-semibold text-slate-700">${label}</span>
+                <span class="text-sm font-semibold text-slate-700">${label}</span>
                 <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle text-slate-200'}"></i>
             </button>`;
         }
@@ -5308,8 +5308,8 @@
         // wasted half the available width and forced a tiny scroll box).
         function pickerChip(label, picked, onClick) {
             return `<button type="button" onclick="${onClick}" class="min-w-0 flex items-center justify-between gap-1.5 px-2.5 py-2.5 rounded-lg text-left border ${picked ? 'bg-cyan-50 border-cyan-300' : 'bg-white border-slate-200'}">
-                <span class="text-[11px] font-semibold text-slate-700 truncate">${label}</span>
-                <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle text-slate-200'} text-xs shrink-0"></i>
+                <span class="text-[13px] font-semibold text-slate-700 truncate">${label}</span>
+                <i class="fa-solid ${picked ? 'fa-circle-check text-cyan-600' : 'fa-circle text-slate-200'} text-sm shrink-0"></i>
             </button>`;
         }
 
@@ -5321,7 +5321,7 @@
             // even if it's later hidden; it just can't be picked fresh from this list.
             const brands = allBrandsInCatalog().filter(b => !hiddenBrands.has(b) || newVendorSelectedBrands.has(b));
             if (brands.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No brands yet — add an item first.</p>';
+                container.innerHTML = '<p class="text-[13px] text-slate-400 px-1">No brands yet — add an item first.</p>';
                 return;
             }
             container.innerHTML = brands.map(b =>
@@ -5376,7 +5376,7 @@
             // Drop any picked category that no longer applies (brand selection changed).
             Array.from(newVendorSelectedCategories).forEach(c => { if (!cats.includes(c)) newVendorSelectedCategories.delete(c); });
             if (cats.length === 0) {
-                container.innerHTML = '<p class="text-[11px] text-slate-400 px-1">No categories yet.</p>';
+                container.innerHTML = '<p class="text-[13px] text-slate-400 px-1">No categories yet.</p>';
                 return;
             }
             container.innerHTML = cats.map(c =>
@@ -5443,14 +5443,14 @@
             }
             const results = vendorItemPickerResults();
             if (results.length === 0) {
-                container.innerHTML = '<p class="col-span-2 text-[11px] text-slate-400 px-1 py-1">No items match.</p>';
+                container.innerHTML = '<p class="col-span-2 text-[13px] text-slate-400 px-1 py-1">No items match.</p>';
             } else {
                 const shown = results.slice(0, newVendorItemPickerLimit);
                 let html = shown.map(item =>
                     pickerChip(`${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span>`, newVendorSelectedItemIds.has(String(item.id)), `toggleNewVendorItemChip('${esc(item.id)}')`)
                 ).join('');
                 if (results.length > shown.length) {
-                    html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="col-span-2 text-center py-2 text-[11px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
+                    html += `<button type="button" onclick="newVendorItemPickerLimit += 150; renderVendorFormItemPicker();" class="col-span-2 text-center py-2 text-[13px] font-bold text-cyan-700 bg-cyan-50 rounded-lg border border-cyan-200">Load ${Math.min(150, results.length - shown.length)} more (${results.length - shown.length} left)</button>`;
                 }
                 container.innerHTML = html;
             }
@@ -5482,7 +5482,7 @@
             container.innerHTML = Array.from(newVendorSelectedItemIds).map(id => {
                 const item = allItems.find(i => String(i.id) === String(id));
                 if (!item) return '';
-                return `<span class="inline-flex items-center gap-1.5 bg-cyan-600 text-white pl-2.5 pr-1.5 py-1 rounded-full text-[11px] font-bold">${esc(item.name)}<button type="button" onclick="toggleNewVendorItemChip('${esc(id)}')" class="w-4 h-4 rounded-full bg-cyan-800 flex items-center justify-center text-[9px]">&times;</button></span>`;
+                return `<span class="inline-flex items-center gap-1.5 bg-cyan-600 text-white pl-2.5 pr-1.5 py-1 rounded-full text-[13px] font-bold">${esc(item.name)}<button type="button" onclick="toggleNewVendorItemChip('${esc(id)}')" class="w-4 h-4 rounded-full bg-cyan-800 flex items-center justify-center text-[12px]">&times;</button></span>`;
             }).join('');
         }
 
@@ -5762,8 +5762,8 @@
         function categoryTabClassVendor(cat) {
             const active = vendorActiveCategoryFilter === cat;
             return active
-                ? "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition shadow-sm bg-cyan-600 text-white"
-                : "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition border bg-white text-slate-700 border-slate-200";
+                ? "px-3.5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition shadow-sm bg-cyan-600 text-white"
+                : "px-3.5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition border bg-white text-slate-700 border-slate-200";
         }
 
         function renderVendorCategoryTabs() {
@@ -5772,7 +5772,7 @@
             const cats = vendorCategoriesForActiveBrand();
             if (vendorActiveCategoryFilter !== 'All Categories' && !cats.includes(vendorActiveCategoryFilter)) vendorActiveCategoryFilter = 'All Categories';
             if (cats.length === 0) {
-                container.innerHTML = `<span class="text-[11px] font-semibold text-slate-400 px-1 py-2">No categories have items for "${esc(vendorActiveBrand)}".</span>`;
+                container.innerHTML = `<span class="text-[13px] font-semibold text-slate-400 px-1 py-2">No categories have items for "${esc(vendorActiveBrand)}".</span>`;
                 return;
             }
             const tabs = ['All Categories', ...cats];
@@ -5828,7 +5828,7 @@
             const showCatTag = searching || vendorActiveCategoryFilter === 'All Categories';
 
             if (itemsToDisplay.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-2 block"></i>No "${esc(vendorActiveBrand || '')}" items found${vendorActiveCategoryFilter !== 'All Categories' ? ` in "${esc(vendorActiveCategoryFilter)}"` : ''}.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-2 block"></i>No "${esc(vendorActiveBrand || '')}" items found${vendorActiveCategoryFilter !== 'All Categories' ? ` in "${esc(vendorActiveCategoryFilter)}"` : ''}.</div>`;
                 return;
             }
 
@@ -5843,14 +5843,14 @@
                         <div id="vrow_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                    <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
-                                    <span id="vneed_${item.id}" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
-                                    ${showCatTag ? `<span class="text-[10px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
-                                    <span id="vcounted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[10px] font-extrabold text-cyan-700"><i class="fa-solid fa-circle-check"></i></span>
+                                    <span class="text-[13px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
+                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                    <span id="vneed_${item.id}" class="text-[13px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
+                                    ${showCatTag ? `<span class="text-[13px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
+                                    <span id="vcounted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[13px] font-extrabold text-cyan-700"><i class="fa-solid fa-circle-check"></i></span>
                                 </div>
-                                <h3 class="text-sm font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
-                                <p class="text-xs text-slate-500 font-medium">${esc(item.uom)}</p>
+                                <h3 class="text-base font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
+                                <p class="text-sm text-slate-500 font-medium">${esc(item.uom)}</p>
                             </div>
                             <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
                                 <button onclick="updateVendorStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
@@ -5879,7 +5879,7 @@
             const hasCount = vendorShelfStock[id] !== undefined;
             input.value = hasCount ? vendorShelfStock[id] : '';
             badge.innerHTML = `Need: ${need}`;
-            badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md border " + (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+            badge.className = "text-[13px] font-extrabold px-2 py-0.5 rounded-md border " + (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
             const row = document.getElementById(`vrow_${id}`);
             // Keep "swipe-row-content" — dropping it here would strip the position/z-index
             // that keeps this row stacked above its (hidden-until-swiped) gear button.
@@ -5902,8 +5902,8 @@
 
         function setVendorAuditMode(mode) {
             vendorAuditMode = mode;
-            document.getElementById('vModeAvailBtn').className = "py-2 rounded-lg text-xs font-bold transition " + (mode === 'available' ? "bg-cyan-600 text-white" : "bg-transparent text-slate-600");
-            document.getElementById('vModeShortBtn').className = "py-2 rounded-lg text-xs font-bold transition " + (mode === 'shortage' ? "bg-cyan-600 text-white" : "bg-transparent text-slate-600");
+            document.getElementById('vModeAvailBtn').className = "py-2 rounded-lg text-sm font-bold transition " + (mode === 'available' ? "bg-cyan-600 text-white" : "bg-transparent text-slate-600");
+            document.getElementById('vModeShortBtn').className = "py-2 rounded-lg text-sm font-bold transition " + (mode === 'shortage' ? "bg-cyan-600 text-white" : "bg-transparent text-slate-600");
             renderVendorItems(document.getElementById('vendorSearchBox').value);
         }
 
@@ -6017,8 +6017,8 @@
             merged.forEach(i => { if (!byCat[i.cat]) byCat[i.cat] = []; byCat[i.cat].push(i); });
             let html = '';
             Object.keys(byCat).forEach(cat => {
-                html += `<div class="mb-2.5"><p class="text-[10px] font-bold text-cyan-700 uppercase mb-1">${esc(cat)}</p>`;
-                byCat[cat].forEach(i => { html += `<div class="flex justify-between text-xs py-1.5 border-b border-slate-100"><span>${esc(i.name)} <span class="text-slate-400">(${esc(i.uom)})</span></span><span class="font-bold">${i.reqQty}</span></div>`; });
+                html += `<div class="mb-2.5"><p class="text-[13px] font-bold text-cyan-700 uppercase mb-1">${esc(cat)}</p>`;
+                byCat[cat].forEach(i => { html += `<div class="flex justify-between text-sm py-1.5 border-b border-slate-100"><span>${esc(i.name)} <span class="text-slate-400">(${esc(i.uom)})</span></span><span class="font-bold">${i.reqQty}</span></div>`; });
                 html += `</div>`;
             });
             document.getElementById('vendorCartPreviewBody').innerHTML = html;
@@ -6073,8 +6073,8 @@
         function switchVendorMode(mode) {
             document.getElementById('vendorRequestView').classList.toggle('hidden', mode !== 'request');
             document.getElementById('vendorLedgerView').classList.toggle('hidden', mode !== 'ledger');
-            document.getElementById('vTabRequestBtn').className = "py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 " + (mode === 'request' ? "bg-cyan-600 text-white shadow-sm" : "bg-slate-100 text-slate-700");
-            document.getElementById('vTabLedgerBtn').className = "py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 " + (mode === 'ledger' ? "bg-cyan-600 text-white shadow-sm" : "bg-slate-100 text-slate-700");
+            document.getElementById('vTabRequestBtn').className = "py-2.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 " + (mode === 'request' ? "bg-cyan-600 text-white shadow-sm" : "bg-slate-100 text-slate-700");
+            document.getElementById('vTabLedgerBtn').className = "py-2.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 " + (mode === 'ledger' ? "bg-cyan-600 text-white shadow-sm" : "bg-slate-100 text-slate-700");
             document.getElementById('vendorBottomBar').classList.toggle('hidden', mode !== 'request');
             if (mode === 'ledger') renderVendorLedgerList();
         }
@@ -6101,16 +6101,16 @@
             });
             return groups;
         }
-        const dateHeaderClass = "sticky top-14 z-10 -mx-3.5 px-3.5 py-1.5 bg-slate-50/95 backdrop-blur-sm text-[10px] font-extrabold uppercase tracking-wide text-slate-500 border-b border-slate-200";
+        const dateHeaderClass = "sticky top-14 z-10 -mx-3.5 px-3.5 py-1.5 bg-slate-50/95 backdrop-blur-sm text-[13px] font-extrabold uppercase tracking-wide text-slate-500 border-b border-slate-200";
 
         function renderVendorLedgerList() {
             const container = document.getElementById('vendorLedgerList');
             if (!container) return;
             if (vendorLedger.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-receipt text-2xl text-slate-300 mb-2 block"></i>No vendor requirements sent yet.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm font-semibold bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-receipt text-2xl text-slate-300 mb-2 block"></i>No vendor requirements sent yet.</div>`;
                 return;
             }
-            const printAllBtn = `<button onclick="printVendorLedgerPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Vendor Ledger (PDF)</button>`;
+            const printAllBtn = `<button onclick="printVendorLedgerPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Vendor Ledger (PDF)</button>`;
             const groups = groupByDay(vendorLedger, 'time');
             container.innerHTML = printAllBtn + groups.map(group => `
                 <div class="${dateHeaderClass}">${esc(group.label)}</div>
@@ -6120,13 +6120,13 @@
                     <div class="flex justify-between items-start gap-2">
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-slate-800 truncate">${esc(entry.vendorName)}</p>
-                            <p class="text-[10px] text-slate-500">${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}${entry.branch ? ' · ' + esc(entry.branch) : ''} · Staff: ${esc(entry.staff)}</p>
+                            <p class="text-[13px] text-slate-500">${new Date(entry.time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}${entry.branch ? ' · ' + esc(entry.branch) : ''} · Staff: ${esc(entry.staff)}</p>
                         </div>
-                        <span class="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200 shrink-0">${entry.items.length} item${entry.items.length === 1 ? '' : 's'}</span>
+                        <span class="text-[13px] font-bold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200 shrink-0">${entry.items.length} item${entry.items.length === 1 ? '' : 's'}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-1.5">
-                        <button onclick="resendVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Resend</button>
-                        <button onclick="printVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-slate-100 text-slate-700 border border-slate-200 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print</button>
+                        <button onclick="resendVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-[13px] flex items-center justify-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Resend</button>
+                        <button onclick="printVendorLedgerEntry('${esc(entry.id)}')" class="py-2 bg-slate-100 text-slate-700 border border-slate-200 font-bold rounded-lg text-[13px] flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print</button>
                     </div>
                 </div>
                 `).join('')}
@@ -6369,9 +6369,9 @@
                     if (dupOnlyFilterActive && !dup) return;
 
                     html += `
-                        <div id="catalog_row_${item.id}" class="bg-white p-3 rounded-xl border ${item.hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} text-xs space-y-2">
+                        <div id="catalog_row_${item.id}" class="bg-white p-3 rounded-xl border ${item.hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} text-sm space-y-2">
                             <div class="flex justify-between items-center font-bold text-slate-800">
-                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${esc(cat)}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded text-[13px]">${esc(cat)}</span>
                                 <div class="flex gap-1.5">
                                     <button onclick="toggleItemHidden(${item.id})" class="${item.hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} px-2.5 py-1 rounded-lg font-bold" title="${item.hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${item.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                     <button onclick="toggleEditItem(${item.id})" id="edit_btn_${item.id}" class="text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
@@ -6379,47 +6379,47 @@
                                 </div>
                             </div>
                             <div id="view_mode_${item.id}" class="py-0.5">
-                                <strong>${esc(item.name)}</strong> (${esc(item.uom)}) ${item.hidden ? '<span class="text-[10px] font-bold text-slate-400">(hidden)</span>' : ''}
-                                <div class="text-[10px] text-slate-500">Code: ${esc(item.code)} | Min: ${item.min} | Brand: ${esc(item.brand || DEFAULT_BRAND)}
+                                <strong>${esc(item.name)}</strong> (${esc(item.uom)}) ${item.hidden ? '<span class="text-[13px] font-bold text-slate-400">(hidden)</span>' : ''}
+                                <div class="text-[13px] text-slate-500">Code: ${esc(item.code)} | Min: ${item.min} | Brand: ${esc(item.brand || DEFAULT_BRAND)}
                                     ${dup ? `<span class="text-red-600 font-bold"> &middot; duplicate code (also ${esc(dup.name)} ${esc(dup.uom)})</span>` : ''}
                                 </div>
                             </div>
                             <div id="edit_mode_${item.id}" class="hidden space-y-2.5 pt-1 border-t border-slate-100">
-                                <div class="grid grid-cols-4 gap-2">
-                                    <div class="col-span-1 flex gap-1">
-                                        <input type="text" id="edit_code_${item.id}" value="${esc(item.code)}" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
-                                        <button onclick="openScannerModal('edit_${item.id}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-xs" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
+                                <div class="grid grid-cols-6 gap-2">
+                                    <div class="col-span-2 flex gap-1">
+                                        <input type="text" id="edit_code_${item.id}" value="${esc(item.code)}" placeholder="Code" class="w-full min-w-0 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
+                                        <button onclick="openScannerModal('edit_${item.id}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-sm shrink-0" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
                                     </div>
-                                    <input type="text" id="edit_name_${item.id}" value="${esc(item.name)}" placeholder="Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
-                                    <input type="text" id="edit_uom_${item.id}" value="${esc(item.uom)}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
+                                    <input type="text" id="edit_name_${item.id}" value="${esc(item.name)}" placeholder="Name" class="col-span-3 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
+                                    <input type="text" id="edit_uom_${item.id}" value="${esc(item.uom)}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
-                                        <select id="edit_cat_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
+                                        <select id="edit_cat_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
                                             ${Object.keys(inventoryData).map(c => `<option value="${esc(c)}" ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
-                                        <input type="text" id="edit_brand_${item.id}" value="${esc(item.brand || DEFAULT_BRAND)}" placeholder="Brand" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
+                                        <input type="text" id="edit_brand_${item.id}" value="${esc(item.brand || DEFAULT_BRAND)}" placeholder="Brand" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
-                                    <select id="edit_vendor_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-xs">
+                                    <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                                    <select id="edit_vendor_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
                                         <option value="">No vendor</option>
                                         ${vendors.map(v => `<option value="${esc(v.id)}" ${Array.isArray(v.itemIds) && v.itemIds.some(x => String(x) === String(item.id)) ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="flex justify-between items-center pt-1">
                                     <div class="flex items-center gap-1.5">
-                                        <span class="text-[10px] text-slate-500 font-bold">Min:</span>
-                                        <input type="number" id="edit_min_${item.id}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-xs">
+                                        <span class="text-[13px] text-slate-500 font-bold">Min:</span>
+                                        <input type="number" id="edit_min_${item.id}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
                                     </div>
                                     <div class="flex gap-1.5">
-                                        <button onclick="toggleEditItem(${item.id})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Cancel</button>
-                                        <button onclick="saveCatalogItem(${item.id})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-xs">Save</button>
+                                        <button onclick="toggleEditItem(${item.id})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm">Cancel</button>
+                                        <button onclick="saveCatalogItem(${item.id})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-sm">Save</button>
                                     </div>
                                 </div>
                             </div>
@@ -7313,7 +7313,7 @@
                 renderTransitList(clean, targetDateStr);
             } catch (err) {
                 if (cachedOk.length === 0) {
-                    container.innerHTML = `<div class="text-center py-6 text-red-500 text-xs">Failed to load records. Check connection.</div>`;
+                    container.innerHTML = `<div class="text-center py-6 text-red-500 text-sm">Failed to load records. Check connection.</div>`;
                 }
             }
         }
@@ -7341,7 +7341,7 @@
             document.getElementById('mobileSheetCount').innerText = `${filtered.length} records`;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs bg-white rounded-xl border">${query ? `No records match "${esc(query)}".` : `No records found for ${esc(targetDateStr)}.`}</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm bg-white rounded-xl border">${query ? `No records match "${esc(query)}".` : `No records found for ${esc(targetDateStr)}.`}</div>`;
                 window._latestCloudSheets = [];
                 return;
             }
@@ -7358,41 +7358,41 @@
                 const received = s.status === 'Received';
 
                 return `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-xs">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-sm">
                         <div class="flex justify-between font-bold text-sm">
                             <span>#${idx + 1} &bull; ${esc(s.src)} &rarr; ${esc(s.dst)}</span>
                             <span class="flex items-center gap-1.5">
-                                ${s.mismatch ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-800"><i class="fa-solid fa-triangle-exclamation"></i> ${s.mismatchCount || ''} mismatch</span>` : ''}
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] ${received ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${esc(s.status)}</span>
+                                ${s.mismatch ? `<span class="px-2.5 py-0.5 rounded-full text-[13px] bg-red-100 text-red-800"><i class="fa-solid fa-triangle-exclamation"></i> ${s.mismatchCount || ''} mismatch</span>` : ''}
+                                <span class="px-2.5 py-0.5 rounded-full text-[13px] ${received ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${esc(s.status)}</span>
                             </span>
                         </div>
-                        <p class="text-slate-500 text-[11px]">Date: ${esc(dateStr)} | Time: ${esc(timeStr)} | Staff: ${esc(staffName)} | <strong>${s.items.length} items</strong></p>
-                        ${s.notes ? `<p class="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${esc(s.notes)}</p>` : ''}
+                        <p class="text-slate-500 text-[13px]">Date: ${esc(dateStr)} | Time: ${esc(timeStr)} | Staff: ${esc(staffName)} | <strong>${s.items.length} items</strong></p>
+                        ${s.notes ? `<p class="text-sm text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200"><strong>Note:</strong> ${esc(s.notes)}</p>` : ''}
 
                         <div class="flex items-center gap-2 pt-1 relative">
-                            <button onclick="loadTransitPayload('${sid}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
+                            <button onclick="loadTransitPayload('${sid}'); openStaffCheckModal();" class="py-2.5 px-4 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-eye text-sm"></i> View</button>
 
                             <!-- Print & Share Dropdown Toggle -->
                             <div class="relative flex-1">
-                                <button onclick="toggleActionDropdown(event, 'print_${sid}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="fa-solid fa-print text-sm"></i> Print & Share <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                <button onclick="toggleActionDropdown(event, 'print_${sid}')" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="fa-solid fa-print text-sm"></i> Print & Share <i class="fa-solid fa-chevron-down text-[13px]"></i>
                                 </button>
                                 <div id="dropdown_print_${sid}" class="hidden absolute left-0 bottom-full mb-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
-                                    <button onclick="loadTransitPayload('${sid}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Print / PDF</button>
-                                    <button onclick="loadTransitPayload('${sid}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
-                                    <button onclick="loadTransitPayload('${sid}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
+                                    <button onclick="loadTransitPayload('${sid}'); downloadPdfFile(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-file-pdf text-slate-800 text-sm w-4"></i> Print / PDF</button>
+                                    <button onclick="loadTransitPayload('${sid}'); openThermalPreview(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-solid fa-receipt text-amber-700 text-sm w-4"></i> Thermal Receipt</button>
+                                    <button onclick="loadTransitPayload('${sid}'); shareToWhatsApp(); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm w-4"></i> WhatsApp</button>
                                 </div>
                             </div>
 
                             <!-- Actions Dropdown -->
                             <div class="relative">
-                                <button onclick="toggleActionDropdown(event, 'actions_${sid}')" class="py-2.5 px-3 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                                <button onclick="toggleActionDropdown(event, 'actions_${sid}')" class="py-2.5 px-3 bg-slate-200 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm">
                                     <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
                                 </button>
                                 <div id="dropdown_actions_${sid}" class="hidden absolute right-0 bottom-full mb-1.5 w-40 bg-white border border-slate-200 rounded-2xl shadow-2xl z-30 overflow-hidden py-1.5">
-                                    ${received ? '' : `<button onclick="markReceived('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"><i class="fa-solid fa-circle-check w-4"></i> Mark Received</button>`}
-                                    <button onclick="editTransitRecord('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2"><i class="fa-solid fa-pen-to-square w-4"></i> Edit</button>
-                                    <button onclick="deleteCloudTransit('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"><i class="fa-solid fa-trash w-4"></i> Delete</button>
+                                    ${received ? '' : `<button onclick="markReceived('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-sm font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"><i class="fa-solid fa-circle-check w-4"></i> Mark Received</button>`}
+                                    <button onclick="editTransitRecord('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-sm font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2"><i class="fa-solid fa-pen-to-square w-4"></i> Edit</button>
+                                    <button onclick="deleteCloudTransit('${sid}'); closeAllDropdowns();" class="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"><i class="fa-solid fa-trash w-4"></i> Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -7445,11 +7445,11 @@
             const staffList = document.getElementById('staffInsightsList');
             const staffEntries = Object.entries(staffStats).sort((a, b) => b[1].dispatched - a[1].dispatched);
             staffList.innerHTML = staffEntries.length ? staffEntries.map(([name, s]) => `
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-sm">
                     <strong class="text-slate-800">${esc(name)}</strong>
                     <span class="text-slate-500">${s.dispatched} sent &bull; ${s.received} confirmed received</span>
                 </div>
-            `).join('') : `<div class="text-center py-4 text-slate-400 text-xs bg-white rounded-xl border">No activity in the last 7 days.</div>`;
+            `).join('') : `<div class="text-center py-4 text-slate-400 text-sm bg-white rounded-xl border">No activity in the last 7 days.</div>`;
 
             // Most frequently needed items, last 30 days: how many transfers included
             // each item at all (a rough proxy for "chronically running short").
@@ -7463,11 +7463,11 @@
             const trendList = document.getElementById('trendInsightsList');
             const trendEntries = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
             trendList.innerHTML = trendEntries.length ? trendEntries.map(([name, count]) => `
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-sm">
                     <span class="text-slate-800">${esc(name)}</span>
                     <span class="font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-md">${count}&times;</span>
                 </div>
-            `).join('') : `<div class="text-center py-4 text-slate-400 text-xs bg-white rounded-xl border">No transfers in the last 30 days.</div>`;
+            `).join('') : `<div class="text-center py-4 text-slate-400 text-sm bg-white rounded-xl border">No transfers in the last 30 days.</div>`;
 
             document.getElementById('insightsModal').classList.remove('hidden');
         }
@@ -7494,11 +7494,11 @@
             list.innerHTML = rec.items.map(item => `
                 <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center justify-between gap-2">
                     <div class="min-w-0 flex-1">
-                        <p class="font-bold text-slate-800 text-xs truncate">${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span></p>
-                        <p class="text-[10px] text-slate-500">Sent: <strong>${item.reqQty}</strong></p>
+                        <p class="font-bold text-slate-800 text-sm truncate">${esc(item.name)} <span class="text-slate-400 font-normal">(${esc(item.uom)})</span></p>
+                        <p class="text-[13px] text-slate-500">Sent: <strong>${item.reqQty}</strong></p>
                     </div>
                     <input type="number" min="0" inputmode="numeric" data-receive-id="${esc(item.id)}" value="${item.reqQty}"
-                        class="w-16 text-center border border-slate-300 rounded-lg py-1.5 text-xs font-bold">
+                        class="w-16 text-center border border-slate-300 rounded-lg py-1.5 text-sm font-bold">
                 </div>
             `).join('');
 
