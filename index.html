@@ -4441,7 +4441,11 @@
                 // open, and pulling again mid-edit could wipe out an unsaved edit in progress.
                 const catalogModalEl = document.getElementById('catalogModal');
                 const catalogOpen = catalogModalEl && !catalogModalEl.classList.contains('hidden');
-                if (navigator.onLine && !catalogOpen) { syncCatalogFromCloud(); syncSettingsFromCloud(); }
+                // Also skip while a manual "Sync Now" tap is already in flight - without
+                // this, a background poll's own result could land mid-manual-sync and
+                // repaint the "Syncing..." banner with a stale/unrelated result before the
+                // manual attempt's own outcome is ready.
+                if (navigator.onLine && !catalogOpen && !isManualSyncing) { syncCatalogFromCloud(); syncSettingsFromCloud(); }
             }
             // Mobile browsers throttle or fully suspend setInterval while the tab/PWA is
             // backgrounded or the screen is locked — a plain 20s interval can silently stop
