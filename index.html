@@ -1003,6 +1003,24 @@
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
+        // Wrapper around fetch() that gives a slow-but-working request plenty of room
+        // before giving up, instead of relying on the browser's own (effectively
+        // unbounded, but also unpredictable on flaky mobile networks) default. Apps
+        // Script backends can take a few seconds just to start responding (cold start /
+        // large doGet handler), and pulling the full catalog/settings/ledger over a real
+        // mobile connection can legitimately take well over ten seconds — none of that
+        // should be mistaken for a failure. A truly dead connection still needs to give
+        // up eventually so "Sync failed" can ever be shown, so this only raises the
+        // ceiling, it doesn't remove it. Default 25s suits the larger pull (GET)
+        // payloads; callers pass a shorter one for smaller pushes if they want.
+        function fetchWithTimeout(url, options, timeoutMs) {
+            timeoutMs = timeoutMs || 25000;
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            const opts = Object.assign({}, options, { signal: controller.signal });
+            return fetch(url, opts).finally(() => clearTimeout(timer));
+        }
+
         // Bump this when catalog names/codes are corrected in code so phones can migrate.
         const CATALOG_VERSION = 5;
 
@@ -3968,11 +3986,11 @@
         // to understand type:'catalog' — existing transit save/read behavior is untouched.
         function pushCatalogToCloud() {
             try {
-                fetch(GOOGLE_SCRIPT_URL, {
+                fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'catalog', action: 'save_catalog', catalog: inventoryData, version: CATALOG_VERSION })
-                }).catch(() => {});
+                }, 20000).catch(() => {});
             } catch (e) { /* ignore */ }
         }
 
@@ -3981,7 +3999,7 @@
         // script deployment, offline, etc.) rather than blocking startup.
         async function syncCatalogFromCloud() {
             try {
-                const res = await fetch(GOOGLE_SCRIPT_URL + '?type=catalog');
+                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=catalog', {}, 28000);
                 if (!res.ok) { recordSyncFailure(); return false; }
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
@@ -4032,7 +4050,7 @@
                 branchList
             };
             try {
-                fetch(GOOGLE_SCRIPT_URL, {
+                fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -4040,7 +4058,7 @@
                         settings: settingsPayload,
                         version: Date.now()
                     })
-                }).then(() => verifySettingsPush_(settingsPayload)).catch(() => {});
+                }, 20000).then(() => verifySettingsPush_(settingsPayload)).catch(() => {});
             } catch (e) { /* ignore */ }
         }
 
@@ -4060,7 +4078,7 @@
                 // just hadn't landed yet — so on a first-attempt mismatch, wait longer and
                 // check once more before concluding it really failed.
                 await new Promise(resolve => setTimeout(resolve, attempt === 1 ? 1500 : 2500));
-                const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
+                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=settings', {}, 28000);
                 if (!res.ok) return;
                 const data = await res.json();
                 const cloudVendors = (data && data.settings && Array.isArray(data.settings.vendors)) ? data.settings.vendors : null;
@@ -4083,7 +4101,7 @@
         let applyingRemoteSettings = false;
         async function syncSettingsFromCloud() {
             try {
-                const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
+                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=settings', {}, 28000);
                 if (!res.ok) { recordSyncFailure(); return false; }
                 const data = await res.json();
                 const s = data && data.settings;
@@ -7104,7 +7122,7 @@
             for (let i = 0; i < tries; i++) {
                 await sleep(1200 + i * 800);
                 try {
-                    const response = await fetch(GOOGLE_SCRIPT_URL);
+                    const response = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {}, 28000);
                     const sheets = await response.json();
                     if (!Array.isArray(sheets)) continue;
                     recordSyncSuccess(); // we did reach the sheet, even if this particular record isn't there yet
@@ -7294,11 +7312,11 @@
         // path and the offline-queue retry path so both behave identically.
         async function attemptSendTransit(transit, predicate) {
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'transit', action: 'save_transit', transit })
-                });
+                }, 20000);
             } catch (err) {
                 return { sent: false, reason: 'network' };
             }
@@ -7463,7 +7481,7 @@
             }
 
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const response = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {}, 28000);
                 const sheets = await response.json();
                 if (!Array.isArray(sheets)) throw new Error("Unexpected server reply");
                 const clean = sheets.filter(s => s && Array.isArray(s.items));
@@ -7716,11 +7734,11 @@
                 writeJson('lalitha_cached_sheets', remaining);
                 renderTransitList(remaining, document.getElementById('lookupDateInput').value);
 
-                await fetch(GOOGLE_SCRIPT_URL, {
+                await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'transit', action: 'delete_transit', transitId: id })
-                });
+                }, 20000);
             } catch (err) { alert("Error deleting record."); }
         }
 
