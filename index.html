@@ -145,7 +145,7 @@
         </div>
         <div class="flex items-center gap-2">
             <div id="liveTime" class="text-[13px] font-medium text-emerald-100"></div>
-            <button onclick="confirmReload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-sm border border-emerald-600" title="Refresh">
+            <button onclick="confirmReload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-sm border border-emerald-600" title="Reload app (use the 'Synced X min ago' bar on Home to sync)">
                 <i class="fa-solid fa-arrows-rotate"></i>
             </button>
         </div>
@@ -166,11 +166,12 @@
 
             <!-- Today strip: quick at-a-glance sync/queue status, no need to open Ledger
                  Sheets just to check whether anything's stuck. -->
-            <div class="flex items-center justify-between bg-white rounded-xl px-3.5 py-2 border border-slate-200 shadow-sm text-[13px]">
-                <span class="font-semibold text-slate-500"><i class="fa-solid fa-rotate text-slate-400 mr-1"></i><span id="homeLastSyncedText">Not synced yet</span></span>
-                <button id="homePendingQueueBtn" onclick="showPackingRequirementSection(); switchMode('packing'); flushPendingQueue(true);" class="hidden font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-300">
+            <div id="homeSyncStrip" onclick="runManualSync()" class="flex items-center justify-between bg-white rounded-xl px-3.5 py-2 border border-slate-200 shadow-sm text-[13px] active:scale-[0.98] transition cursor-pointer" title="Tap to sync now">
+                <span class="font-semibold text-slate-500"><i id="homeSyncIcon" class="fa-solid fa-rotate text-slate-400 mr-1"></i><span id="homeLastSyncedText">Not synced yet</span></span>
+                <button id="homePendingQueueBtn" onclick="event.stopPropagation(); showPackingRequirementSection(); switchMode('packing'); flushPendingQueue(true);" class="hidden font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-300">
                     <i class="fa-solid fa-triangle-exclamation mr-1"></i><span id="homePendingQueueCount">0</span> pending
                 </button>
+                <span id="homeSyncNowLabel" class="text-[11px] font-bold text-indigo-500 uppercase tracking-wide">Sync Now</span>
             </div>
 
             <p class="text-[13px] font-bold text-slate-500 uppercase px-1">What do you want to do?</p>
@@ -3975,9 +3976,10 @@
         async function syncCatalogFromCloud() {
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + '?type=catalog');
-                if (!res.ok) return;
+                if (!res.ok) { recordSyncFailure(); return; }
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
+                    recordSyncSuccess(); // reached the backend and got a valid catalog reply
                     // Skip the write + re-render entirely when the poll came back identical —
                     // this runs every ~20s in the background, so on the (usual) no-change poll
                     // this avoids a pointless full list rebuild.
@@ -3991,7 +3993,7 @@
                     // shouldn't wipe their in-progress search back to the full unfiltered list.
                     renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
                 }
-            } catch (e) { /* old script deployment or offline — keep local catalog */ }
+            } catch (e) { recordSyncFailure(); /* old script deployment or offline — keep local catalog */ }
         }
 
         // Best-effort push of vendors + all the hide/show toggles to the shared backend,
@@ -4018,7 +4020,8 @@
                 hiddenBrands: Array.from(hiddenBrands),
                 hiddenCategories: Array.from(hiddenCategories),
                 hiddenBrandCategories: Array.from(hiddenBrandCategories),
-                hiddenVendorCategories: Array.from(hiddenVendorCategories)
+                hiddenVendorCategories: Array.from(hiddenVendorCategories),
+                branchList
             };
             try {
                 fetch(GOOGLE_SCRIPT_URL, {
@@ -4053,6 +4056,9 @@
                 const missing = (pushedSettings.vendors || []).filter(v => !cloudVendorIds.has(String(v.id)));
                 if (missing.length) {
                     showToast(`⚠ Vendor sync may have failed to save (${missing.map(v => v.name).join(', ')}). Check your connection and try again.`);
+                    recordSyncFailure();
+                } else {
+                    recordSyncSuccess(); // confirmed the push actually landed
                 }
             } catch (e) { /* can't verify right now — stay silent, don't false-alarm */ }
         }
@@ -4064,10 +4070,11 @@
         async function syncSettingsFromCloud() {
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
-                if (!res.ok) return;
+                if (!res.ok) { recordSyncFailure(); return; }
                 const data = await res.json();
                 const s = data && data.settings;
                 if (!s || typeof s !== 'object') return;
+                recordSyncSuccess(); // reached the backend and got a valid settings reply
 
                 applyingRemoteSettings = true;
                 if (Array.isArray(s.vendors)) {
@@ -4079,6 +4086,7 @@
                 if (Array.isArray(s.hiddenCategories)) { hiddenCategories = new Set(s.hiddenCategories); writeJson('lalitha_hidden_categories', s.hiddenCategories); }
                 if (Array.isArray(s.hiddenBrandCategories)) { hiddenBrandCategories = new Set(s.hiddenBrandCategories); writeJson('lalitha_hidden_brand_categories', s.hiddenBrandCategories); }
                 if (Array.isArray(s.hiddenVendorCategories)) { hiddenVendorCategories = new Set(s.hiddenVendorCategories); writeJson('lalitha_hidden_vendor_categories', s.hiddenVendorCategories); }
+                if (Array.isArray(s.branchList) && s.branchList.length > 0) { branchList = s.branchList; writeJson('lalitha_branches', branchList); }
                 applyingRemoteSettings = false;
 
                 // Re-render whatever's currently on screen that this could affect.
@@ -4091,7 +4099,8 @@
                     renderVendorSelectDropdown();
                     renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
                 }
-            } catch (e) { applyingRemoteSettings = false; /* old script deployment or offline — keep local settings */ }
+                if (document.getElementById('settingsView_branches') && !document.getElementById('settingsView_branches').classList.contains('hidden') && typeof renderBranchManageList === 'function') renderBranchManageList();
+            } catch (e) { applyingRemoteSettings = false; recordSyncFailure(); /* old script deployment or offline — keep local settings */ }
         }
 
         // ---------- Brand / Category filters + hide/show ----------
@@ -4332,20 +4341,39 @@
             setInterval(updateLastSyncedText, 30000); // keep "Xm ago" fresh
             updatePendingQueueUI();
             if (navigator.onLine) flushPendingQueue(false); // try to clear any queue left from last session
-            window.addEventListener('online', () => flushPendingQueue(false));
+            // Reconnecting after being offline is exactly when there's the most to catch up
+            // on, so treat it like a foreground event: flush queued transits AND pull the
+            // latest catalog/settings right away, instead of waiting for the next poll tick.
+            window.addEventListener('online', () => { flushPendingQueue(false); pollRemoteChanges(); });
 
+            let lastPollAttempt = 0;
+            const POLL_INTERVAL_MS = 20000;
             if (navigator.onLine) { syncCatalogFromCloud(); syncSettingsFromCloud(); } // pick up catalog + vendor/hide-show edits made from the other branch
-            const pollRemoteChanges = () => {
+            function pollRemoteChanges() {
+                lastPollAttempt = Date.now();
                 // Skip while the catalog editor is open — openCatalogModal() already synced on
                 // open, and pulling again mid-edit could wipe out an unsaved edit in progress.
-                const catalogOpen = !document.getElementById('catalogModal').classList.contains('hidden');
+                const catalogModalEl = document.getElementById('catalogModal');
+                const catalogOpen = catalogModalEl && !catalogModalEl.classList.contains('hidden');
                 if (navigator.onLine && !catalogOpen) { syncCatalogFromCloud(); syncSettingsFromCloud(); }
-            };
-            setInterval(pollRemoteChanges, 20000); // ~15-20s: no push channel on this backend, so this is as close to instant as it gets
-            // Also sync the moment the app is brought back to the foreground — covers the
-            // common case of switching away and back without waiting for the next poll tick.
-            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pollRemoteChanges(); });
-            window.addEventListener('focus', pollRemoteChanges);
+            }
+            // Mobile browsers throttle or fully suspend setInterval while the tab/PWA is
+            // backgrounded or the screen is locked — a plain 20s interval can silently stop
+            // firing for as long as the phone stayed asleep/backgrounded, which is why "Synced
+            // X min ago" could grow to hundreds of minutes with nothing actually wrong. There's
+            // no service worker here, so nothing can run while truly backgrounded — but we CAN
+            // guarantee a sync fires the instant the app is usable again: on every tab-visible,
+            // window-focus and reconnect event, sync immediately rather than waiting for the
+            // next tick, and treat those events as equivalent to a fresh interval tick.
+            setInterval(pollRemoteChanges, POLL_INTERVAL_MS);
+            function syncIfDue() {
+                // Also covers the interval having been throttled while still "running" —
+                // if more than one interval's worth of time has passed since the last
+                // attempt, don't wait for the timer to catch up, sync right now.
+                if (Date.now() - lastPollAttempt >= POLL_INTERVAL_MS) pollRemoteChanges();
+            }
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncIfDue(); });
+            window.addEventListener('focus', syncIfDue);
 
             setupSwipeBackGesture();
         }
@@ -5158,7 +5186,11 @@
         // of Settings today), and the lock is explicitly per-device by design: two
         // phones can each be locked to a different branch at the same time.
         let branchList = readJson('lalitha_branches', ['Gajuwaka', 'Kurmannapalem']);
-        function saveBranchList() { writeJson('lalitha_branches', branchList); }
+        // Branch list previously never left the device it was edited on — it wasn't part of
+        // the settings payload pushed to the cloud, so adding/renaming/deleting a branch on
+        // one phone silently never showed up on the other. Now included in settingsPayload
+        // below and pushed immediately, same as every other settings edit.
+        function saveBranchList() { writeJson('lalitha_branches', branchList); if (!applyingRemoteSettings) pushSettingsToCloud(); }
         let lockedBranch = localStorage.getItem('lalitha_locked_branch') || '';
         function setDeviceBranchLock(name) {
             lockedBranch = name || '';
@@ -7082,6 +7114,8 @@
             const homeBtn = document.getElementById('homePendingQueueBtn');
             const homeCountEl = document.getElementById('homePendingQueueCount');
             if (homeBtn && homeCountEl) { homeCountEl.textContent = n; homeBtn.classList.toggle('hidden', n === 0); }
+            const homeSyncNowLabel = document.getElementById('homeSyncNowLabel');
+            if (homeSyncNowLabel) homeSyncNowLabel.classList.toggle('hidden', n > 0);
         }
 
         let isFlushingQueue = false;
@@ -7111,23 +7145,85 @@
         }
 
         // ---------- Sync status ----------
+        // Any code path that actually reaches the backend successfully (catalog pull,
+        // settings pull, transit read/confirm, verified settings push) should call
+        // recordSyncSuccess() so "Synced X min ago" reflects reality. Previously only the
+        // transit-confirm path did this, so a phone that sat idle without dispatching a
+        // transit could show a wildly stale "Synced X min ago" even though catalog/settings
+        // were quietly syncing fine every ~20s in the background — that mismatch is what
+        // made auto-sync look broken. recordSyncFailure() is the counterpart: called when a
+        // sync attempt while online genuinely fails, so the pill can show a distinct
+        // "Sync failed" state instead of silently leaving the old, misleadingly-reassuring
+        // timestamp in place.
         function recordSyncSuccess() {
             writeJson('lalitha_last_synced', Date.now());
+            writeJson('lalitha_last_sync_failed', false);
+            updateLastSyncedText();
+        }
+        function recordSyncFailure() {
+            if (!navigator.onLine) return; // offline is expected, not a failure to alarm about
+            writeJson('lalitha_last_sync_failed', true);
             updateLastSyncedText();
         }
 
         function updateLastSyncedText() {
             const last = readJson('lalitha_last_synced', null);
-            let text;
-            if (!last) { text = "Not synced yet"; }
-            else {
+            const failed = readJson('lalitha_last_sync_failed', false);
+            let text, failState;
+            if (failed) {
+                text = "Sync failed — tap to retry";
+                failState = true;
+            } else if (!last) {
+                text = "Not synced yet";
+                failState = false;
+            } else {
                 const mins = Math.max(0, Math.round((Date.now() - last) / 60000));
                 text = mins < 1 ? "Synced just now" : mins === 1 ? "Synced 1 min ago" : `Synced ${mins} min ago`;
+                failState = false;
             }
             const el = document.getElementById('lastSyncedText');
             if (el) el.textContent = text;
             const homeEl = document.getElementById('homeLastSyncedText');
             if (homeEl) homeEl.textContent = text;
+            const homeIcon = document.getElementById('homeSyncIcon');
+            const homeStrip = document.getElementById('homeSyncStrip');
+            if (homeIcon) homeIcon.classList.toggle('text-red-500', failState);
+            if (homeIcon) homeIcon.classList.toggle('text-slate-400', !failState);
+            if (homeStrip) homeStrip.classList.toggle('border-red-300', failState);
+            if (homeEl) homeEl.classList.toggle('text-red-600', failState);
+            if (homeEl) homeEl.classList.toggle('text-slate-500', !failState);
+        }
+
+        // Manual "Sync Now" — tapping the Home sync pill. Does a genuine two-way sync:
+        // pushes anything local (catalog + settings, in case a no-cors push earlier never
+        // got confirmed) and pulls the latest from the cloud, then updates the pill with a
+        // clear success or failure state so tapping it is a trustworthy way to check.
+        let isManualSyncing = false;
+        async function runManualSync() {
+            if (isManualSyncing) return;
+            isManualSyncing = true;
+            const icon = document.getElementById('homeSyncIcon');
+            const textEl = document.getElementById('homeLastSyncedText');
+            if (icon) icon.classList.add('fa-spin');
+            if (textEl) textEl.textContent = 'Syncing…';
+            try {
+                pushCatalogToCloud();
+                pushSettingsToCloud();
+                await Promise.all([syncCatalogFromCloud(), syncSettingsFromCloud()]);
+                const failedNow = readJson('lalitha_last_sync_failed', false);
+                if (failedNow) {
+                    showToast('⚠ Sync failed — check your connection and try again.');
+                } else {
+                    showToast('✓ Synced successfully.');
+                }
+            } catch (e) {
+                recordSyncFailure();
+                showToast('⚠ Sync failed — check your connection and try again.');
+            } finally {
+                isManualSyncing = false;
+                if (icon) icon.classList.remove('fa-spin');
+                updateLastSyncedText();
+            }
         }
 
         // Sends one transit record and verifies it actually landed (see confirmSaved's note
