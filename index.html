@@ -21,11 +21,15 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- QR / Barcode Reader Library (ZXing) - version pinned -->
-    <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+    <!-- These four are only touched inside user-triggered handlers (scanner, PDF export,
+         Excel import/export) — deferred so ~1.4MB of JS doesn't block first paint. They still
+         finish loading (in order) before the "load" event that fires initApp, and well before
+         any user can reach the features that use them. -->
+    <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js" defer></script>
     <!-- Bundled locally (same as Offer-Calc) so PDF export works without extra CDN calls -->
-    <script src="./html2canvas.min.js"></script>
-    <script src="./jspdf.umd.min.js"></script>
-    <script src="./xlsx.full.min.js"></script>
+    <script src="./html2canvas.min.js" defer></script>
+    <script src="./jspdf.umd.min.js" defer></script>
+    <script src="./xlsx.full.min.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         html { touch-action: manipulation; }
@@ -43,6 +47,28 @@
         /* Skeleton loading placeholders (Ledger Sheets etc.) */
         .skeleton-block { background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: skeletonPulse 1.4s ease-in-out infinite; border-radius: 0.5rem; }
         @keyframes skeletonPulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* Long-press rows: kill native text-selection highlight + iOS copy/lookup callout
+           so the custom long-press gesture isn't fighting the browser's own one. Scrolling
+           stays intact — "manipulation" only drops double-tap-zoom/300ms delay, not panning.
+           The number input inside these rows manages its own selection regardless of an
+           ancestor's user-select, so it's unaffected and still focuses/edits normally. */
+        .no-select-longpress {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+        /* Swipe-back page-slide transition: outgoing view slides out to the right while
+           the incoming view slides in from the left, mirroring the swipe's own direction.
+           Applied briefly by handleBackGesture()/navigateBack helpers, then cleaned up. */
+        @keyframes slideOutToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0.4; } }
+        @keyframes slideInFromLeft { from { transform: translateX(-30%); opacity: 0.5; } to { transform: translateX(0); opacity: 1; } }
+        .view-slide-back-out { animation: slideOutToRight 280ms ease forwards; }
+        .view-slide-back-in { animation: slideInFromLeft 280ms ease forwards; }
+        @media (prefers-reduced-motion: reduce) {
+            .view-slide-back-out, .view-slide-back-in { animation: none !important; }
+        }
         @media print {
             @page { size: A4; margin: 4mm; }
             body { margin: 0; padding: 0; background: #fff; width: 210mm; }
@@ -3864,11 +3890,18 @@
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
+                    // Skip the write + re-render entirely when the poll came back identical —
+                    // this runs every ~20s in the background, so on the (usual) no-change poll
+                    // this avoids a pointless full list rebuild.
+                    const incomingJson = JSON.stringify(data.catalog);
+                    if (incomingJson === JSON.stringify(inventoryData)) return;
                     inventoryData = data.catalog;
                     writeJson('lalitha_master_inventory', inventoryData);
                     writeJson('lalitha_catalog_version', CATALOG_VERSION);
                     renderTabs();
-                    renderItems();
+                    // Preserve whatever the user is currently searching for — a background poll
+                    // shouldn't wipe their in-progress search back to the full unfiltered list.
+                    renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
                 }
             } catch (e) { /* old script deployment or offline — keep local catalog */ }
         }
@@ -4216,10 +4249,29 @@
             }, { passive: true });
         }
 
+        // Plays the "coming back" slide-in on the view that a swipe-back gesture just
+        // revealed — translateX from off-screen-left to 0, mirroring the left-to-right
+        // swipe itself. Purely a CSS animation (see .view-slide-back-in / prefers-reduced-
+        // motion guard in <style>); cleaned up via animationend with a timeout fallback so
+        // a dropped event (or reduced-motion, where the animation never starts) can't leave
+        // the class stuck and affect a later render.
+        function playBackSlideIn(el) {
+            if (!el) return;
+            el.classList.remove('view-slide-back-in');
+            void el.offsetWidth; // restart the animation if it's already mid-play
+            el.classList.add('view-slide-back-in');
+            const cleanup = () => { el.classList.remove('view-slide-back-in'); el.removeEventListener('animationend', cleanup); };
+            el.addEventListener('animationend', cleanup, { once: true });
+            setTimeout(cleanup, 350);
+        }
+
         // What "back" means right now, checked most-specific-first: a modal on top of
         // everything else, then a Settings sub-view, then a main section back to Home.
         // Used by both the swipe gesture and could be wired to a hardware/browser back
-        // button later without duplicating this logic.
+        // button later without duplicating this logic. Triggered from a swipe (as opposed
+        // to tapping one of the on-screen back arrows, which call switchSettingsView/
+        // showHomeSection directly and are left instant), so the destination view gets a
+        // brief slide-in animation to visually match the swipe gesture's motion.
         function handleBackGesture() {
             const isOpen = (id) => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); };
 
@@ -4241,14 +4293,19 @@
                 if (!isOpen('settingsView_menu')) {
                     // vendorForm's own back arrow goes to the Vendors list, not the
                     // top menu — match that here rather than skipping straight out.
-                    switchSettingsView(isOpen('settingsView_vendorForm') ? 'vendors' : 'menu');
+                    const dest = isOpen('settingsView_vendorForm') ? 'vendors' : 'menu';
+                    switchSettingsView(dest);
+                    playBackSlideIn(document.getElementById(`settingsView_${dest}`));
                 } else {
                     closeCatalogModal();
                 }
                 return;
             }
 
-            if (!isOpen('homeSection')) showHomeSection();
+            if (!isOpen('homeSection')) {
+                showHomeSection();
+                playBackSlideIn(document.getElementById('homeSection'));
+            }
         }
 
         function openLogoPreview() {
@@ -4456,6 +4513,12 @@
             }, { passive: true });
             el.addEventListener('touchend', clear, { passive: true });
             el.addEventListener('touchcancel', clear, { passive: true });
+            // Belt-and-braces on top of the .no-select-longpress CSS (user-select: none +
+            // -webkit-touch-callout: none): some browsers still fire a "contextmenu" event
+            // after a long press even with those set, which would pop the native
+            // copy/lookup menu. Suppressing it here doesn't affect scrolling or the tap-to-
+            // focus-quantity-input behavior, which never triggers a contextmenu.
+            el.addEventListener('contextmenu', (e) => e.preventDefault());
         }
 
         // Opens Settings → Existing Items with the given item's edit form expanded and
@@ -4531,7 +4594,7 @@
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
 
                 return `
-                    <div id="row_${item.id}" class="bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
+                    <div id="row_${item.id}" class="no-select-longpress bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
@@ -5535,7 +5598,7 @@
                 const inputDisplayVal = hasCount ? vendorShelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
                 return `
-                    <div id="vrow_${item.id}" class="bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
+                    <div id="vrow_${item.id}" class="no-select-longpress bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                 <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
