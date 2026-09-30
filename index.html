@@ -333,11 +333,14 @@
                     <div id="mobileSheetCount" class="text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">0 records</div>
                 </div>
             </div>
-            <div class="relative">
-                <input type="text" id="ledgerSearchBox" placeholder="Search item or staff name (searches all dates)..." oninput="renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value)" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 pr-9 text-sm font-semibold outline-none">
-                <button id="ledgerSearchClear" onclick="document.getElementById('ledgerSearchBox').value=''; renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value);" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search">
-                    <i class="fa-solid fa-circle-xmark text-sm"></i>
-                </button>
+            <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                    <input type="text" id="ledgerSearchBox" placeholder="Search item or staff name (searches all dates)..." oninput="renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value)" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 pr-9 text-sm font-semibold outline-none">
+                    <button id="ledgerSearchClear" onclick="document.getElementById('ledgerSearchBox').value=''; renderTransitList(readJson('lalitha_cached_sheets', []), document.getElementById('lookupDateInput').value);" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400" title="Clear search">
+                        <i class="fa-solid fa-circle-xmark text-sm"></i>
+                    </button>
+                </div>
+                <button onclick="openScannerModal('ledgerSearch')" class="bg-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-sm shadow-sm" title="Scan to search"><i class="fa-solid fa-barcode text-sm"></i></button>
             </div>
             <div class="flex items-center justify-between px-1">
                 <span id="lastSyncedText" class="text-[13px] text-slate-400 font-semibold">Not synced yet</span>
@@ -806,7 +809,10 @@
                         </button>
                         <div id="vendorFormStepItemsBody" class="hidden px-3.5 pb-3.5 space-y-2">
                             <p id="newVendorItemScopeNote" class="hidden text-[13px] font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-lg px-2.5 py-1.5"></p>
-                            <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
+                            <div class="flex gap-1.5">
+                                <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
+                                <button type="button" onclick="openScannerModal('newVendorItemSearch')" class="bg-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-sm shadow-sm" title="Scan to filter"><i class="fa-solid fa-barcode text-sm"></i></button>
+                            </div>
                             <div class="flex justify-end gap-3">
                                 <button type="button" onclick="selectAllVendorItems()" class="text-[13px] font-bold text-cyan-700">Select all shown</button>
                                 <button type="button" onclick="clearAllVendorItems()" class="text-[13px] font-bold text-red-600">Clear all</button>
@@ -3976,7 +3982,7 @@
         async function syncCatalogFromCloud() {
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + '?type=catalog');
-                if (!res.ok) { recordSyncFailure(); return; }
+                if (!res.ok) { recordSyncFailure(); return false; }
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
                     recordSyncSuccess(); // reached the backend and got a valid catalog reply
@@ -3984,7 +3990,7 @@
                     // this runs every ~20s in the background, so on the (usual) no-change poll
                     // this avoids a pointless full list rebuild.
                     const incomingJson = JSON.stringify(data.catalog);
-                    if (incomingJson === JSON.stringify(inventoryData)) return;
+                    if (incomingJson === JSON.stringify(inventoryData)) return true;
                     inventoryData = data.catalog;
                     writeJson('lalitha_master_inventory', inventoryData);
                     writeJson('lalitha_catalog_version', CATALOG_VERSION);
@@ -3992,8 +3998,10 @@
                     // Preserve whatever the user is currently searching for — a background poll
                     // shouldn't wipe their in-progress search back to the full unfiltered list.
                     renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+                    return true;
                 }
-            } catch (e) { recordSyncFailure(); /* old script deployment or offline — keep local catalog */ }
+                return false;
+            } catch (e) { recordSyncFailure(); /* old script deployment or offline — keep local catalog */ return false; }
         }
 
         // Best-effort push of vendors + all the hide/show toggles to the shared backend,
@@ -4044,9 +4052,14 @@
         // otherwise would. Never throws — a failed verification read (offline, old
         // deployment with no 'settings' support) is treated the same as "can't tell",
         // not as a confirmed failure, so this never cries wolf.
-        async function verifySettingsPush_(pushedSettings) {
+        async function verifySettingsPush_(pushedSettings, attempt) {
+            attempt = attempt || 1;
             try {
-                await new Promise(resolve => setTimeout(resolve, 1200)); // give Apps Script a moment to commit
+                // Give Apps Script a moment to commit. A single check shortly after the
+                // write can race a slower commit and look like a failure when it actually
+                // just hadn't landed yet — so on a first-attempt mismatch, wait longer and
+                // check once more before concluding it really failed.
+                await new Promise(resolve => setTimeout(resolve, attempt === 1 ? 1500 : 2500));
                 const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
                 if (!res.ok) return;
                 const data = await res.json();
@@ -4055,6 +4068,7 @@
                 const cloudVendorIds = new Set(cloudVendors.map(v => String(v.id)));
                 const missing = (pushedSettings.vendors || []).filter(v => !cloudVendorIds.has(String(v.id)));
                 if (missing.length) {
+                    if (attempt < 2) { verifySettingsPush_(pushedSettings, attempt + 1); return; }
                     showToast(`⚠ Vendor sync may have failed to save (${missing.map(v => v.name).join(', ')}). Check your connection and try again.`);
                     recordSyncFailure();
                 } else {
@@ -4070,10 +4084,10 @@
         async function syncSettingsFromCloud() {
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + '?type=settings');
-                if (!res.ok) { recordSyncFailure(); return; }
+                if (!res.ok) { recordSyncFailure(); return false; }
                 const data = await res.json();
                 const s = data && data.settings;
-                if (!s || typeof s !== 'object') return;
+                if (!s || typeof s !== 'object') return false;
                 recordSyncSuccess(); // reached the backend and got a valid settings reply
 
                 applyingRemoteSettings = true;
@@ -4100,7 +4114,8 @@
                     renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
                 }
                 if (document.getElementById('settingsView_branches') && !document.getElementById('settingsView_branches').classList.contains('hidden') && typeof renderBranchManageList === 'function') renderBranchManageList();
-            } catch (e) { applyingRemoteSettings = false; recordSyncFailure(); /* old script deployment or offline — keep local settings */ }
+                return true;
+            } catch (e) { applyingRemoteSettings = false; recordSyncFailure(); /* old script deployment or offline — keep local settings */ return false; }
         }
 
         // ---------- Brand / Category filters + hide/show ----------
@@ -6996,6 +7011,20 @@
                 renderVendorItems(scannedCode);
                 const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
                 showToast(match ? `Scanned: ${match.name} (${match.uom})` : `Scanned: ${scannedCode} — no match found`);
+            } else if (scannerTargetMode === 'newVendorItemSearch') {
+                const el = document.getElementById('newVendorItemSearch');
+                if (el) { el.value = scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); }
+                const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
+                showToast(match ? `Scanned: ${match.name} (${match.uom})` : `Scanned: ${scannedCode} — no match found`);
+            } else if (scannerTargetMode === 'ledgerSearch') {
+                const el = document.getElementById('ledgerSearchBox');
+                const match = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
+                // The ledger searches by item NAME (it matches against text already saved in
+                // past transit records, not item codes), so drop in the matched item's name
+                // when we recognize the code — falling back to the raw code so a typo-free
+                // search still runs even if the item can't be resolved locally.
+                if (el) { el.value = match ? match.name : scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); }
+                showToast(match ? `Scanned: ${match.name} (${match.uom})` : `Scanned: ${scannedCode} — no match found`);
             } else {
                 // Main item search.
                 const el = document.getElementById('searchBox');
@@ -7155,20 +7184,45 @@
         // sync attempt while online genuinely fails, so the pill can show a distinct
         // "Sync failed" state instead of silently leaving the old, misleadingly-reassuring
         // timestamp in place.
+        // Two safeguards against showing a false "Sync failed" on a genuinely-fine
+        // connection:
+        //  1. syncCheckedThisSession — the red state is only ever shown once THIS page
+        //     load has itself completed a real sync attempt. Without this, opening the
+        //     app would instantly redraw whatever failed/succeeded flag was left over
+        //     from the END of the previous session (which could be minutes or days
+        //     stale — e.g. the phone lost signal walking into the store last time) even
+        //     though the very first fetch of this fresh session hasn't even resolved
+        //     yet. That stale-flag flash is exactly what looked like "good internet,
+        //     sync fails immediately".
+        //  2. syncFailStreak — a single missed poll (one Apps Script cold start, one
+        //     dropped packet) no longer paints the pill red. Only two CONSECUTIVE
+        //     failures in a row flip the visible state, so a one-off blip that
+        //     self-corrects on the very next ~20s poll never reaches the user at all.
+        //     A real, ongoing failure (actually offline, backend down, stale
+        //     deployment) still fails twice in a row and is still reported.
+        let syncCheckedThisSession = false;
+        let syncFailStreak = 0;
         function recordSyncSuccess() {
+            syncCheckedThisSession = true;
+            syncFailStreak = 0;
             writeJson('lalitha_last_synced', Date.now());
             writeJson('lalitha_last_sync_failed', false);
             updateLastSyncedText();
         }
         function recordSyncFailure() {
             if (!navigator.onLine) return; // offline is expected, not a failure to alarm about
+            syncFailStreak++;
+            if (syncFailStreak < 2) return; // one-off blip — don't alarm on the first miss
+            syncCheckedThisSession = true;
             writeJson('lalitha_last_sync_failed', true);
             updateLastSyncedText();
         }
 
         function updateLastSyncedText() {
             const last = readJson('lalitha_last_synced', null);
-            const failed = readJson('lalitha_last_sync_failed', false);
+            // Ignore a persisted failure flag until THIS session has confirmed it for
+            // itself — see syncCheckedThisSession above.
+            const failed = syncCheckedThisSession && readJson('lalitha_last_sync_failed', false);
             let text, failState;
             if (failed) {
                 text = "Sync failed — tap to retry";
@@ -7209,15 +7263,24 @@
             try {
                 pushCatalogToCloud();
                 pushSettingsToCloud();
-                await Promise.all([syncCatalogFromCloud(), syncSettingsFromCloud()]);
-                const failedNow = readJson('lalitha_last_sync_failed', false);
-                if (failedNow) {
-                    showToast('⚠ Sync failed — check your connection and try again.');
-                } else {
+                // A manual tap is a deliberate, immediate check — report exactly what THIS
+                // attempt did (its own true/false return), not the streak-gated persisted
+                // flag that background polls use (which intentionally waits for two
+                // consecutive misses before going red, so a single manual attempt that
+                // fails once wouldn't otherwise show red here).
+                const [catalogOk, settingsOk] = await Promise.all([syncCatalogFromCloud(), syncSettingsFromCloud()]);
+                if (catalogOk && settingsOk) {
+                    recordSyncSuccess();
                     showToast('✓ Synced successfully.');
+                } else {
+                    writeJson('lalitha_last_sync_failed', true);
+                    syncCheckedThisSession = true;
+                    updateLastSyncedText();
+                    showToast('⚠ Sync failed — check your connection and try again.');
                 }
             } catch (e) {
-                recordSyncFailure();
+                writeJson('lalitha_last_sync_failed', true);
+                syncCheckedThisSession = true;
                 showToast('⚠ Sync failed — check your connection and try again.');
             } finally {
                 isManualSyncing = false;
