@@ -224,6 +224,29 @@
             </button>
         </div>
 
+        <!-- Packing ledger reminders — recurring rules (one-time/weekly/monthly), same
+             options as the per-vendor reminders; notifies via the bell when due. -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 text-sm space-y-2">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-clock text-amber-500"></i>
+                <span class="font-bold text-slate-700 flex-1">Ledger Reminders</span>
+                <button type="button" onclick="togglePackingReminderAdd()" class="text-indigo-600 text-[13px] font-bold px-1.5"><i class="fa-solid fa-plus mr-0.5"></i>Add</button>
+            </div>
+            <div id="packingReminderChips" class="flex flex-wrap gap-1.5"></div>
+            <div id="packingReminderAddBox" class="hidden pt-1.5 border-t border-slate-100 space-y-2">
+                <div class="flex gap-1.5">
+                    <select id="packingReminderType" onchange="renderPackingReminderTypeFields()" class="flex-1 bg-slate-50 border border-slate-300 rounded-lg p-2 text-[13px] font-bold outline-none">
+                        <option value="once">One-time</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                    <input type="time" id="packingReminderTime" value="18:00" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-[13px] font-bold outline-none">
+                </div>
+                <div id="packingReminderTypeFields"></div>
+                <button type="button" onclick="addPackingReminderRule()" class="w-full bg-indigo-600 text-white font-bold rounded-lg py-2 text-[13px]">Add Reminder</button>
+            </div>
+        </div>
+
         <!-- AUDIT & INTELLIGENT STOCK CHECK VIEW -->
         <div id="auditViewSection" class="space-y-3">
 
@@ -652,7 +675,7 @@
 
                 <!-- Add Item view -->
                 <div id="settingsView_addItem" class="hidden space-y-2.5">
-                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <button onclick="backFromAddItem()" id="addItemBackBtn" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
                     <div class="grid grid-cols-2 gap-2.5">
                         <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
@@ -772,6 +795,23 @@
                             <input type="text" id="newVendorName" placeholder="Vendor name" class="bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                             <input type="tel" id="newVendorMobile" placeholder="Mobile (with country code)" class="bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                         </div>
+                        <div>
+                            <label class="block text-[12px] font-bold uppercase text-slate-400 mb-1">Reminders <span class="text-slate-300 font-semibold normal-case">(optional) — notifies you to create this vendor's ledger</span></label>
+                            <div id="newVendorReminderChips" class="flex flex-wrap gap-1.5 mb-1.5"></div>
+                            <button type="button" onclick="toggleVendorReminderAdd()" class="text-indigo-600 text-[13px] font-bold px-0.5"><i class="fa-solid fa-plus mr-0.5"></i>Add a reminder</button>
+                            <div id="vendorReminderAddBox" class="hidden pt-1.5 mt-1 border-t border-slate-100 space-y-2">
+                                <div class="flex gap-1.5">
+                                    <select id="newVendorReminderType" onchange="renderVendorReminderTypeFields()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 text-[13px] font-bold outline-none">
+                                        <option value="once">One-time</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                    <input type="time" id="newVendorReminderTime" value="18:00" class="bg-slate-50 border border-slate-300 rounded-xl p-2 text-[13px] font-bold outline-none">
+                                </div>
+                                <div id="newVendorReminderTypeFields"></div>
+                                <button type="button" onclick="addVendorReminderRule()" class="w-full bg-indigo-600 text-white font-bold rounded-xl py-2 text-[13px]">Add Reminder</button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Same accordion pattern for all three steps: tap the header to expand,
@@ -816,9 +856,12 @@
                                 <input type="text" id="newVendorItemSearch" placeholder="Search item or code..." oninput="newVendorItemPickerLimit = 150; renderVendorFormItemPicker()" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
                                 <button type="button" onclick="openScannerModal('newVendorItemSearch')" class="bg-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-sm shadow-sm" title="Scan to filter"><i class="fa-solid fa-barcode text-sm"></i></button>
                             </div>
-                            <div class="flex justify-end gap-3">
-                                <button type="button" onclick="selectAllVendorItems()" class="text-[13px] font-bold text-cyan-700">Select all shown</button>
-                                <button type="button" onclick="clearAllVendorItems()" class="text-[13px] font-bold text-red-600">Clear all</button>
+                            <div class="flex justify-between items-center gap-3">
+                                <button type="button" onclick="openAddItemFromVendorForm()" class="text-[13px] font-bold text-emerald-700"><i class="fa-solid fa-plus mr-0.5"></i>New item</button>
+                                <div class="flex gap-3">
+                                    <button type="button" onclick="selectAllVendorItems()" class="text-[13px] font-bold text-cyan-700">Select all shown</button>
+                                    <button type="button" onclick="clearAllVendorItems()" class="text-[13px] font-bold text-red-600">Clear all</button>
+                                </div>
                             </div>
                             <div id="newVendorItemPicker" class="grid grid-cols-2 gap-1.5 p-1 bg-slate-50 rounded-lg border border-slate-200"></div>
                             <p class="text-[13px] text-slate-400 pt-0.5">Leave empty to supply every item under the picked brand(s)/categories.</p>
@@ -1025,7 +1068,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-12";
+        const APP_VERSION = "v2026.10.01-15";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4618,6 +4661,8 @@
             let lastPollAttempt = 0;
             const POLL_INTERVAL_MS = 20000;
             updateNotifBadge(); // reflect whatever's already in lalitha_notifications from a previous session
+            renderPackingReminderChips();
+            checkDueReminders(); // a reminder due while the app was closed still fires the moment it's reopened
             if (navigator.onLine) { syncCatalogFromCloud(); syncSettingsFromCloud(); checkForNewTransitsAndNotify(); } // pick up catalog + vendor/hide-show edits made from the other branch, and establish/advance the notifications baseline
             function pollRemoteChanges() {
                 lastPollAttempt = Date.now();
@@ -4629,6 +4674,7 @@
                 // this, a background poll's own result could land mid-manual-sync and
                 // repaint the "Syncing..." banner with a stale/unrelated result before the
                 // manual attempt's own outcome is ready.
+                checkDueReminders(); // runs every poll tick regardless of online state — it's purely local, date/time-based
                 if (navigator.onLine && !catalogOpen && !isManualSyncing) { syncCatalogFromCloud(); syncSettingsFromCloud(); checkForNewTransitsAndNotify(); }
             }
             // Mobile browsers throttle or fully suspend setInterval while the tab/PWA is
@@ -5218,6 +5264,29 @@
             if (view === 'history') renderCatalogHistoryList();
         }
 
+        // "+ New item" from inside the vendor form — lets you add a missing catalog item
+        // without losing your in-progress vendor edits, then drops you straight back.
+        let addItemReturnToVendorForm = false;
+        function openAddItemFromVendorForm() {
+            addItemReturnToVendorForm = true;
+            switchSettingsView('addItem');
+            if (typeof renderAddItemFormAuxFields === 'function') renderAddItemFormAuxFields();
+            const vendorSel = document.getElementById('newItemVendor');
+            if (vendorSel && editingVendorId) vendorSel.value = editingVendorId;
+            const backBtn = document.getElementById('addItemBackBtn');
+            if (backBtn) backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Back to Vendor';
+        }
+        function backFromAddItem() {
+            if (addItemReturnToVendorForm) {
+                addItemReturnToVendorForm = false;
+                const backBtn = document.getElementById('addItemBackBtn');
+                if (backBtn) backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Back to Settings';
+                switchSettingsView('vendorForm');
+            } else {
+                switchSettingsView('menu');
+            }
+        }
+
         // ---------- Catalog change history (local to this phone) ----------
         function logCatalogHistory(action, detail) {
             const log = readJson('lalitha_catalog_history', []);
@@ -5564,6 +5633,7 @@
                             <p class="text-[13px] text-slate-500">${esc(v.mobile)}${brandsArr.length ? ` · <span class="text-cyan-700 font-bold">${brandsArr.map(esc).join(', ')}</span>` : ''}</p>
                             <p class="text-[13px] text-slate-400 mt-0.5">${Array.isArray(v.categories) && v.categories.length ? `${v.categories.length} categor${v.categories.length === 1 ? 'y' : 'ies'}` : 'All categories'}${Array.isArray(v.itemIds) && v.itemIds.length ? ` · ${v.itemIds.length} specific item${v.itemIds.length === 1 ? '' : 's'}` : ''}</p>
                             <p class="text-[13px] text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-0.5"></i> ${lastOrderedLabelForVendor(v.id)}</p>
+                            ${Array.isArray(v.reminders) && v.reminders.length ? `<p class="text-[13px] text-amber-600 font-semibold mt-0.5"><i class="fa-solid fa-bell mr-0.5"></i> ${v.reminders.map(r => esc(reminderRuleLabel_(r))).join(' · ')}</p>` : ''}
                         </div>
                         <div class="flex gap-2 shrink-0">
                             <button onclick="toggleVendorCatsExpanded('${esc(v.id)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this vendor"><i class="fa-solid fa-layer-group"></i></button>
@@ -5831,6 +5901,12 @@
             if (nameEl) nameEl.value = '';
             if (mobileEl) mobileEl.value = '';
             if (searchEl) searchEl.value = '';
+            newVendorReminders = [];
+            vendorReminderDaysSet = new Set();
+            const addBox = document.getElementById('vendorReminderAddBox');
+            if (addBox) addBox.classList.add('hidden');
+            renderVendorReminderChips();
+            renderVendorReminderTypeFields();
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
             renderVendorFormItemPicker();
@@ -5838,6 +5914,217 @@
             const saveBtn = document.getElementById('vendorFormSaveBtn');
             if (titleEl) titleEl.textContent = 'Add Vendor';
             if (saveBtn) saveBtn.textContent = 'Add Vendor';
+        }
+
+        // ---------- Recurring reminder rules (shared by vendor reminders + the packing
+        // ledger reminder) — a rule is { id, type: 'once'|'weekly'|'monthly', time: 'HH:MM',
+        // dateStr? (once), days? (weekly, 0=Sun..6=Sat), dayOfMonth? (monthly, 1-31) }.
+        const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const DAY_LABELS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+        function newReminderRuleId_() { return 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+        function formatTimeLabel_(hhmm) {
+            if (!hhmm) return '';
+            const [h, m] = hhmm.split(':').map(Number);
+            const period = h >= 12 ? 'PM' : 'AM';
+            const h12 = ((h % 12) || 12);
+            return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+        }
+
+        function reminderRuleLabel_(rule) {
+            const t = formatTimeLabel_(rule.time);
+            if (rule.type === 'once') {
+                const d = rule.dateStr ? new Date(rule.dateStr + 'T00:00:00') : null;
+                return `Once — ${d ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '?'} at ${t}`;
+            } else if (rule.type === 'weekly') {
+                const days = (rule.days || []).slice().sort((a, b) => a - b).map(d => DAY_LABELS[d]).join(', ');
+                return `Weekly — ${days || '?'} at ${t}`;
+            } else if (rule.type === 'monthly') {
+                return `Monthly — day ${rule.dayOfMonth} at ${t}`;
+            }
+            return 'Reminder';
+        }
+
+        function lastDayOfMonth_(year, monthIndex0) { return new Date(year, monthIndex0 + 1, 0).getDate(); }
+
+        // Finds the most recent scheduled occurrence of `rule` that is <= now, and returns
+        // a stable key unique to THAT occurrence (so each week's/month's slot fires once).
+        // Returns null if no occurrence of this rule has happened yet.
+        function mostRecentDueOccurrenceKey_(rule, now) {
+            if (!rule || !rule.time) return null;
+            const [hh, mm] = String(rule.time).split(':').map(Number);
+            if (isNaN(hh) || isNaN(mm)) return null;
+            const nowDate = new Date(now);
+            if (rule.type === 'once') {
+                if (!rule.dateStr) return null;
+                const d = new Date(rule.dateStr + 'T00:00:00');
+                d.setHours(hh, mm, 0, 0);
+                return d.getTime() <= now ? (rule.id + '_once') : null;
+            }
+            if (rule.type === 'weekly') {
+                const days = Array.isArray(rule.days) ? rule.days : [];
+                if (!days.length) return null;
+                for (let back = 0; back < 8; back++) {
+                    const d = new Date(nowDate);
+                    d.setDate(d.getDate() - back);
+                    if (!days.includes(d.getDay())) continue;
+                    const occ = new Date(d);
+                    occ.setHours(hh, mm, 0, 0);
+                    if (occ.getTime() <= now) return rule.id + '_' + localDateStr(occ);
+                }
+                return null;
+            }
+            if (rule.type === 'monthly') {
+                const dom = Number(rule.dayOfMonth) || 1;
+                for (let back = 0; back < 2; back++) {
+                    const ref = new Date(nowDate.getFullYear(), nowDate.getMonth() - back, 1);
+                    const clampedDay = Math.min(dom, lastDayOfMonth_(ref.getFullYear(), ref.getMonth()));
+                    const occ = new Date(ref.getFullYear(), ref.getMonth(), clampedDay, hh, mm, 0, 0);
+                    if (occ.getTime() <= now) return rule.id + '_' + ref.getFullYear() + '-' + String(ref.getMonth() + 1).padStart(2, '0');
+                }
+                return null;
+            }
+            return null;
+        }
+
+        function renderReminderTypeFieldsInto_(containerEl, type, daysSet, monthInputId, dateInputId) {
+            if (!containerEl) return;
+            if (type === 'once') {
+                containerEl.innerHTML = `<input type="date" id="${dateInputId}" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-[13px] font-bold outline-none">`;
+            } else if (type === 'weekly') {
+                containerEl.innerHTML = `<div class="flex gap-1 justify-between">${DAY_LABELS_SHORT.map((lbl, i) => `
+                    <button type="button" data-day="${i}" class="reminder-day-chip w-9 h-9 rounded-full text-[12px] font-bold border ${daysSet.has(i) ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-300 text-slate-500'}">${lbl}</button>
+                `).join('')}</div>`;
+            } else if (type === 'monthly') {
+                containerEl.innerHTML = `<input type="number" id="${monthInputId}" min="1" max="31" placeholder="Day of month (1-31)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-[13px] font-bold outline-none">`;
+            }
+        }
+
+        function renderReminderChipsInto_(containerEl, rules, removeFn) {
+            if (!containerEl) return;
+            if (!rules.length) { containerEl.innerHTML = ''; return; }
+            containerEl.innerHTML = rules.map(r => `
+                <span class="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-[12px] font-bold px-2.5 py-1.5 rounded-full">
+                    <i class="fa-solid fa-bell text-[10px]"></i>${esc(reminderRuleLabel_(r))}
+                    <button type="button" onclick="${removeFn}('${r.id}')" class="text-amber-500 hover:text-amber-700"><i class="fa-solid fa-xmark"></i></button>
+                </span>
+            `).join('');
+        }
+
+        // ---- Vendor-form reminder draft state (committed to v.reminders on save) ----
+        let newVendorReminders = [];
+        let vendorReminderDaysSet = new Set();
+
+        function toggleVendorReminderAdd() {
+            const box = document.getElementById('vendorReminderAddBox');
+            if (!box) return;
+            box.classList.toggle('hidden');
+            if (!box.classList.contains('hidden')) renderVendorReminderTypeFields();
+        }
+        function renderVendorReminderChips() {
+            renderReminderChipsInto_(document.getElementById('newVendorReminderChips'), newVendorReminders, 'removeVendorReminderRule');
+        }
+        function renderVendorReminderTypeFields() {
+            const typeEl = document.getElementById('newVendorReminderType');
+            const type = typeEl ? typeEl.value : 'once';
+            renderReminderTypeFieldsInto_(document.getElementById('newVendorReminderTypeFields'), type, vendorReminderDaysSet, 'newVendorReminderDayOfMonth', 'newVendorReminderDate');
+            if (type === 'weekly') {
+                document.querySelectorAll('#newVendorReminderTypeFields .reminder-day-chip').forEach(btn => {
+                    btn.addEventListener('click', () => toggleVendorReminderDay(Number(btn.dataset.day)));
+                });
+            }
+        }
+        function toggleVendorReminderDay(i) {
+            if (vendorReminderDaysSet.has(i)) vendorReminderDaysSet.delete(i); else vendorReminderDaysSet.add(i);
+            renderVendorReminderTypeFields();
+        }
+        function addVendorReminderRule() {
+            const typeEl = document.getElementById('newVendorReminderType');
+            const timeEl = document.getElementById('newVendorReminderTime');
+            const type = typeEl ? typeEl.value : 'once';
+            const time = timeEl && timeEl.value ? timeEl.value : '18:00';
+            const rule = { id: newReminderRuleId_(), type, time };
+            if (type === 'once') {
+                const dateEl = document.getElementById('newVendorReminderDate');
+                if (!dateEl || !dateEl.value) { showToast('Pick a date'); return; }
+                rule.dateStr = dateEl.value;
+            } else if (type === 'weekly') {
+                if (vendorReminderDaysSet.size === 0) { showToast('Pick at least one day'); return; }
+                rule.days = Array.from(vendorReminderDaysSet).sort((a, b) => a - b);
+            } else if (type === 'monthly') {
+                const domEl = document.getElementById('newVendorReminderDayOfMonth');
+                const dom = domEl ? Number(domEl.value) : NaN;
+                if (!dom || dom < 1 || dom > 31) { showToast('Enter a valid day of month (1-31)'); return; }
+                rule.dayOfMonth = dom;
+            }
+            newVendorReminders.push(rule);
+            vendorReminderDaysSet = new Set();
+            renderVendorReminderChips();
+            document.getElementById('vendorReminderAddBox').classList.add('hidden');
+        }
+        function removeVendorReminderRule(id) {
+            newVendorReminders = newVendorReminders.filter(r => r.id !== id);
+            renderVendorReminderChips();
+        }
+
+        // ---- Packing ledger reminders — committed immediately (no form Save step) ----
+        let packingReminders = readJson('lalitha_packing_reminders', []);
+        let packingReminderDaysSet = new Set();
+
+        function savePackingReminders_() { writeJson('lalitha_packing_reminders', packingReminders); }
+        function togglePackingReminderAdd() {
+            const box = document.getElementById('packingReminderAddBox');
+            if (!box) return;
+            box.classList.toggle('hidden');
+            if (!box.classList.contains('hidden')) renderPackingReminderTypeFields();
+        }
+        function renderPackingReminderChips() {
+            renderReminderChipsInto_(document.getElementById('packingReminderChips'), packingReminders, 'removePackingReminderRule');
+        }
+        function renderPackingReminderTypeFields() {
+            const typeEl = document.getElementById('packingReminderType');
+            const type = typeEl ? typeEl.value : 'once';
+            renderReminderTypeFieldsInto_(document.getElementById('packingReminderTypeFields'), type, packingReminderDaysSet, 'packingReminderDayOfMonth', 'packingReminderDate');
+            if (type === 'weekly') {
+                document.querySelectorAll('#packingReminderTypeFields .reminder-day-chip').forEach(btn => {
+                    btn.addEventListener('click', () => togglePackingReminderDay(Number(btn.dataset.day)));
+                });
+            }
+        }
+        function togglePackingReminderDay(i) {
+            if (packingReminderDaysSet.has(i)) packingReminderDaysSet.delete(i); else packingReminderDaysSet.add(i);
+            renderPackingReminderTypeFields();
+        }
+        function addPackingReminderRule() {
+            const typeEl = document.getElementById('packingReminderType');
+            const timeEl = document.getElementById('packingReminderTime');
+            const type = typeEl ? typeEl.value : 'once';
+            const time = timeEl && timeEl.value ? timeEl.value : '18:00';
+            const rule = { id: newReminderRuleId_(), type, time };
+            if (type === 'once') {
+                const dateEl = document.getElementById('packingReminderDate');
+                if (!dateEl || !dateEl.value) { showToast('Pick a date'); return; }
+                rule.dateStr = dateEl.value;
+            } else if (type === 'weekly') {
+                if (packingReminderDaysSet.size === 0) { showToast('Pick at least one day'); return; }
+                rule.days = Array.from(packingReminderDaysSet).sort((a, b) => a - b);
+            } else if (type === 'monthly') {
+                const domEl = document.getElementById('packingReminderDayOfMonth');
+                const dom = domEl ? Number(domEl.value) : NaN;
+                if (!dom || dom < 1 || dom > 31) { showToast('Enter a valid day of month (1-31)'); return; }
+                rule.dayOfMonth = dom;
+            }
+            packingReminders.push(rule);
+            packingReminderDaysSet = new Set();
+            savePackingReminders_();
+            renderPackingReminderChips();
+            document.getElementById('packingReminderAddBox').classList.add('hidden');
+        }
+        function removePackingReminderRule(id) {
+            packingReminders = packingReminders.filter(r => r.id !== id);
+            savePackingReminders_();
+            renderPackingReminderChips();
         }
 
         function openVendorFormPage() {
@@ -5859,16 +6146,26 @@
             const itemIds = Array.from(newVendorSelectedItemIds);
             if (!name || !mobile) { showToast("Enter both the vendor's name and mobile number."); return; }
             if (mobile.replace(/\D/g, '').length < 10) { showToast("Enter a valid mobile number, with country code if you have one."); return; }
+            const reminders = newVendorReminders.slice();
             if (editingVendorId) {
                 const v = vendors.find(x => x.id === editingVendorId);
                 if (v) {
                     v.name = name; v.mobile = mobile; v.brands = brands; v.categories = categories; v.itemIds = itemIds;
+                    // Changing the reminder rules should let changed/added ones fire again —
+                    // drop every past "already notified" record for this vendor whenever the
+                    // rule set actually changed, so edits re-arm (a minor tradeoff: an
+                    // untouched sibling rule could re-notify once more this period too).
+                    if (JSON.stringify(v.reminders || []) !== JSON.stringify(reminders)) {
+                        Array.from(firedReminderIds).forEach(k => { if (k.startsWith('vendor_' + v.id + '_')) firedReminderIds.delete(k); });
+                        writeJson('lalitha_fired_reminder_ids', Array.from(firedReminderIds));
+                    }
+                    v.reminders = reminders;
                     saveVendors();
                     logCatalogHistory('Edited vendor', `${name} (${mobile}) — ${brands.join(', ') || 'no brand'}`);
                     showToast('Vendor updated');
                 }
             } else {
-                vendors.push({ id: 'vendor_' + Date.now(), name, mobile, brands, categories, itemIds });
+                vendors.push({ id: 'vendor_' + Date.now(), name, mobile, brands, categories, itemIds, reminders });
                 saveVendors();
                 logCatalogHistory('Added vendor', `${name} (${mobile}) — ${brands.join(', ') || 'no brand'}`);
                 showToast('Vendor added');
@@ -5892,6 +6189,12 @@
             if (nameEl) nameEl.value = v.name;
             if (mobileEl) mobileEl.value = v.mobile;
             if (searchEl) searchEl.value = '';
+            newVendorReminders = Array.isArray(v.reminders) ? JSON.parse(JSON.stringify(v.reminders)) : [];
+            vendorReminderDaysSet = new Set();
+            const addBox = document.getElementById('vendorReminderAddBox');
+            if (addBox) addBox.classList.add('hidden');
+            renderVendorReminderChips();
+            renderVendorReminderTypeFields();
             renderNewVendorBrandChips();
             renderNewVendorCategoryChips();
             renderVendorFormItemPicker();
@@ -7138,7 +7441,20 @@
             renderCatalogEditorList();
             renderBrandFilter();
             renderAddItemFormAuxFields();
-            showToast('Item added');
+            // Opened via "+ New item" from inside the vendor form — add it straight into
+            // that vendor's draft item picks and jump back, instead of leaving the user on
+            // the Add Item screen to tap Back themselves.
+            if (addItemReturnToVendorForm) {
+                newVendorSelectedItemIds.add(String(newItem.id));
+                addItemReturnToVendorForm = false;
+                const backBtn = document.getElementById('addItemBackBtn');
+                if (backBtn) backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Back to Settings';
+                switchSettingsView('vendorForm');
+                renderVendorFormItemPicker();
+                showToast(`"${name}" added and picked for this vendor`);
+            } else {
+                showToast('Item added');
+            }
         }
 
         function deleteCatalogItem(id) {
@@ -7768,6 +8084,59 @@
         let notifTransitStatusSnapshot = readJson('lalitha_transit_status_snapshot', {}); // transit id -> last-seen status
         let notifBaselineDone = localStorage.getItem('lalitha_notif_baseline_done') === '1';
 
+        // ---- Vendor / Packing "create a ledger" reminders ----
+        // A vendor's reminders live on the vendor object itself (vendor.reminders, an
+        // array of recurring rule objects — see the mostRecentDueOccurrenceKey_ helpers
+        // above). The packing reminders are a similar array of rules, not per-vendor,
+        // persisted separately (packingReminders / 'lalitha_packing_reminders').
+        // firedReminderIds stops a reminder firing again every single poll once it's
+        // already due and already notified about — each key is specific to one
+        // occurrence (e.g. one week's Monday, one month's 15th), so it naturally fires
+        // again next time that occurrence comes due.
+        let firedReminderIds = new Set(readJson('lalitha_fired_reminder_ids', []));
+
+        function markReminderFired_(key) {
+            firedReminderIds.add(key);
+            writeJson('lalitha_fired_reminder_ids', Array.from(firedReminderIds));
+        }
+
+        function checkDueReminders() {
+            const now = Date.now();
+            vendors.forEach(v => {
+                (Array.isArray(v.reminders) ? v.reminders : []).forEach(rule => {
+                    const occKey = mostRecentDueOccurrenceKey_(rule, now);
+                    if (!occKey) return;
+                    const key = 'vendor_' + v.id + '_' + occKey;
+                    if (!firedReminderIds.has(key)) {
+                        markReminderFired_(key);
+                        addNotification({ type: 'vendor_reminder', title: `Create ledger — ${v.name}`, body: reminderRuleLabel_(rule), vendorReminderId: v.id });
+                    }
+                });
+            });
+            (Array.isArray(packingReminders) ? packingReminders : []).forEach(rule => {
+                const occKey = mostRecentDueOccurrenceKey_(rule, now);
+                if (!occKey) return;
+                const key = 'packing_' + occKey;
+                if (!firedReminderIds.has(key)) {
+                    markReminderFired_(key);
+                    addNotification({ type: 'packing_reminder', title: 'Create Packing Ledger', body: reminderRuleLabel_(rule), packingReminder: true });
+                }
+            });
+        }
+
+        function navigateToVendorReminder(vendorId) {
+            showVendorRequirementSection();
+            if (vendors.some(v => v.id === vendorId)) {
+                currentVendorId = vendorId;
+                const sel = document.getElementById('vendorReqPageSelect');
+                if (sel) { sel.value = vendorId; onVendorPageVendorChange(); }
+            }
+        }
+        function navigateToPackingReminder() {
+            showPackingRequirementSection();
+            switchMode('audit');
+        }
+
         function addNotification(n) {
             notifications.unshift(Object.assign({
                 id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
@@ -7809,7 +8178,7 @@
             container.innerHTML = notifications.map(n => `
                 <button onclick="handleNotificationTap('${n.id}')" class="w-full text-left bg-white p-3.5 rounded-xl border ${n.read ? 'border-slate-200' : 'border-indigo-300 bg-indigo-50/60'} shadow-sm flex items-start gap-2.5">
                     <div class="w-9 h-9 rounded-xl ${n.read ? 'bg-slate-100 text-slate-500' : 'bg-indigo-100 text-indigo-700'} flex items-center justify-center text-sm shrink-0 mt-0.5">
-                        <i class="fa-solid ${n.type === 'transit_received' ? 'fa-circle-check' : 'fa-truck-fast'}"></i>
+                        <i class="fa-solid ${n.type === 'transit_received' ? 'fa-circle-check' : (n.type === 'vendor_reminder' || n.type === 'packing_reminder') ? 'fa-clock' : 'fa-truck-fast'}"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-bold text-slate-800">${esc(n.title)}</p>
@@ -7826,6 +8195,8 @@
             if (!n.read) { n.read = true; writeJson('lalitha_notifications', notifications); updateNotifBadge(); }
             closeNotificationsPanel();
             if (n.transitId) navigateToTransitNotification(n.transitId);
+            else if (n.vendorReminderId) navigateToVendorReminder(n.vendorReminderId);
+            else if (n.packingReminder) navigateToPackingReminder();
         }
         // Jumps to Packing Request > Ledger Sheets, dated to that record, and opens its
         // detail view — the "redirect to the specified space" behavior asked for.
@@ -7963,7 +8334,9 @@
                 const received = s.status === 'Received';
 
                 return `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-sm">
+                    <div class="swipe-row-wrap">
+                        <button type="button" onclick="deleteCloudTransit('${sid}')" class="swipe-row-gear !bg-red-600" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
+                        <div id="ledgerRow_${sid}" class="swipe-row-content bg-white p-4 rounded-xl shadow-sm border space-y-2.5 text-sm">
                         <div class="flex justify-between font-bold text-sm">
                             <span>#${idx + 1} &bull; ${esc(s.src)} &rarr; ${esc(s.dst)}</span>
                             <span class="flex items-center gap-1.5">
@@ -8001,6 +8374,7 @@
                                 </div>
                             </div>
                         </div>
+                        </div>
                     </div>
                 `;
             };
@@ -8014,6 +8388,11 @@
                 container.innerHTML = filtered.map((s, idx) => renderCard(s, idx)).join('');
             }
             window._latestCloudSheets = filtered;
+            activeSwipeReveal = null;
+            filtered.forEach(s => {
+                const rowEl = document.getElementById(`ledgerRow_${s.id}`);
+                attachSwipeReveal(rowEl ? rowEl.parentElement : null, rowEl, s.id);
+            });
         }
 
         function toggleActionDropdown(event, prefixId) {
