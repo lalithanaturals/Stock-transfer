@@ -1008,9 +1008,9 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-8";
+        const APP_VERSION = "v2026.10.01-9";
 
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
         // Wrapper around fetch() that gives a slow-but-working request plenty of room
         // before giving up, instead of relying on the browser's own (effectively
@@ -4048,6 +4048,19 @@
         // Ordinary callers (saveInventory etc.) can still just call it and ignore
         // the return value, exactly as before.
         function pushCatalogToCloud() {
+            // Safety net, mirroring the pull-side one above: never push a catalog that's
+            // completely empty on this device. A push is a full overwrite server-side, so
+            // a device that hasn't loaded any catalog yet (a brand new install, a cleared
+            // browser, a storage glitch) must never be allowed to wipe out a cloud catalog
+            // that already has real items in it — that's the exact kind of silent data loss
+            // seen earlier in this app's life. Legitimate catalog edits (add/edit/delete an
+            // item, import) always happen against an already-loaded, non-empty catalog, so
+            // this never blocks a real edit — only an accidental wipe-push from an empty state.
+            const localCount = Object.values(inventoryData || {}).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
+            if (localCount === 0) {
+                recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, new Error('local catalog is empty — refusing to push (would wipe the cloud catalog)'));
+                return Promise.resolve();
+            }
             try {
                 return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
