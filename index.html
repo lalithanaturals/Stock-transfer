@@ -163,6 +163,10 @@
                 <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
                 <div class="absolute -right-2 bottom-2 w-16 h-16 bg-white/10 rounded-full"></div>
                 <button onclick="openCatalogModal()" title="Settings" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 active:scale-[0.93] transition flex items-center justify-center text-white text-base z-10"><i class="fa-solid fa-gear"></i></button>
+                <button onclick="openNotificationsPanel()" title="Notifications" class="absolute top-[3.75rem] right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 active:scale-[0.93] transition flex items-center justify-center text-white text-base z-10">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="homeNotifBadge" class="hidden absolute -top-1 -right-1 bg-amber-400 text-indigo-900 text-[10px] font-extrabold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white">0</span>
+                </button>
                 <p class="text-sm text-indigo-100 font-semibold relative">Hello 👋</p>
                 <h2 class="text-xl font-bold mt-0.5 relative">Lalitha Naturals</h2>
                 <p class="text-[13px] text-indigo-100 mt-1 relative" id="homeDateLabel"></p>
@@ -854,6 +858,23 @@
         </div>
     </div>
 
+    <!-- Notifications panel — in-app only (see the big comment above
+         checkForNewTransitsAndNotify() in the script for what this does and does not
+         cover: it needs the app open to notice anything, it can't pop up on the lock
+         screen while the app is closed — that needs real OS push notifications, a
+         separate, bigger piece of work). -->
+    <div id="notifPanel" class="fixed inset-0 bg-slate-50 z-50 hidden flex flex-col">
+        <div class="bg-white w-full h-full flex flex-col">
+            <div class="bg-slate-800 text-white px-4 py-3.5 flex justify-between items-center shrink-0" style="padding-top: max(0.875rem, env(safe-area-inset-top));">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-bell text-amber-400 text-base"></i> Notifications</h3>
+                <div class="flex items-center gap-4">
+                    <button onclick="markAllNotificationsRead()" class="text-[12px] font-bold text-indigo-300">Mark all read</button>
+                    <button onclick="closeNotificationsPanel()" class="text-white text-2xl font-bold px-1 leading-none">&times;</button>
+                </div>
+            </div>
+            <div class="p-3.5 overflow-y-auto bg-slate-50 flex-1 space-y-2" id="notifListContainer"></div>
+        </div>
+    </div>
 
     <!-- Barcode Scanner Modal -->
     <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
@@ -1004,7 +1025,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-11";
+        const APP_VERSION = "v2026.10.01-12";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4596,7 +4617,8 @@
 
             let lastPollAttempt = 0;
             const POLL_INTERVAL_MS = 20000;
-            if (navigator.onLine) { syncCatalogFromCloud(); syncSettingsFromCloud(); } // pick up catalog + vendor/hide-show edits made from the other branch
+            updateNotifBadge(); // reflect whatever's already in lalitha_notifications from a previous session
+            if (navigator.onLine) { syncCatalogFromCloud(); syncSettingsFromCloud(); checkForNewTransitsAndNotify(); } // pick up catalog + vendor/hide-show edits made from the other branch, and establish/advance the notifications baseline
             function pollRemoteChanges() {
                 lastPollAttempt = Date.now();
                 // Skip while the catalog editor is open — openCatalogModal() already synced on
@@ -4607,7 +4629,7 @@
                 // this, a background poll's own result could land mid-manual-sync and
                 // repaint the "Syncing..." banner with a stale/unrelated result before the
                 // manual attempt's own outcome is ready.
-                if (navigator.onLine && !catalogOpen && !isManualSyncing) { syncCatalogFromCloud(); syncSettingsFromCloud(); }
+                if (navigator.onLine && !catalogOpen && !isManualSyncing) { syncCatalogFromCloud(); syncSettingsFromCloud(); checkForNewTransitsAndNotify(); }
             }
             // Mobile browsers throttle or fully suspend setInterval while the tab/PWA is
             // backgrounded or the screen is locked — a plain 20s interval can silently stop
@@ -7725,6 +7747,140 @@
             let msg = "Loaded record for editing. Only the items that were on the sheet are restored with their entered count; any item that was fully stocked (and so wasn't on the sheet) will show as needing its full Min again unless you re-enter it. Press 'Confirm & Dispatch' when done.";
             if (missing > 0) msg += `\n\n${missing} item(s) on this record are no longer in the catalog and were not loaded.`;
             alert(msg);
+        }
+
+        // ---------- Notifications (in-app only) ----------
+        // What this is: a notification center inside the app — a bell icon with an
+        // unread badge, a list, and tapping an entry jumps straight to that transit
+        // record. It generates notifications for the two events that actually need
+        // cross-device awareness: a transfer newly dispatched TO this device's locked
+        // branch, and a transfer this device dispatched being marked Received at the
+        // other end. It runs on every background poll (~20s) and at startup, so it
+        // catches things even if you're sitting on the Home screen.
+        //
+        // What this is NOT: real push notifications. These can only appear while the
+        // app itself is open (in a tab, or in the background tab if the OS hasn't
+        // fully suspended it) — nothing can pop up on your lock screen while the app is
+        // fully closed. That needs actual Web Push (a browser/OS-level API with its own
+        // server-side piece — subscription storage + VAPID keys + a scheduled push),
+        // which is a separate, bigger feature. This in-app bell is step one.
+        let notifications = readJson('lalitha_notifications', []);
+        let notifTransitStatusSnapshot = readJson('lalitha_transit_status_snapshot', {}); // transit id -> last-seen status
+        let notifBaselineDone = localStorage.getItem('lalitha_notif_baseline_done') === '1';
+
+        function addNotification(n) {
+            notifications.unshift(Object.assign({
+                id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+                time: Date.now(),
+                read: false
+            }, n));
+            if (notifications.length > 200) notifications = notifications.slice(0, 200); // cap so this never grows unbounded
+            writeJson('lalitha_notifications', notifications);
+            updateNotifBadge();
+        }
+
+        function updateNotifBadge() {
+            const badge = document.getElementById('homeNotifBadge');
+            if (!badge) return;
+            const count = notifications.filter(n => !n.read).length;
+            if (count > 0) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.remove('hidden'); }
+            else badge.classList.add('hidden');
+        }
+
+        function openNotificationsPanel() {
+            renderNotificationsList();
+            document.getElementById('notifPanel').classList.remove('hidden');
+        }
+        function closeNotificationsPanel() {
+            document.getElementById('notifPanel').classList.add('hidden');
+        }
+        function markAllNotificationsRead() {
+            notifications.forEach(n => n.read = true);
+            writeJson('lalitha_notifications', notifications);
+            updateNotifBadge();
+            renderNotificationsList();
+        }
+        function renderNotificationsList() {
+            const container = document.getElementById('notifListContainer');
+            if (!notifications.length) {
+                container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No notifications yet.</p>`;
+                return;
+            }
+            container.innerHTML = notifications.map(n => `
+                <button onclick="handleNotificationTap('${n.id}')" class="w-full text-left bg-white p-3.5 rounded-xl border ${n.read ? 'border-slate-200' : 'border-indigo-300 bg-indigo-50/60'} shadow-sm flex items-start gap-2.5">
+                    <div class="w-9 h-9 rounded-xl ${n.read ? 'bg-slate-100 text-slate-500' : 'bg-indigo-100 text-indigo-700'} flex items-center justify-center text-sm shrink-0 mt-0.5">
+                        <i class="fa-solid ${n.type === 'transit_received' ? 'fa-circle-check' : 'fa-truck-fast'}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-800">${esc(n.title)}</p>
+                        ${n.body ? `<p class="text-[13px] text-slate-500 mt-0.5">${esc(n.body)}</p>` : ''}
+                        <p class="text-[11px] text-slate-400 mt-1">${new Date(n.time).toLocaleString()}</p>
+                    </div>
+                    ${n.read ? '' : '<span class="w-2.5 h-2.5 bg-indigo-500 rounded-full mt-1.5 shrink-0"></span>'}
+                </button>
+            `).join('');
+        }
+        function handleNotificationTap(id) {
+            const n = notifications.find(x => x.id === id);
+            if (!n) return;
+            if (!n.read) { n.read = true; writeJson('lalitha_notifications', notifications); updateNotifBadge(); }
+            closeNotificationsPanel();
+            if (n.transitId) navigateToTransitNotification(n.transitId);
+        }
+        // Jumps to Packing Request > Ledger Sheets, dated to that record, and opens its
+        // detail view — the "redirect to the specified space" behavior asked for.
+        function navigateToTransitNotification(transitId) {
+            const cm = document.getElementById('catalogModal');
+            if (cm) cm.classList.add('hidden');
+            showPackingRequirementSection();
+            switchMode('packing');
+            const cached = readJson('lalitha_cached_sheets', []);
+            const rec = (typeof findSheet === 'function' && findSheet(transitId)) || cached.find(s => s && s.id === transitId);
+            if (rec) document.getElementById('lookupDateInput').value = localDateStr(new Date(rec.time));
+            Promise.resolve(loadTransitSheets(true)).then(() => {
+                loadTransitPayload(transitId);
+                if (typeof openStaffCheckModal === 'function') openStaffCheckModal();
+            });
+        }
+
+        // Pulls the ledger in the background (independent of whether the Ledger Sheets
+        // tab is actually open) and diffs it against what this device last saw, by
+        // transit id + status, to notice two things worth a notification: a transfer
+        // newly addressed to this device's locked branch, and one of this device's own
+        // dispatches flipping to Received. The very first time this ever runs on a
+        // device it only records the current state as a baseline and notifies about
+        // nothing — otherwise everyone would get a flood of notifications for all of
+        // history the first time this version loads.
+        async function checkForNewTransitsAndNotify() {
+            try {
+                const response = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {}, 30000);
+                if (!response.ok) return;
+                const sheets = await response.json();
+                if (!Array.isArray(sheets)) return;
+                const clean = sheets.filter(s => s && Array.isArray(s.items));
+                writeJson('lalitha_cached_sheets', clean);
+
+                clean.forEach(t => {
+                    const prevStatus = notifTransitStatusSnapshot[t.id];
+                    const isNew = prevStatus === undefined;
+                    if (notifBaselineDone && lockedBranch) {
+                        if (isNew && t.dst === lockedBranch) {
+                            addNotification({ type: 'transit_incoming', title: `Transfer incoming — ${t.dst}`, body: `From ${t.src}${t.staff ? ' · ' + t.staff : ''}`, transitId: t.id });
+                        } else if (!isNew && prevStatus !== 'Received' && t.status === 'Received' && t.src === lockedBranch) {
+                            addNotification({ type: 'transit_received', title: 'Transfer received', body: `${t.dst} received your transfer`, transitId: t.id });
+                        }
+                    }
+                    notifTransitStatusSnapshot[t.id] = t.status;
+                });
+                writeJson('lalitha_transit_status_snapshot', notifTransitStatusSnapshot);
+                if (!notifBaselineDone) { notifBaselineDone = true; localStorage.setItem('lalitha_notif_baseline_done', '1'); }
+
+                // Keep the Ledger Sheets view fresh if it's the one currently on screen,
+                // rather than leaving it showing a stale list until the next manual pull.
+                if (document.getElementById('transitSheetsFeed')) {
+                    renderTransitList(clean, document.getElementById('lookupDateInput').value);
+                }
+            } catch (e) { /* best-effort — next poll tick will retry */ }
         }
 
         // ---------- Ledger ----------
