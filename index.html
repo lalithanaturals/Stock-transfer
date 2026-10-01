@@ -1008,7 +1008,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-6";
+        const APP_VERSION = "v2026.10.01-7";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
@@ -4215,11 +4215,19 @@
                 recordSyncSuccess(); // reached the backend and got a valid settings reply
 
                 applyingRemoteSettings = true;
-                // Same safety net as the catalog pull: a vendor list genuinely going from
-                // "several vendors" to "zero" is never a real sync update — refuse that
-                // specific overwrite rather than silently wiping this device's vendors.
-                if (Array.isArray(s.vendors) && !(s.vendors.length === 0 && vendors.length > 0)) {
-                    vendors = s.vendors;
+                // Same safety net as the catalog pull, but broader: refuse the overwrite
+                // whenever the incoming list is MISSING any vendor this device currently
+                // has (by id) — not just a drop to zero. This is what was actually causing
+                // "I can't add a vendor": add one locally, its push to the cloud is still
+                // in flight (fire-and-forget, not awaited), the next ~20s background poll's
+                // pull lands first with the OLD list that doesn't have it yet, and that pull
+                // was overwriting local `vendors` — silently erasing the just-added vendor a
+                // few seconds after it appeared to save.
+                const incomingVendors = Array.isArray(s.vendors) ? s.vendors : null;
+                const incomingIds = incomingVendors ? new Set(incomingVendors.map(v => String(v.id))) : null;
+                const missingLocalVendor = incomingVendors && vendors.some(v => !incomingIds.has(String(v.id)));
+                if (incomingVendors && !missingLocalVendor) {
+                    vendors = incomingVendors;
                     vendors.forEach(v => { if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : []; });
                     writeJson('lalitha_vendors', vendors);
                 }
