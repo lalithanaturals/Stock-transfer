@@ -1008,7 +1008,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-5";
+        const APP_VERSION = "v2026.10.01-6";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
@@ -4074,20 +4074,24 @@
                 }
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
-                    recordSyncSuccess(); // reached the backend and got a valid catalog reply
                     // Safety net: a catalog genuinely going from "thousands of items" to
                     // "zero" is never a real, intended edit — it almost always means the
                     // cloud side is empty/not-yet-seeded (a brand new backend, a botched
                     // push) rather than the user actually deleting everything. Refuse that
                     // specific overwrite rather than silently wiping this device's copy —
                     // this is exactly the gap that caused real data to disappear from a
-                    // phone during a backend migration.
+                    // phone during a backend migration. Checked BEFORE recordSyncSuccess()
+                    // so a refused overwrite never shows as "Synced" — a previous version of
+                    // this check ran after, which could show success while quietly declining
+                    // to actually update anything, masking a real problem.
                     const incomingCount = Object.values(data.catalog).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
                     const localCount = Object.values(inventoryData || {}).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
                     if (incomingCount === 0 && localCount > 0) {
                         recordSyncErrorDetail_('Catalog pull', 'GET', url, new Error('cloud catalog is empty but this device has ' + localCount + ' items locally — refusing to overwrite'));
+                        recordSyncFailure();
                         return false;
                     }
+                    recordSyncSuccess(); // reached the backend, got a valid catalog reply, and it passed the safety check above
                     // Skip the write + re-render entirely when the poll came back identical —
                     // this runs every ~20s in the background, so on the (usual) no-change poll
                     // this avoids a pointless full list rebuild.
@@ -4100,6 +4104,12 @@
                     // Preserve whatever the user is currently searching for — a background poll
                     // shouldn't wipe their in-progress search back to the full unfiltered list.
                     renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+                    // These settings sub-views read category/brand lists straight out of
+                    // inventoryData — if one happens to be open while a catalog sync lands in
+                    // the background, refresh it too, or it's stuck showing whatever it had
+                    // (possibly "no categories yet") until the person leaves and reopens it.
+                    if (document.getElementById('settingsView_categories') && !document.getElementById('settingsView_categories').classList.contains('hidden')) renderCategoryManageList();
+                    if (document.getElementById('settingsView_brands') && !document.getElementById('settingsView_brands').classList.contains('hidden')) renderBrandManageList();
                     return true;
                 }
                 return false;
