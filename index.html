@@ -1008,7 +1008,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-1";
+        const APP_VERSION = "v2026.10.01-2";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
@@ -4055,11 +4055,18 @@
         // Best-effort pull of the shared catalog on load, so an edit made on one branch's
         // device shows up on the other. Falls back to the local copy on any error (old
         // script deployment, offline, etc.) rather than blocking startup.
-        async function syncCatalogFromCloud() {
+        async function syncCatalogFromCloud(isRetry) {
             const url = GOOGLE_SCRIPT_URL + '?type=catalog';
             try {
                 const res = await fetchWithTimeout(url, {}, 58000);
-                if (!res.ok) { recordSyncErrorDetail_('Catalog pull', 'GET', url, null, res); recordSyncFailure(); return false; }
+                if (!res.ok) {
+                    // A single bad response (e.g. a transient HTTP 404/500 from a Google-side
+                    // cold start or hiccup) shouldn't immediately show "Sync failed" to the
+                    // user — give it one quick second-attempt first, since these are usually
+                    // gone a couple seconds later.
+                    if (!isRetry) { await new Promise(r => setTimeout(r, 2000)); return syncCatalogFromCloud(true); }
+                    recordSyncErrorDetail_('Catalog pull', 'GET', url, null, res); recordSyncFailure(); return false;
+                }
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
                     recordSyncSuccess(); // reached the backend and got a valid catalog reply
@@ -4078,7 +4085,10 @@
                     return true;
                 }
                 return false;
-            } catch (e) { recordSyncErrorDetail_('Catalog pull', 'GET', url, e); recordSyncFailure(); /* old script deployment or offline — keep local catalog */ return false; }
+            } catch (e) {
+                if (!isRetry) { await new Promise(r => setTimeout(r, 2000)); return syncCatalogFromCloud(true); }
+                recordSyncErrorDetail_('Catalog pull', 'GET', url, e); recordSyncFailure(); /* old script deployment or offline — keep local catalog */ return false;
+            }
         }
 
         // Best-effort push of vendors + all the hide/show toggles to the shared backend,
@@ -4160,11 +4170,16 @@
         // polling timer, and on tab focus — this backend has no push/websocket channel,
         // so "instant" here means within one poll interval (~15-20s), not literally live.
         let applyingRemoteSettings = false;
-        async function syncSettingsFromCloud() {
+        async function syncSettingsFromCloud(isRetry) {
             const url = GOOGLE_SCRIPT_URL + '?type=settings';
             try {
                 const res = await fetchWithTimeout(url, {}, 58000);
-                if (!res.ok) { recordSyncErrorDetail_('Settings pull', 'GET', url, null, res); recordSyncFailure(); return false; }
+                if (!res.ok) {
+                    // Same one-quick-retry treatment as the catalog pull above — a transient
+                    // HTTP error shouldn't alarm the user if it clears up a couple seconds later.
+                    if (!isRetry) { await new Promise(r => setTimeout(r, 2000)); return syncSettingsFromCloud(true); }
+                    recordSyncErrorDetail_('Settings pull', 'GET', url, null, res); recordSyncFailure(); return false;
+                }
                 const data = await res.json();
                 const s = data && data.settings;
                 if (!s || typeof s !== 'object') return false;
@@ -4195,7 +4210,11 @@
                 }
                 if (document.getElementById('settingsView_branches') && !document.getElementById('settingsView_branches').classList.contains('hidden') && typeof renderBranchManageList === 'function') renderBranchManageList();
                 return true;
-            } catch (e) { applyingRemoteSettings = false; recordSyncErrorDetail_('Settings pull', 'GET', url, e); recordSyncFailure(); /* old script deployment or offline — keep local settings */ return false; }
+            } catch (e) {
+                applyingRemoteSettings = false;
+                if (!isRetry) { await new Promise(r => setTimeout(r, 2000)); return syncSettingsFromCloud(true); }
+                recordSyncErrorDetail_('Settings pull', 'GET', url, e); recordSyncFailure(); /* old script deployment or offline — keep local settings */ return false;
+            }
         }
 
         // ---------- Brand / Category filters + hide/show ----------
