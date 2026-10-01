@@ -1008,9 +1008,9 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-4";
+        const APP_VERSION = "v2026.10.01-5";
 
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
         // Wrapper around fetch() that gives a slow-but-working request plenty of room
         // before giving up, instead of relying on the browser's own (effectively
@@ -4042,14 +4042,19 @@
         // Best-effort push of the whole catalog to the shared backend so both branches
         // stay in sync. Silently does nothing if the Apps Script hasn't been updated yet
         // to understand type:'catalog' — existing transit save/read behavior is untouched.
+        // Returns the in-flight push's promise (resolves once the push attempt is
+        // done, success or fail) so callers that need to guarantee "pushed before
+        // pulled" — like runManualSync — can await it instead of firing it blind.
+        // Ordinary callers (saveInventory etc.) can still just call it and ignore
+        // the return value, exactly as before.
         function pushCatalogToCloud() {
             try {
-                fetchWithTimeout(GOOGLE_SCRIPT_URL, {
+                return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'catalog', action: 'save_catalog', catalog: inventoryData, version: CATALOG_VERSION })
                 }, 45000).catch(err => { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, err); });
-            } catch (e) { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, e); }
+            } catch (e) { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, e); return Promise.resolve(); }
         }
 
         // Best-effort pull of the shared catalog on load, so an edit made on one branch's
@@ -4070,6 +4075,19 @@
                 const data = await res.json();
                 if (data && data.catalog && typeof data.catalog === 'object' && !Array.isArray(data.catalog)) {
                     recordSyncSuccess(); // reached the backend and got a valid catalog reply
+                    // Safety net: a catalog genuinely going from "thousands of items" to
+                    // "zero" is never a real, intended edit — it almost always means the
+                    // cloud side is empty/not-yet-seeded (a brand new backend, a botched
+                    // push) rather than the user actually deleting everything. Refuse that
+                    // specific overwrite rather than silently wiping this device's copy —
+                    // this is exactly the gap that caused real data to disappear from a
+                    // phone during a backend migration.
+                    const incomingCount = Object.values(data.catalog).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
+                    const localCount = Object.values(inventoryData || {}).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
+                    if (incomingCount === 0 && localCount > 0) {
+                        recordSyncErrorDetail_('Catalog pull', 'GET', url, new Error('cloud catalog is empty but this device has ' + localCount + ' items locally — refusing to overwrite'));
+                        return false;
+                    }
                     // Skip the write + re-render entirely when the poll came back identical —
                     // this runs every ~20s in the background, so on the (usual) no-change poll
                     // this avoids a pointless full list rebuild.
@@ -4109,6 +4127,7 @@
         // stale/un-redeployed script), verifySettingsPush_() below reads the settings
         // straight back with a normal fetch (not no-cors, so we CAN see failures) a
         // moment later and warns the user if what we just tried to save isn't there.
+        // Also returns its promise now, same reasoning as pushCatalogToCloud above.
         function pushSettingsToCloud() {
             const settingsPayload = {
                 vendors,
@@ -4119,7 +4138,7 @@
                 branchList
             };
             try {
-                fetchWithTimeout(GOOGLE_SCRIPT_URL, {
+                return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -4128,7 +4147,7 @@
                         version: Date.now()
                     })
                 }, 45000).then(() => verifySettingsPush_(settingsPayload)).catch(err => { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, err); });
-            } catch (e) { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, e); }
+            } catch (e) { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, e); return Promise.resolve(); }
         }
 
         // Reads settings straight back from the cloud and checks that every vendor we
@@ -4186,7 +4205,10 @@
                 recordSyncSuccess(); // reached the backend and got a valid settings reply
 
                 applyingRemoteSettings = true;
-                if (Array.isArray(s.vendors)) {
+                // Same safety net as the catalog pull: a vendor list genuinely going from
+                // "several vendors" to "zero" is never a real sync update — refuse that
+                // specific overwrite rather than silently wiping this device's vendors.
+                if (Array.isArray(s.vendors) && !(s.vendors.length === 0 && vendors.length > 0)) {
                     vendors = s.vendors;
                     vendors.forEach(v => { if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : []; });
                     writeJson('lalitha_vendors', vendors);
@@ -7374,8 +7396,15 @@
             if (icon) icon.classList.add('fa-spin');
             if (textEl) textEl.textContent = 'Syncing… this can take up to a minute';
             try {
-                pushCatalogToCloud();
-                pushSettingsToCloud();
+                // Push must finish BEFORE pulling, not race it. Pulling while a push is
+                // still in flight can pull back a cloud copy that doesn't have this
+                // device's data in it yet — and if the cloud happens to be empty (a
+                // fresh/not-yet-seeded backend), that pull would otherwise look like a
+                // legitimate update and overwrite this device's local data with nothing.
+                // (There's also a dedicated safety net against that specific case in
+                // syncCatalogFromCloud now, but not racing them in the first place is
+                // the real fix.)
+                await Promise.all([pushCatalogToCloud(), pushSettingsToCloud()]);
                 // A manual tap is a deliberate, immediate check — report exactly what THIS
                 // attempt did (its own true/false return), not the streak-gated persisted
                 // flag that background polls use (which intentionally waits for two
