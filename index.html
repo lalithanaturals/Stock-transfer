@@ -1008,7 +1008,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-7";
+        const APP_VERSION = "v2026.10.01-8";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
@@ -4138,26 +4138,69 @@
         // straight back with a normal fetch (not no-cors, so we CAN see failures) a
         // moment later and warns the user if what we just tried to save isn't there.
         // Also returns its promise now, same reasoning as pushCatalogToCloud above.
-        function pushSettingsToCloud() {
-            const settingsPayload = {
-                vendors,
-                hiddenBrands: Array.from(hiddenBrands),
-                hiddenCategories: Array.from(hiddenCategories),
-                hiddenBrandCategories: Array.from(hiddenBrandCategories),
-                hiddenVendorCategories: Array.from(hiddenVendorCategories),
-                branchList
-            };
+        // Merges this device's vendor list with whatever is currently on the cloud,
+        // by vendor id, BEFORE pushing. Without this, two devices that each added a
+        // different vendor since their last pull would each push their own
+        // (incomplete) full vendor list, and whichever push lands last silently
+        // erases the other device's vendor from the cloud — and then from every
+        // other device on its next pull. This is a real bug that was observed in
+        // practice (two devices, each with one vendor the other didn't have, wiped
+        // each other's vendor out). The merge is a union by id: any vendor present
+        // on the cloud but missing locally is kept (added into the local list too,
+        // so this device doesn't lose it either); for an id present on both sides,
+        // this device's local copy wins (it's the one being actively edited). Hidden
+        // Brand/Category/etc. toggle sets are unioned the same way — a hide done on
+        // one device shouldn't be silently un-hidden by another device's stale push.
+        // Never throws: if the cloud can't be read right now, falls back to pushing
+        // the local list as-is rather than blocking the save entirely.
+        async function mergeLocalSettingsWithCloud_() {
             try {
-                return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'settings', action: 'save_settings',
-                        settings: settingsPayload,
-                        version: Date.now()
-                    })
-                }, 45000).then(() => verifySettingsPush_(settingsPayload)).catch(err => { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, err); });
-            } catch (e) { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, e); return Promise.resolve(); }
+                const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL + '?type=settings', {}, 15000);
+                if (!res.ok) return;
+                const data = await res.json();
+                const s = data && data.settings;
+                if (!s) return;
+                if (Array.isArray(s.vendors)) {
+                    const localIds = new Set(vendors.map(v => String(v.id)));
+                    const cloudOnly = s.vendors.filter(v => !localIds.has(String(v.id)));
+                    if (cloudOnly.length) {
+                        cloudOnly.forEach(v => { if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : []; });
+                        vendors = vendors.concat(cloudOnly);
+                        writeJson('lalitha_vendors', vendors);
+                    }
+                }
+                const unionInto = (localSet, cloudArr) => {
+                    if (Array.isArray(cloudArr)) cloudArr.forEach(x => localSet.add(x));
+                };
+                unionInto(hiddenBrands, s.hiddenBrands);
+                unionInto(hiddenCategories, s.hiddenCategories);
+                unionInto(hiddenBrandCategories, s.hiddenBrandCategories);
+                unionInto(hiddenVendorCategories, s.hiddenVendorCategories);
+            } catch (e) { /* offline or unreachable — push local data as-is */ }
+        }
+
+        function pushSettingsToCloud() {
+            return mergeLocalSettingsWithCloud_().then(() => {
+                const settingsPayload = {
+                    vendors,
+                    hiddenBrands: Array.from(hiddenBrands),
+                    hiddenCategories: Array.from(hiddenCategories),
+                    hiddenBrandCategories: Array.from(hiddenBrandCategories),
+                    hiddenVendorCategories: Array.from(hiddenVendorCategories),
+                    branchList
+                };
+                try {
+                    return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'settings', action: 'save_settings',
+                            settings: settingsPayload,
+                            version: Date.now()
+                        })
+                    }, 45000).then(() => verifySettingsPush_(settingsPayload)).catch(err => { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, err); });
+                } catch (e) { recordSyncErrorDetail_('Settings push', 'POST', GOOGLE_SCRIPT_URL, e); return Promise.resolve(); }
+            });
         }
 
         // Reads settings straight back from the cloud and checks that every vendor we
