@@ -1008,7 +1008,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-2";
+        const APP_VERSION = "v2026.10.01-3";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
@@ -4454,7 +4454,10 @@
             });
 
             updateLastSyncedText();
-            setInterval(updateLastSyncedText, 30000); // keep "Xm ago" fresh
+            // keep "Xm ago" fresh - but never while a manual "Sync Now" is actually in
+            // flight, or this would silently paint the old "X min ago" text back over the
+            // "Syncing..." message mid-attempt, making it look done when it's still running.
+            setInterval(() => { if (!isManualSyncing) updateLastSyncedText(); }, 30000);
             updatePendingQueueUI();
             if (navigator.onLine) flushPendingQueue(false); // try to clear any queue left from last session
             // Reconnecting after being offline is exactly when there's the most to catch up
