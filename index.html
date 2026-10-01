@@ -162,6 +162,7 @@
             <div class="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
                 <div class="absolute -right-2 bottom-2 w-16 h-16 bg-white/10 rounded-full"></div>
+                <button onclick="openCatalogModal()" title="Settings" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 active:scale-[0.93] transition flex items-center justify-center text-white text-base z-10"><i class="fa-solid fa-gear"></i></button>
                 <p class="text-sm text-indigo-100 font-semibold relative">Hello 👋</p>
                 <h2 class="text-xl font-bold mt-0.5 relative">Lalitha Naturals</h2>
                 <p class="text-[13px] text-indigo-100 mt-1 relative" id="homeDateLabel"></p>
@@ -199,16 +200,11 @@
                 <i class="fa-solid fa-chevron-right text-white/70"></i>
             </button>
 
-            <div class="grid grid-cols-2 gap-3 pt-1">
-                <button onclick="openCatalogModal()" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm flex items-center gap-2.5 text-left">
-                    <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-sm"><i class="fa-solid fa-gear"></i></div>
-                    <span class="text-sm font-bold text-slate-700">Settings</span>
-                </button>
-                <button onclick="showPackingRequirementSection(); switchMode('packing');" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm flex items-center gap-2.5 text-left">
-                    <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm"><i class="fa-solid fa-receipt"></i></div>
-                    <span class="text-sm font-bold text-slate-700">Ledger Sheets</span>
-                </button>
-            </div>
+            <!-- The old tile(s) here — "Settings" and, before that, a duplicate "Ledger
+                 Sheets" shortcut into Packing's own Ledger Sheets tab — are gone, per
+                 explicit request to simplify this screen. Settings now lives as the gear
+                 icon in the top-right corner of the purple greeting card above; Packing
+                 Request > Ledger Sheets tab is still exactly where it always was. -->
         </div>
 
         <!-- ============ PACKING REQUIREMENT (in-store, Lalitha Naturals) ============ -->
@@ -1008,7 +1004,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-9";
+        const APP_VERSION = "v2026.10.01-11";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4173,9 +4169,26 @@
                 const data = await res.json();
                 const s = data && data.settings;
                 if (!s) return;
+                // Pick up any vendor deletions another device already pushed, so this
+                // device both (a) doesn't re-add that vendor below and (b) drops it from
+                // its own local list too — deletion is meant to propagate everywhere, not
+                // just protect the device that did the deleting.
+                if (Array.isArray(s.deletedVendorIds)) {
+                    s.deletedVendorIds.forEach(id => deletedVendorIds.add(String(id)));
+                    writeJson('lalitha_deleted_vendor_ids', Array.from(deletedVendorIds));
+                }
+                if (deletedVendorIds.size) {
+                    const before = vendors.length;
+                    vendors = vendors.filter(v => !deletedVendorIds.has(String(v.id)));
+                    if (vendors.length !== before) writeJson('lalitha_vendors', vendors);
+                }
                 if (Array.isArray(s.vendors)) {
                     const localIds = new Set(vendors.map(v => String(v.id)));
-                    const cloudOnly = s.vendors.filter(v => !localIds.has(String(v.id)));
+                    // Never resurrect a vendor that's been deliberately deleted (by this
+                    // device or any other — see the tombstone merge just above) — only
+                    // union in vendors that are genuinely new from another device, not ones
+                    // missing locally because they were removed on purpose.
+                    const cloudOnly = s.vendors.filter(v => !localIds.has(String(v.id)) && !deletedVendorIds.has(String(v.id)));
                     if (cloudOnly.length) {
                         cloudOnly.forEach(v => { if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : []; });
                         vendors = vendors.concat(cloudOnly);
@@ -4189,6 +4202,13 @@
                 unionInto(hiddenCategories, s.hiddenCategories);
                 unionInto(hiddenBrandCategories, s.hiddenBrandCategories);
                 unionInto(hiddenVendorCategories, s.hiddenVendorCategories);
+                // Pick up deletion tombstones from the cloud too, so this device's own
+                // push (below) carries forward every vendor-deletion anyone has made, not
+                // just the ones made on this device.
+                if (Array.isArray(s.deletedVendorIds)) {
+                    s.deletedVendorIds.forEach(id => deletedVendorIds.add(String(id)));
+                    writeJson('lalitha_deleted_vendor_ids', Array.from(deletedVendorIds));
+                }
             } catch (e) { /* offline or unreachable — push local data as-is */ }
         }
 
@@ -4196,6 +4216,7 @@
             return mergeLocalSettingsWithCloud_().then(() => {
                 const settingsPayload = {
                     vendors,
+                    deletedVendorIds: Array.from(deletedVendorIds),
                     hiddenBrands: Array.from(hiddenBrands),
                     hiddenCategories: Array.from(hiddenCategories),
                     hiddenBrandCategories: Array.from(hiddenBrandCategories),
@@ -4353,6 +4374,18 @@
         vendors.forEach(v => {
             if (!Array.isArray(v.brands)) v.brands = v.brand ? [v.brand] : [];
         });
+
+        // Tombstones for vendors deleted on THIS device, so a settings push never lets
+        // a deleted vendor silently come back. Without this, mergeLocalSettingsWithCloud_
+        // (which unions in any vendor the cloud has that this device doesn't, so one
+        // device's addition is never lost — see that function) would also union back in
+        // a vendor this device just deliberately deleted, since from a plain merge's
+        // point of view "cloud has it, I don't" looks identical whether that's a delete
+        // or another device's addition it hasn't pulled yet. Keeping a permanent local
+        // record of deleted ids (vendor ids are never reused) tells the merge which case
+        // it is. This is exactly why "sync fails right after deleting a vendor" happened —
+        // not an actual sync failure, but the merge faithfully bringing the vendor back.
+        let deletedVendorIds = new Set(readJson('lalitha_deleted_vendor_ids', []));
         let dispatchList = readJson('lalitha_dispatch_list', []);
 
         // Per-vendor category hiding — e.g. hide "Cosmetics" just for one vendor, while it
@@ -5864,6 +5897,8 @@
             if (!v) return;
             if (!confirm(`Remove vendor "${v.name}"?`)) return;
             vendors = vendors.filter(x => x.id !== id);
+            deletedVendorIds.add(String(id));
+            writeJson('lalitha_deleted_vendor_ids', Array.from(deletedVendorIds));
             saveVendors();
             logCatalogHistory('Removed vendor', v.name);
             renderVendorManageList();
@@ -6635,51 +6670,67 @@
                                     ${dup ? `<span class="text-red-600 font-bold"> &middot; duplicate code (also ${esc(dup.name)} ${esc(dup.uom)})</span>` : ''}
                                 </div>
                             </div>
-                            <div id="edit_mode_${item.id}" class="hidden space-y-2.5 pt-1 border-t border-slate-100">
-                                <div class="grid grid-cols-6 gap-2">
-                                    <div class="col-span-2 flex gap-1">
-                                        <input type="text" id="edit_code_${item.id}" value="${esc(item.code)}" placeholder="Code" class="w-full min-w-0 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
-                                        <button onclick="openScannerModal('edit_${item.id}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-sm shrink-0" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
-                                    </div>
-                                    <input type="text" id="edit_name_${item.id}" value="${esc(item.name)}" placeholder="Name" class="col-span-3 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
-                                    <input type="text" id="edit_uom_${item.id}" value="${esc(item.uom)}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
-                                        <select id="edit_cat_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
-                                            ${Object.keys(inventoryData).map(c => `<option value="${esc(c)}" ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
-                                        <input type="text" id="edit_brand_${item.id}" value="${esc(item.brand || DEFAULT_BRAND)}" placeholder="Brand" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
-                                    <select id="edit_vendor_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
-                                        <option value="">No vendor</option>
-                                        ${vendors.map(v => `<option value="${esc(v.id)}" ${Array.isArray(v.itemIds) && v.itemIds.some(x => String(x) === String(item.id)) ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="flex justify-between items-center pt-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-[13px] text-slate-500 font-bold">Min:</span>
-                                        <input type="number" id="edit_min_${item.id}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
-                                    </div>
-                                    <div class="flex gap-1.5">
-                                        <button onclick="toggleEditItem(${item.id})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm">Cancel</button>
-                                        <button onclick="saveCatalogItem(${item.id})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-sm">Save</button>
-                                    </div>
-                                </div>
-                            </div>
+                            <div id="edit_mode_${item.id}" class="hidden" data-cat="${esc(cat)}"></div>
                         </div>
                     `;
                 });
             }
             document.getElementById('catalogCountHeader').innerText = `Existing Items (${totalCount})`;
             container.innerHTML = html || `<p class="text-center text-slate-400 py-3">No matching items.</p>`;
+        }
+
+        // Builds the (fairly heavy — a category <select> plus a vendor <select> with an
+        // <option> per vendor) edit-form markup for ONE catalog item, on demand.
+        //
+        // WHY: this used to be built inline for every item while rendering the whole
+        // Existing Items list — fine for a handful of items, but with ~2,800 real items
+        // in this catalog that meant building ~2,800 copies of that markup (each with
+        // its own full category/vendor dropdown) synchronously on every open of Existing
+        // Items, which is exactly what was freezing the app for a few seconds whenever
+        // it was tapped. Building it lazily, only for the one item someone actually taps
+        // Edit on, makes opening the list itself cheap regardless of catalog size.
+        function buildEditItemHtml_(item, cat) {
+            return `
+                <div class="space-y-2.5 pt-1 border-t border-slate-100">
+                    <div class="grid grid-cols-6 gap-2">
+                        <div class="col-span-2 flex gap-1">
+                            <input type="text" id="edit_code_${item.id}" value="${esc(item.code)}" placeholder="Code" class="w-full min-w-0 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
+                            <button onclick="openScannerModal('edit_${item.id}')" class="bg-indigo-600 text-white px-2.5 py-1.5 rounded-lg text-sm shrink-0" title="Scan Barcode"><i class="fa-solid fa-barcode"></i></button>
+                        </div>
+                        <input type="text" id="edit_name_${item.id}" value="${esc(item.name)}" placeholder="Name" class="col-span-3 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
+                        <input type="text" id="edit_uom_${item.id}" value="${esc(item.uom)}" placeholder="UOM" class="col-span-1 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Category</label>
+                            <select id="edit_cat_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
+                                ${Object.keys(inventoryData).map(c => `<option value="${esc(c)}" ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Brand</label>
+                            <input type="text" id="edit_brand_${item.id}" value="${esc(item.brand || DEFAULT_BRAND)}" placeholder="Brand" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[12px] font-bold uppercase text-slate-400 mb-0.5">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                        <select id="edit_vendor_${item.id}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-sm">
+                            <option value="">No vendor</option>
+                            ${vendors.map(v => `<option value="${esc(v.id)}" ${Array.isArray(v.itemIds) && v.itemIds.some(x => String(x) === String(item.id)) ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[13px] text-slate-500 font-bold">Min:</span>
+                            <input type="number" id="edit_min_${item.id}" value="${item.min}" class="w-16 bg-slate-50 border border-slate-300 rounded-lg p-1.5 font-semibold text-center text-sm">
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="toggleEditItem(${item.id})" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm">Cancel</button>
+                            <button onclick="saveCatalogItem(${item.id})" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow text-sm">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Opens edit mode for an item, or (called again from the form's own Cancel button)
@@ -6693,6 +6744,15 @@
             if (!viewDiv || !editDiv || !btn) return;
 
             if (editDiv.classList.contains('hidden')) {
+                // Build the edit form's markup the first time this item is actually
+                // edited, not for every item up front — see buildEditItemHtml_ above.
+                if (!editDiv.dataset.built) {
+                    const found = findCatalogItemById(id);
+                    if (found) {
+                        editDiv.innerHTML = buildEditItemHtml_(found.item, editDiv.dataset.cat || found.cat);
+                        editDiv.dataset.built = '1';
+                    }
+                }
                 editDiv.classList.remove('hidden');
                 viewDiv.classList.add('hidden');
                 btn.classList.add('hidden');
