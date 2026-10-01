@@ -144,7 +144,10 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <div id="liveTime" class="text-[13px] font-medium text-emerald-100"></div>
+            <div class="text-right">
+                <div id="liveTime" class="text-[13px] font-medium text-emerald-100"></div>
+                <div id="appVersionLabel" class="text-[10px] font-medium text-emerald-200/70 leading-tight"></div>
+            </div>
             <button onclick="confirmReload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-sm border border-emerald-600" title="Reload app (use the 'Synced X min ago' bar on Home to sync)">
                 <i class="fa-solid fa-arrows-rotate"></i>
             </button>
@@ -1001,6 +1004,12 @@
 
     <!-- Application Script -->
     <script>
+        // Bump this every time index.html is changed and re-deployed. It's shown in the
+        // small text under the clock (top-right of the header) on every phone, so you can
+        // glance at any device and instantly tell whether it's actually running the latest
+        // file or still showing an old cached copy — no more guessing after a GitHub push.
+        const APP_VERSION = "v2026.10.01-1";
+
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwayC119_r4H107b3GjHNJ_uR2TD2eaxjQQg6F-Ooed8M7xHHZ0hEp0p_QjZDoMk4uJ/exec";
 
         // Wrapper around fetch() that gives a slow-but-working request plenty of room
@@ -4410,6 +4419,8 @@
 
         // ---------- App init ----------
         function initApp() {
+            const versionEl = document.getElementById('appVersionLabel');
+            if (versionEl) versionEl.textContent = APP_VERSION;
             updateClock();
             setInterval(updateClock, 1000);
             const homeDateEl = document.getElementById('homeDateLabel');
