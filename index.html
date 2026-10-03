@@ -2,9 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Lalitha Naturals - Branch Transfer</title>
     <meta name="theme-color" content="#047857">
+
+    <!-- iOS "Add to Home Screen" — without these, Safari ignores manifest.json's
+         "standalone" display mode and always opens with the browser's own address
+         bar/toolbar visible, even when launched from the home-screen icon. -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Branch Transfer">
+    <meta name="mobile-web-app-capable" content="yes">
 
     <!-- Browser tab favicon -->
     <link rel="icon" href="./favicon.ico" sizes="any">
@@ -189,7 +197,7 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
         <div class="flex items-center gap-2 cursor-pointer" onclick="showHomeSection()" title="Tap to go Home">
             <div onclick="event.stopPropagation(); openLogoPreview();" class="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow flex items-center justify-center cursor-pointer">
                 <img src="./logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
@@ -559,7 +567,7 @@
     </main>
 
     <!-- Bottom Action Bar for Vendor Requirement -->
-    <div id="vendorBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40">
+    <div id="vendorBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
             <button onclick="openVendorCartPreview()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[13px] shadow flex flex-col items-center justify-center gap-1">
                 <span id="vendorBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-cyan-500 text-white text-[13px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">0</span>
@@ -572,7 +580,7 @@
     </div>
 
     <!-- Bottom Action Bar (Only visible/active on Packing Requirement → Audit view) -->
-    <div id="bottomActionBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40">
+    <div id="bottomActionBar" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-40" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
         <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
             <button onclick="openStaffCheckModal()" class="relative bg-slate-800 text-white font-semibold py-3 rounded-xl text-[13px] shadow flex flex-col items-center justify-center gap-1">
                 <span id="packingBottomCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-emerald-500 text-white text-[13px] font-extrabold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">0</span>
@@ -1155,7 +1163,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-21";
+        const APP_VERSION = "v2026.10.01-22";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
