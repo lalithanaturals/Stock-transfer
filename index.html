@@ -10,7 +10,7 @@
          "standalone" display mode and always opens with the browser's own address
          bar/toolbar visible, even when launched from the home-screen icon. -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Branch Transfer">
     <meta name="mobile-web-app-capable" content="yes">
 
@@ -190,8 +190,8 @@
     </div>
 
     <!-- Toast: brief non-blocking feedback -->
-    <div id="appToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] text-center"></div>
-    <div id="appUndoToast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-sm font-bold pl-4 pr-2 py-2 rounded-xl shadow-2xl transition opacity-0 translate-y-2 max-w-[90vw] flex items-center gap-3">
+    <div id="appToast" class="hidden fixed left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-2xl transition opacity-0 -translate-y-2 max-w-[90vw] text-center" style="top: max(0.75rem, env(safe-area-inset-top));"></div>
+    <div id="appUndoToast" class="hidden fixed left-1/2 -translate-x-1/2 z-[60] bg-slate-900 text-white text-sm font-bold pl-4 pr-2 py-2 rounded-xl shadow-2xl transition opacity-0 -translate-y-2 max-w-[90vw] flex items-center gap-3" style="top: max(0.75rem, env(safe-area-inset-top));">
         <span id="appUndoToastMsg"></span>
         <button id="appUndoToastBtn" class="bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg text-[13px] font-extrabold uppercase tracking-wide">Undo</button>
     </div>
@@ -1163,7 +1163,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.01-22";
+        const APP_VERSION = "v2026.10.03-24";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4385,13 +4385,18 @@
                         writeJson('lalitha_vendors', vendors);
                     }
                 }
-                const unionInto = (localSet, cloudArr) => {
-                    if (Array.isArray(cloudArr)) cloudArr.forEach(x => localSet.add(x));
-                };
-                unionInto(hiddenBrands, s.hiddenBrands);
-                unionInto(hiddenCategories, s.hiddenCategories);
-                unionInto(hiddenBrandCategories, s.hiddenBrandCategories);
-                unionInto(hiddenVendorCategories, s.hiddenVendorCategories);
+                // NOTE: deliberately NOT merging hiddenBrands/hiddenCategories/
+                // hiddenBrandCategories/hiddenVendorCategories from the cloud here. This
+                // function runs right before a PUSH, as a "pick up what's new elsewhere
+                // first" step — but a one-way union (only ever adding, never removing) on
+                // a push meant it was structurally impossible to ever unhide a brand/
+                // category once it had been hidden and synced once: tap "unhide" → saved
+                // locally → this merge re-fetches the still-hidden cloud copy and unions
+                // it straight back in → the very push that was supposed to unhide it
+                // re-hides it instead. Cross-device propagation of hide/unhide already
+                // happens correctly via the separate pull path (syncSettingsFromCloud),
+                // which replaces these sets wholesale from the cloud rather than unioning
+                // — so this device's own current choice is simply what gets pushed here.
                 // Pick up deletion tombstones from the cloud too, so this device's own
                 // push (below) carries forward every vendor-deletion anyone has made, not
                 // just the ones made on this device.
@@ -9136,10 +9141,10 @@
             if (!el) { console.log(msg); return; }
             el.textContent = msg;
             el.classList.remove('hidden');
-            requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
+            requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-2'));
             clearTimeout(toastTimer);
             toastTimer = setTimeout(() => {
-                el.classList.add('opacity-0', 'translate-y-2');
+                el.classList.add('opacity-0', '-translate-y-2');
                 setTimeout(() => el.classList.add('hidden'), 200);
             }, 1800);
         }
@@ -9154,10 +9159,10 @@
             if (!el || !msgEl || !btn) { showToast(msg); return; }
             msgEl.textContent = msg;
             el.classList.remove('hidden');
-            requestAnimationFrame(() => el.classList.remove('opacity-0', 'translate-y-2'));
+            requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-2'));
             clearTimeout(undoToastTimer);
             const hide = () => {
-                el.classList.add('opacity-0', 'translate-y-2');
+                el.classList.add('opacity-0', '-translate-y-2');
                 setTimeout(() => el.classList.add('hidden'), 200);
             };
             btn.onclick = () => { clearTimeout(undoToastTimer); hide(); if (onUndo) onUndo(); };
