@@ -58,6 +58,13 @@
            wrapper clips the gear button until then and keeps the row's own rounded
            corners on the outside. */
         .swipe-row-wrap { position: relative; overflow: hidden; border-radius: 0.75rem; }
+        /* A dropdown (e.g. "Print & Share") living inside a swipe row opens upward
+           with absolute positioning, which escapes above the row's own box — but the
+           row's overflow:hidden (needed for the swipe-to-reveal-gear mechanism) was
+           clipping the top item(s) of that dropdown, making them invisible even
+           though they were still present and clickable. Toggled on only while a
+           dropdown inside this row is open (see toggleActionDropdown/closeAllDropdowns). */
+        .swipe-row-wrap.dropdown-open { overflow: visible; }
         .swipe-row-gear {
             position: absolute; inset: 0; left: 0; width: 64px; z-index: 1;
             display: flex; align-items: center; justify-content: center;
@@ -1200,7 +1207,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-42";
+        const APP_VERSION = "v2026.10.10-43";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -8948,11 +8955,19 @@
             if (!dropdown) return;
             const isHidden = dropdown.classList.contains('hidden');
             closeAllDropdowns();
-            if (isHidden) dropdown.classList.remove('hidden');
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                // Let the dropdown escape the swipe row's overflow:hidden while it's
+                // open, so its top item(s) aren't invisibly clipped — see the
+                // .dropdown-open CSS rule.
+                const wrap = dropdown.closest('.swipe-row-wrap');
+                if (wrap) wrap.classList.add('dropdown-open');
+            }
         }
 
         function closeAllDropdowns() {
             document.querySelectorAll('[id^="dropdown_"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.swipe-row-wrap.dropdown-open').forEach(el => el.classList.remove('dropdown-open'));
             const staffList = document.getElementById('staffDropdownList');
             if (staffList) staffList.classList.add('hidden');
             closeActiveSwipeReveal();
