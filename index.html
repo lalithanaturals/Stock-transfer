@@ -1238,7 +1238,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-52";
+        const APP_VERSION = "v2026.10.10-53";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5219,17 +5219,26 @@
             const msgEl = document.getElementById('reloadConfirmMsg');
             if (hasUnsaved) {
                 if (iconEl) iconEl.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-red-100 text-red-600";
-                if (msgEl) msgEl.textContent = "You have entries on this screen that haven't been dispatched yet. Reloading will lose them.";
+                if (msgEl) msgEl.textContent = "You have entries on this screen that haven't been dispatched yet. Reloading will sync, then clear them.";
             } else {
                 if (iconEl) iconEl.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-amber-100 text-amber-600";
-                if (msgEl) msgEl.textContent = "This will refresh the app. Nothing unsaved will be lost.";
+                if (msgEl) msgEl.textContent = "This will sync, then refresh the app with a clean slate.";
             }
             document.getElementById('reloadConfirmModal').classList.remove('hidden');
         }
         function closeReloadConfirmModal() {
             document.getElementById('reloadConfirmModal').classList.add('hidden');
         }
-        function doConfirmedReload() {
+        async function doConfirmedReload() {
+            // Reload used to just refresh the page — shelfStock (the in-progress tick
+            // marks / entered counts) is saved to localStorage, so it survived a reload
+            // completely untouched, which looked like "reload" wasn't resetting anything.
+            // Now every reload explicitly syncs first, then clears the in-progress counts,
+            // so pressing it always leaves a genuinely clean, freshly-synced screen.
+            setOverlay(true, 'Syncing...');
+            try { await runManualSync(); } catch (e) { /* still reset+reload even if the sync itself failed */ }
+            shelfStock = {};
+            flushShelfStockNow_();
             window.location.reload();
         }
 
