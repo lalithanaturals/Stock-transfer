@@ -164,10 +164,57 @@
                 animation: none !important; opacity: 1 !important; transform: none !important;
             }
         }
+        @media screen {
+            /* On-screen preview only (Staff Check modal): a single border around the
+               whole sheet, since there's no "per physical page" concept on screen.
+               Printing uses the fixed, per-page overlay border below instead. */
+            .sheet-preview-border { border: 2px solid #047857; border-radius: 5px; }
+        }
         @media print {
-            @page { size: A4; margin: 4mm; }
-            body { margin: 0; padding: 0; background: #fff; width: 210mm; }
-            #pdfTemplateContainer { width: 100% !important; }
+            /* Fixed 1cm margin on every side, on every page. */
+            @page { size: A4; margin: 10mm; }
+            /* Native-print path for the Transit/Dispatch sheet (replaces the old
+               html2canvas-screenshot + manual page-slicing approach): the browser's own
+               print engine paginates real HTML/CSS, so a row can never be cut in half —
+               there's no bitmap being sliced at a guessed pixel offset anymore. Gated by
+               a body class so this never affects any other page/print flow. */
+            body.printing-transit-sheet { margin: 0; padding: 0; background: #fff; }
+            body.printing-transit-sheet > *:not(#pdfTemplateContainer) { display: none !important; }
+            body.printing-transit-sheet #pdfTemplateContainer {
+                display: block !important; position: static !important;
+                width: 100% !important; left: auto !important; top: auto !important;
+            }
+            body.printing-transit-sheet #pdfTemplateContainer tr {
+                break-inside: avoid; page-break-inside: avoid;
+            }
+            body.printing-transit-sheet .sheet-preview-border { border: none; }
+            /* A permanent border frame on every page: @page can't be styled with a
+               border directly in Chrome, so this is a position:fixed overlay sized to
+               the full physical page — Chrome repeats a fixed element once per
+               printed page, so the same border frame reappears on page 1, 2, 3…
+               instead of only wrapping around the whole (now multi-page) content
+               once, which would leave most pages without any border at all. */
+            body.printing-transit-sheet .print-page-border {
+                /* position:fixed is relative to each page's printable area (the
+                   region already inset by the @page margin above), so 0/0/0/0 here
+                   sits the border exactly on that 1cm-from-paper-edge boundary —
+                   not a further 1cm inside it. */
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                border: 2px solid #047857; border-radius: 5px; pointer-events: none;
+            }
+            /* "Page N" footer, repeated on every physical page. Chrome repeats a
+               position:fixed element once per printed page and, combined with a
+               counter incremented by the @page rule itself, numbers each repeat
+               correctly (1, 2, 3…) — there's no reliable cross-browser way to also
+               show the total page count without knowing it in advance, so this
+               shows just the running number rather than guessing a wrong total. */
+            body.printing-transit-sheet { counter-reset: lnPrintPage; }
+            @page { counter-increment: lnPrintPage; }
+            body.printing-transit-sheet .print-page-footer {
+                position: fixed; bottom: 2mm; right: 6mm;
+                font-size: 10px; font-weight: 800; color: #047857;
+            }
+            body.printing-transit-sheet .print-page-footer::after { content: "Page " counter(lnPrintPage); }
         }
     </style>
 </head>
@@ -1153,7 +1200,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-41";
+        const APP_VERSION = "v2026.10.10-42";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -9073,129 +9120,33 @@
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // Opens the A4 sheet in its own window and starts the print dialog.
-        // Choose "Save as PDF" as the printer to get a real PDF file.
-        // Renders the prepared transit sheet to a canvas and drops it into a real A4 PDF —
-        // downloads an actual .pdf file instead of opening the browser's print dialog.
-        async function downloadPdfFile() {
+        // Prints the A4 transit sheet using the browser's own print engine instead of
+        // screenshotting it (html2canvas) and manually slicing that image into pages.
+        // The old approach had to GUESS where a safe page-break pixel offset was by
+        // measuring row positions after the fact — any gap in that math (as happened
+        // with the two-column layout, where the two columns' rows don't line up)
+        // could cut straight through a row of text. Real browser pagination can't do
+        // that: it lays out actual HTML across real pages and a row marked
+        // break-inside:avoid is physically kept whole, not sliced out of a bitmap.
+        // To get a PDF file instead of a physical printout, the person just picks
+        // "Save as PDF" as the destination in the print dialog that opens.
+        function downloadPdfFile() {
             if (!preparePrintData()) return;
-            setOverlay(true, "Loading PDF tools...");
-            const [canvasOk, pdfOk] = await Promise.all([ensureHtml2Canvas(), ensureJsPDF()]);
-            if (!canvasOk || !pdfOk) {
-                setOverlay(false);
-                alert("PDF library did not load. Check your internet connection and try again.");
-                return;
-            }
-
-            const container = document.getElementById('pdfTemplateContainer');
-            const src = activeMobilePayload ? activeMobilePayload.src : document.getElementById('sourceBranch').value;
-            const dst = activeMobilePayload ? activeMobilePayload.dst : document.getElementById('destBranch').value;
-            const dateStr = localDateStr(activeMobilePayload ? new Date(activeMobilePayload.time) : new Date());
-
-            setOverlay(true, "Generating PDF...");
-            // The container is normally display:none (used as an offscreen template); html2canvas
-            // needs real layout to capture, so make it visible off-screen just for the capture.
-            const prevStyle = container.getAttribute('style') || '';
-            container.setAttribute('style', 'display:block; position:fixed; left:-10000px; top:0; background:#fff;');
-            try {
-                const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-                const pageW = pdf.internal.pageSize.getWidth();
-                const pageH = pdf.internal.pageSize.getHeight();
-                // A slightly larger margin than before — keeps the printed border (and
-                // everything else) clear of the printer's unprintable edge strip.
-                const margin = 6;
-                const usableW = pageW - margin * 2;
-                const imgH = (canvas.height * usableW) / canvas.width;
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-
-                if (imgH <= pageH - margin * 2) {
-                    pdf.addImage(imgData, 'JPEG', margin, margin, usableW, imgH);
-                } else {
-                    // Content taller than one A4 page: slice the canvas across multiple
-                    // pages. A naive fixed-height cut can slice straight through the
-                    // middle of a text row, splitting it between two pages — that's the
-                    // "letters are cutting" problem. So every candidate cut is snapped to
-                    // the nearest actual row boundary (measured from the live DOM before
-                    // the slice, converted into canvas pixels) instead of an arbitrary
-                    // pixel offset, so a row is always kept whole on one page or the other.
-                    const containerRect = container.getBoundingClientRect();
-                    const pxPerCssPx = canvas.width / containerRect.width;
-                    // The sheet is a 2-column layout: two independent category tables run
-                    // side by side, and their rows do NOT line up — row 12 of the left
-                    // column can be a completely different height/position than row 12 of
-                    // the right column. Picking a cut at the bottom edge of just ONE row
-                    // (as before) only guarantees that row is whole; a row in the OTHER
-                    // column can still straddle that same Y and get sliced in half. So
-                    // instead of individual row edges, build the union of every row's
-                    // [top,bottom) span across BOTH columns, merge any that overlap
-                    // vertically, and only snap to a boundary that sits in a gap outside
-                    // every merged span — safe for every row on the page, in either column.
-                    const rowIntervals = Array.from(container.querySelectorAll('tbody tr'))
-                        .map(tr => {
-                            const r = tr.getBoundingClientRect();
-                            return [(r.top - containerRect.top) * pxPerCssPx, (r.bottom - containerRect.top) * pxPerCssPx];
-                        })
-                        .sort((a, b) => a[0] - b[0]);
-                    const mergedSpans = [];
-                    for (const [top, bottom] of rowIntervals) {
-                        if (mergedSpans.length && top <= mergedSpans[mergedSpans.length - 1][1]) {
-                            mergedSpans[mergedSpans.length - 1][1] = Math.max(mergedSpans[mergedSpans.length - 1][1], bottom);
-                        } else {
-                            mergedSpans.push([top, bottom]);
-                        }
-                    }
-                    const rowBreaks = mergedSpans.map(span => span[1]);
-                    function snapToRowBreak(targetY, afterY) {
-                        let best = null;
-                        for (const bp of rowBreaks) {
-                            if (bp > afterY && bp <= targetY) best = bp;
-                            if (bp > targetY) break;
-                        }
-                        return best || targetY; // no safe row break found — fall back rather than get stuck
-                    }
-
-                    const usableH = pageH - margin * 2;
-                    const pxPerMm = canvas.width / usableW;
-                    const pageHeightPx = usableH * pxPerMm;
-                    let renderedPx = 0, first = true;
-                    while (renderedPx < canvas.height) {
-                        let sliceBottom = Math.min(renderedPx + pageHeightPx, canvas.height);
-                        if (sliceBottom < canvas.height) sliceBottom = snapToRowBreak(sliceBottom, renderedPx);
-                        const sliceH = sliceBottom - renderedPx;
-                        const sliceCanvas = document.createElement('canvas');
-                        sliceCanvas.width = canvas.width;
-                        sliceCanvas.height = sliceH;
-                        sliceCanvas.getContext('2d').drawImage(canvas, 0, renderedPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-                        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-                        if (!first) pdf.addPage();
-                        pdf.addImage(sliceData, 'JPEG', margin, margin, usableW, (sliceH * usableW) / canvas.width);
-                        renderedPx += sliceH;
-                        first = false;
-                    }
-                }
-
-                // Page numbers, bottom-right of every page, kept just above the margin so
-                // they stay inside the printable area instead of right at the paper edge —
-                // added after all pages exist since multi-page sheets are only known once
-                // the canvas has been sliced.
-                const totalPages = pdf.internal.getNumberOfPages();
-                for (let p = 1; p <= totalPages; p++) {
-                    pdf.setPage(p);
-                    pdf.setFontSize(9);
-                    pdf.setFont(undefined, 'bold');
-                    pdf.setTextColor(4, 120, 87);
-                    pdf.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - margin + 4, { align: 'right' });
-                }
-
-                pdf.save(`Transit_${src}_to_${dst}_${dateStr}.pdf`.replace(/\s+/g, '_'));
-            } catch (err) {
-                alert("Could not generate the PDF. Please try again.");
-            } finally {
-                container.setAttribute('style', prevStyle);
-                setOverlay(false);
-            }
+            document.body.classList.add('printing-transit-sheet');
+            const cleanup = () => {
+                document.body.classList.remove('printing-transit-sheet');
+                window.removeEventListener('afterprint', cleanup);
+            };
+            window.addEventListener('afterprint', cleanup);
+            // One tick so the class/layout change is actually painted before print()
+            // captures it — calling print() in the same frame can grab stale layout.
+            setTimeout(() => {
+                window.print();
+                // afterprint doesn't fire in every browser (notably some iOS/WebKit
+                // print-preview flows) — this is a safety-net cleanup, harmless if
+                // afterprint already ran it.
+                setTimeout(cleanup, 1000);
+            }, 50);
         }
 
         function preparePrintData() {
@@ -9221,9 +9172,9 @@
             // minPaddingRows so there's room to add a few by hand at the branch. A chunk
             // that's part of a split category skips the padding — it already has plenty
             // of real rows, and padding every chunk would waste space.
-            function buildItemRows(items, withPadding) {
+            function buildItemRows(items, withPadding, startIdx) {
                 let rows = "";
-                let idx = 1;
+                let idx = startIdx || 1;
                 items.forEach(item => {
                     rows += `<tr style="border-bottom:1px solid #cbd5e1; height:26px;">
                         <td style="padding:2px 4px;text-align:center;font-size:12px;font-weight:bold;color:#475569;">${idx++}</td>
@@ -9245,7 +9196,7 @@
                 return rows;
             }
 
-            function categoryTableHtml(title, items, withPadding) {
+            function categoryTableHtml(title, items, withPadding, startIdx) {
                 return `
                     <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 8px; background: #fff; border: 1.5px solid #047857; border-radius: 4px; overflow: hidden; width: 100%;">
                         <div style="font-size: 13px; font-weight: bold; background: #047857; color: #fff; padding: 4px 7px; text-transform: uppercase;">${esc(title)}</div>
@@ -9258,7 +9209,7 @@
                                     <th style="width: 36px; padding: 3px; font-size: 11px; text-align: center;">Req</th>
                                 </tr>
                             </thead>
-                            <tbody>${buildItemRows(items, withPadding)}</tbody>
+                            <tbody>${buildItemRows(items, withPadding, startIdx)}</tbody>
                         </table>
                     </div>
                 `;
@@ -9281,6 +9232,10 @@
             allCategories.forEach(cat => {
                 let remaining = (grouped[cat] || []).slice();
                 let first = true;
+                // Keeps counting up across a split category's chunks — e.g. if
+                // Groceries' first chunk ends at #30, "Groceries (contd.)" starts at
+                // #31 in the next column, instead of confusingly restarting at #1.
+                let runningIdx = 1;
                 while (remaining.length > 0) {
                     if (colIdx >= NUM_COLS) colIdx = NUM_COLS - 1;
                     const lastColumn = colIdx === NUM_COLS - 1;
@@ -9289,7 +9244,8 @@
                     const chunk = remaining.slice(0, takeCount);
                     remaining = remaining.slice(takeCount);
                     const isWholeUnsplitCategory = first && remaining.length === 0;
-                    colsHtml[colIdx].push(categoryTableHtml(first ? cat : `${cat} (contd.)`, chunk, isWholeUnsplitCategory));
+                    colsHtml[colIdx].push(categoryTableHtml(first ? cat : `${cat} (contd.)`, chunk, isWholeUnsplitCategory, runningIdx));
+                    runningIdx += chunk.length;
                     colUsed[colIdx] += chunk.length + 2;
                     first = false;
                     if (remaining.length > 0) colIdx++;
@@ -9298,11 +9254,14 @@
             const cols = colsHtml.map(c => c.join(''));
 
             document.getElementById('pdfTemplateContainer').innerHTML = `
-                <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:198mm;box-sizing:border-box;">
-                  <!-- Full-page border frame, inset from the physical page edge, so nothing
-                       — text or the border itself — ever sits in the printer's unprintable
-                       margin and gets clipped. -->
-                  <div style="border: 2px solid #047857; border-radius: 5px; padding: 8px 10px; box-sizing: border-box;">
+                <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:190mm;box-sizing:border-box;">
+                  <!-- The print-only page border + footer are position:fixed overlays
+                       (see the @media print rules) — Chrome repeats them on every
+                       physical page, which a border drawn here around the content
+                       (now possibly spanning many pages) could never do by itself. -->
+                  <div class="print-page-border"></div>
+                  <div class="print-page-footer"></div>
+                  <div class="sheet-preview-border" style="padding: 8px 10px; box-sizing: border-box;">
                     <div style="border-bottom:2.5px solid #047857;padding-bottom:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-end;">
                         <div style="display:flex;align-items:center;gap:8px;">
                             <img src="./logo.png" alt="" style="width:28px;height:28px;object-fit:contain;">
@@ -9313,12 +9272,15 @@
                             <div><strong>Date & Time:</strong> ${esc(dateTimeStr)} | <strong>Total Items Requested:</strong> <span style="color:#047857;font-weight:bold;">${totalCount}</span></div>
                         </div>
                     </div>
-                    <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
-                        <tr>
-                            <td style="width:50%; vertical-align:top; padding-right:6px;">${cols[0]}</td>
-                            <td style="width:50%; vertical-align:top; padding-left:6px;">${cols[1]}</td>
-                        </tr>
-                    </table>
+                    <div style="width:100%; overflow:hidden;">
+                        <!-- Two floated columns instead of a single-row <table><td>: a <tr>
+                             can't break across print pages (the browser treats it as one
+                             unbreakable unit and will clip or misrender it), but a floated
+                             block flows and paginates normally, so each column can now span
+                             as many physical pages as it needs. -->
+                        <div style="float:left; width:48%; margin-right:4%;">${cols[0]}</div>
+                        <div style="float:left; width:48%;">${cols[1]}</div>
+                    </div>
                     <div style="margin-top:6px; border:1.5px solid #cbd5e1; border-radius:4px; padding:5px 7px; background:#f8fafc; font-size:11px;">
                         <strong>Staff Remarks / Notes:</strong> <span style="color:#334155;">${notes ? esc(notes) : '__________________________________________________________________________________________'}</span>
                     </div>
