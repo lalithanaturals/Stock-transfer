@@ -1138,8 +1138,8 @@
                 <p id="itemSettingsPopupMinNote" class="hidden text-[13px] text-slate-400"></p>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end gap-2">
-                <button onclick="closeItemSettingsPopup()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-sm">Cancel</button>
-                <button onclick="saveItemSettingsPopup()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-sm">Save</button>
+                <button onclick="closeItemSettingsPopup()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-sm active:scale-95 transition-transform">Cancel</button>
+                <button id="itemSettingsPopupSaveBtn" onclick="saveItemSettingsPopup()" class="px-6 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-sm active:scale-95 transition-transform min-w-[72px]">Save</button>
             </div>
         </div>
     </div>
@@ -1154,7 +1154,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-29";
+        const APP_VERSION = "v2026.10.10-32";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5406,26 +5406,35 @@
 
         function saveItemSettingsPopup() {
             if (itemSettingsPopupId === null) return;
-            const minVal = document.getElementById('itemSettingsPopupMin').value;
-            const fields = {
-                code: document.getElementById('itemSettingsPopupCode').value.trim(),
-                name: document.getElementById('itemSettingsPopupName').value.trim(),
-                uom: document.getElementById('itemSettingsPopupUom').value.trim(),
-                brand: document.getElementById('itemSettingsPopupBrand').value.trim() || DEFAULT_BRAND,
-                cat: document.getElementById('itemSettingsPopupCat').value,
-                vendorId: document.getElementById('itemSettingsPopupVendor').value,
-                // When editing a specific branch's Min, don't touch the shared default
-                // here — commitCatalogItemEdit gets the item's CURRENT default so its
-                // "did anything change" / confirm-dialog logic doesn't light up over a
-                // per-branch-only change. The override itself is applied separately below.
-                min: itemSettingsPopupBranch ? (findCatalogItemById(itemSettingsPopupId).item.min) : parseInt(minVal, 10),
-            };
-            const ok = commitCatalogItemEdit(itemSettingsPopupId, fields, { confirmFirst: false, refreshRowLists: true });
-            if (ok) {
-                if (itemSettingsPopupBranch) setBranchMin(itemSettingsPopupId, itemSettingsPopupBranch, minVal);
-                hapticTap();
-                closeItemSettingsPopup();
-            }
+            // commitCatalogItemEdit below re-renders the (possibly long) item list
+            // synchronously, which can take a moment — show the Save button "sink" into
+            // a small spinner right away so the tap feels acknowledged instantly instead
+            // of the UI looking frozen until the save actually finishes.
+            const btn = document.getElementById('itemSettingsPopupSaveBtn');
+            if (btn) { btn.disabled = true; btn.classList.add('scale-95', 'opacity-80'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+            hapticTap();
+            setTimeout(() => {
+                const minVal = document.getElementById('itemSettingsPopupMin').value;
+                const fields = {
+                    code: document.getElementById('itemSettingsPopupCode').value.trim(),
+                    name: document.getElementById('itemSettingsPopupName').value.trim(),
+                    uom: document.getElementById('itemSettingsPopupUom').value.trim(),
+                    brand: document.getElementById('itemSettingsPopupBrand').value.trim() || DEFAULT_BRAND,
+                    cat: document.getElementById('itemSettingsPopupCat').value,
+                    vendorId: document.getElementById('itemSettingsPopupVendor').value,
+                    // When editing a specific branch's Min, don't touch the shared default
+                    // here — commitCatalogItemEdit gets the item's CURRENT default so its
+                    // "did anything change" / confirm-dialog logic doesn't light up over a
+                    // per-branch-only change. The override itself is applied separately below.
+                    min: itemSettingsPopupBranch ? (findCatalogItemById(itemSettingsPopupId).item.min) : parseInt(minVal, 10),
+                };
+                const ok = commitCatalogItemEdit(itemSettingsPopupId, fields, { confirmFirst: false, refreshRowLists: true });
+                if (ok) {
+                    if (itemSettingsPopupBranch) setBranchMin(itemSettingsPopupId, itemSettingsPopupBranch, minVal);
+                    closeItemSettingsPopup();
+                }
+                if (btn) { btn.disabled = false; btn.classList.remove('scale-95', 'opacity-80'); btn.innerHTML = 'Save'; }
+            }, 10);
         }
 
         function renderItems(filter = "") {
@@ -9122,6 +9131,17 @@
                         first = false;
                     }
                 }
+
+                // Page numbers, bottom-right of every page — added after all pages exist
+                // since multi-page sheets are only known once the canvas has been sliced.
+                const totalPages = pdf.internal.getNumberOfPages();
+                for (let p = 1; p <= totalPages; p++) {
+                    pdf.setPage(p);
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(120);
+                    pdf.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 2, { align: 'right' });
+                }
+
                 pdf.save(`Transit_${src}_to_${dst}_${dateStr}.pdf`.replace(/\s+/g, '_'));
             } catch (err) {
                 alert("Could not generate the PDF. Please try again.");
@@ -9147,13 +9167,14 @@
             // category in the catalog — so Staff Check and printouts show just what
             // was entered, with no blank padded-out categories.
             const allCategories = Object.keys(grouped);
-            const categoryBlocks = [];
+            const minPaddingRows = 6;
 
-            allCategories.forEach(cat => {
-                const items = grouped[cat] || [];
+            // Renders one category's <tbody> rows (its real items, then blank padding
+            // rows up to minPaddingRows so there's room to add a few by hand at the
+            // branch). Shared by both the normal block and the big-category split below.
+            function buildItemRows(items) {
                 let rows = "";
                 let idx = 1;
-
                 items.forEach(item => {
                     rows += `<tr style="border-bottom:1px solid #cbd5e1; height:18px;">
                         <td style="padding:1px 3px;text-align:center;font-size:9px;font-weight:bold;color:#475569;">${idx++}</td>
@@ -9162,8 +9183,6 @@
                         <td style="padding:1px 3px;text-align:center;font-size:10px;font-weight:800;color:#047857;background:#f0fdf4;">${esc(item.reqQty)}</td>
                     </tr>`;
                 });
-
-                const minPaddingRows = 6;
                 for (let i = items.length; i < minPaddingRows; i++) {
                     rows += `<tr style="border-bottom:1px solid #e2e8f0; height:18px;">
                         <td style="padding:1px 3px;text-align:center;font-size:9px;color:#cbd5e1;">${idx++}</td>
@@ -9172,34 +9191,84 @@
                         <td style="padding:1px 3px;text-align:center;font-size:10px;color:transparent;">-</td>
                     </tr>`;
                 }
+                return rows;
+            }
 
-                categoryBlocks.push(`
+            function itemsTableHtml(items) {
+                return `<table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f1f5f9; color: #334155; border-bottom: 1px solid #cbd5e1;">
+                            <th style="width: 22px; padding: 2px; font-size: 8px; text-align: center;">#</th>
+                            <th style="text-align: left; padding: 2px; font-size: 8px;">Item</th>
+                            <th style="width: 45px; padding: 2px; font-size: 8px; text-align: center;">Code</th>
+                            <th style="width: 28px; padding: 2px; font-size: 8px; text-align: center;">Req</th>
+                        </tr>
+                    </thead>
+                    <tbody>${buildItemRows(items)}</tbody>
+                </table>`;
+            }
+
+            function categoryTableHtml(title, items) {
+                return `
                     <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; background: #fff; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden; width: 100%;">
-                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${esc(cat)}</div>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f1f5f9; color: #334155; border-bottom: 1px solid #cbd5e1;">
-                                    <th style="width: 22px; padding: 2px; font-size: 8px; text-align: center;">#</th>
-                                    <th style="text-align: left; padding: 2px; font-size: 8px;">Item</th>
-                                    <th style="width: 45px; padding: 2px; font-size: 8px; text-align: center;">Code</th>
-                                    <th style="width: 28px; padding: 2px; font-size: 8px; text-align: center;">Req</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
+                        <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${esc(title)}</div>
+                        ${itemsTableHtml(items)}
                     </div>
-                `);
+                `;
+            }
+
+            // A category much bigger than the rest (e.g. a catch-all "Groceries" with 100+
+            // items) can't be balanced by handing it whole to one of 3 outer columns — it
+            // just dominates that column's height while the other two run out of content
+            // and leave a blank gap for the rest of the page (shared table rows stretch to
+            // the tallest cell). So any category over this size gets its OWN full-width
+            // block, laid out in its own internal 3 columns first; only the remaining,
+            // normal-sized categories go through the outer column-balancing step below.
+            const BIG_CATEGORY_THRESHOLD = 16;
+            const bigCategoryBlocks = [];
+            const smallCategoryBlocks = [];
+            const smallCategoryWeights = [];
+
+            allCategories.forEach(cat => {
+                const items = grouped[cat] || [];
+                if (items.length > BIG_CATEGORY_THRESHOLD) {
+                    const per = Math.ceil(items.length / 3);
+                    const chunks = [items.slice(0, per), items.slice(per, per * 2), items.slice(per * 2)];
+                    bigCategoryBlocks.push(`
+                        <div style="break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; border: 1px solid #cbd5e1; border-radius: 3px; overflow: hidden;">
+                            <div style="font-size: 10px; font-weight: bold; background: #047857; color: #fff; padding: 2.5px 5px; text-transform: uppercase;">${esc(cat)}</div>
+                            <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
+                                <tr>
+                                    <td style="width:33.33%; vertical-align:top; border-right:1px solid #e2e8f0;">${chunks[0].length ? itemsTableHtml(chunks[0]) : ''}</td>
+                                    <td style="width:33.33%; vertical-align:top; border-right:1px solid #e2e8f0;">${chunks[1].length ? itemsTableHtml(chunks[1]) : ''}</td>
+                                    <td style="width:33.33%; vertical-align:top;">${chunks[2].length ? itemsTableHtml(chunks[2]) : ''}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    `);
+                } else {
+                    smallCategoryBlocks.push(categoryTableHtml(cat, items));
+                    smallCategoryWeights.push(Math.max(items.length, minPaddingRows) + 2); // +2 ~ header/margin overhead
+                }
             });
 
-            // Spread categories over 3 columns (7 categories -> 3 / 2 / 2)
-            const n = categoryBlocks.length;
-            const base = Math.floor(n / 3), extra = n % 3;
-            const sizes = [base + (extra > 0 ? 1 : 0), base + (extra > 1 ? 1 : 0), base];
-            const cols = [
-                categoryBlocks.slice(0, sizes[0]).join(''),
-                categoryBlocks.slice(sizes[0], sizes[0] + sizes[1]).join(''),
-                categoryBlocks.slice(sizes[0] + sizes[1]).join('')
-            ];
+            // Balance the remaining (normal-sized) categories across the 3 columns by
+            // their actual ROW COUNT, not by how many categories there are — greedy
+            // "shortest column first" bin-packing (biggest of these placed first) keeps
+            // the 3 columns close in height instead of splitting evenly by count alone.
+            const colHeights = [0, 0, 0];
+            const colBuckets = [[], [], []];
+            smallCategoryBlocks
+                .map((html, i) => ({ html, weight: smallCategoryWeights[i] }))
+                .sort((a, b) => b.weight - a.weight)
+                .forEach(block => {
+                    let target = 0;
+                    for (let i = 1; i < 3; i++) if (colHeights[i] < colHeights[target]) target = i;
+                    colBuckets[target].push(block.html);
+                    colHeights[target] += block.weight;
+                });
+            const cols = colBuckets.map(b => b.join(''));
+            const bigCategoriesHtml = bigCategoryBlocks.join('');
 
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:198mm;">
@@ -9210,9 +9279,10 @@
                         </div>
                         <div style="font-size:8px;color:#334155;text-align:right;line-height:1.2;">
                             <div><strong>From:</strong> ${esc(src)} &rarr; <strong>To:</strong> ${esc(dst)} | <strong>Staff:</strong> <span style="color:#047857;font-weight:bold;">${esc(staff)}</span></div>
-                            <div><strong>Date & Time:</strong> ${esc(dateTimeStr)}</div>
+                            <div><strong>Date & Time:</strong> ${esc(dateTimeStr)} | <strong>Total Items Requested:</strong> <span style="color:#047857;font-weight:bold;">${totalCount}</span></div>
                         </div>
                     </div>
+                    ${bigCategoriesHtml}
                     <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
                         <tr>
                             <td style="width:33.33%; vertical-align:top; padding-right:3px;">${cols[0]}</td>
