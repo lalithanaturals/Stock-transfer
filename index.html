@@ -1219,7 +1219,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-45";
+        const APP_VERSION = "v2026.10.10-46";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5223,6 +5223,15 @@
             document.getElementById('vendorRequirementSection').classList.add('hidden');
             document.getElementById('vendorBottomBar').classList.add('hidden');
             document.getElementById('packingRequirementSection').classList.remove('hidden');
+            // Both branches only ever pack Lalitha Naturals, so always land here showing
+            // every Lalitha Naturals category as a tab — regardless of whichever brand
+            // was last picked (e.g. while using the Vendor section) — rather than leaving
+            // a stale activeBrand filter in place from before.
+            if (activeBrand !== DEFAULT_BRAND) {
+                activeBrand = DEFAULT_BRAND;
+                localStorage.setItem('lalitha_active_brand', activeBrand);
+            }
+            renderTabs();
             // Re-show the bottom bar only if the Audit & Check sub-tab is the active one
             // (switchMode keeps it hidden while on the Ledger Sheets sub-tab).
             const onAudit = !document.getElementById('auditViewSection').classList.contains('hidden');
