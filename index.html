@@ -1219,7 +1219,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-46";
+        const APP_VERSION = "v2026.10.10-47";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -1241,6 +1241,16 @@
             // Tag the timeout onto AbortErrors so classifySyncError_() can report exactly
             // how long the request actually waited before giving up, instead of just "timed out".
             return fetch(url, opts).catch(err => {
+                // Some sandboxed preview environments (e.g. an in-chat artifact preview)
+                // proxy fetch() through postMessage, which can't structured-clone an
+                // AbortSignal and throws "DataCloneError" before the request ever goes
+                // out. That's a quirk of that sandbox, not a real network failure — fall
+                // back to a plain fetch without the abort signal so sync still works
+                // there too, just without the timeout-abort safety net.
+                if (err && (err.name === 'DataCloneError' || /could not be cloned/i.test(err.message || ''))) {
+                    clearTimeout(timer);
+                    return fetch(url, options);
+                }
                 if (err && err.name === 'AbortError') err._timeoutMs = timeoutMs;
                 throw err;
             }).finally(() => clearTimeout(timer));
