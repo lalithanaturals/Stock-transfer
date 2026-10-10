@@ -1163,7 +1163,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.03-24";
+        const APP_VERSION = "v2026.10.10-25";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4220,6 +4220,16 @@
         }
 
         let inventoryData = loadInventory();
+        // Counts catalog pushes currently in flight. While this is > 0, a background
+        // catalog PULL must not blindly overwrite inventoryData (see syncCatalogFromCloud)
+        // — the cloud copy it would fetch is, by definition, still the OLD one that hasn't
+        // seen this device's not-yet-landed edit. A pull racing a push like that silently
+        // erased a just-added category: it replaced inventoryData with the stale cloud
+        // catalog a split second after the category was added locally, before the push had
+        // a chance to land, making "Please pick a category" fire on Save even though the
+        // category was clearly showing (as a now-orphaned, already-rendered dropdown
+        // option) moments earlier.
+        let catalogPushInFlight = 0;
         function saveInventory() {
             writeJson('lalitha_master_inventory', inventoryData);
             pushCatalogToCloud();
@@ -4247,13 +4257,15 @@
                 recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, new Error('local catalog is empty — refusing to push (would wipe the cloud catalog)'));
                 return Promise.resolve();
             }
+            catalogPushInFlight++;
+            const done = () => { catalogPushInFlight = Math.max(0, catalogPushInFlight - 1); };
             try {
                 return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'catalog', action: 'save_catalog', catalog: inventoryData, version: CATALOG_VERSION })
-                }, 45000).catch(err => { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, err); });
-            } catch (e) { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, e); return Promise.resolve(); }
+                }, 45000).catch(err => { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, err); }).finally(done);
+            } catch (e) { recordSyncErrorDetail_('Catalog push', 'POST', GOOGLE_SCRIPT_URL, e); done(); return Promise.resolve(); }
         }
 
         // Best-effort pull of the shared catalog on load, so an edit made on one branch's
@@ -4261,6 +4273,13 @@
         // script deployment, offline, etc.) rather than blocking startup.
         async function syncCatalogFromCloud(isRetry) {
             const url = GOOGLE_SCRIPT_URL + '?type=catalog';
+            // A push from THIS device is still on the wire — the cloud copy a pull would
+            // fetch right now is, by definition, the stale pre-edit version. Overwriting
+            // inventoryData with it would erase whatever was just added/changed locally
+            // (e.g. a brand-new category) before the push even has a chance to land. Skip
+            // this round entirely; the next poll (after the push lands) will have the
+            // real, up-to-date cloud copy to compare against.
+            if (catalogPushInFlight > 0) return true;
             try {
                 const res = await fetchWithTimeout(url, {}, 58000);
                 if (!res.ok) {
