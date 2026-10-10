@@ -1153,7 +1153,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-35";
+        const APP_VERSION = "v2026.10.10-40";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5502,25 +5502,27 @@
                 return `
                     <div class="swipe-row-wrap">
                         <button type="button" onclick="openItemSettingsPopup(${item.id}, '${esc(packingBranch)}')" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
-                        <div id="row_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5${notReq ? ' opacity-60' : ''}">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                    <span class="text-[13px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${effMin}</span>
-                                    <span id="need_${item.id}" class="text-[13px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
-                                    ${showCatTag ? `<span class="text-[13px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
-                                    ${showBrandTag ? `<span class="text-[13px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
-                                    <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[13px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
-                                    <button type="button" id="notreq_${item.id}" onclick="toggleNotRequired(${item.id})" title="${notReq ? 'Marked not required for this dispatch — tap to undo' : 'Mark not required for this dispatch'}" class="ml-auto shrink-0 w-7 h-7 flex items-center justify-center rounded-md border ${notReq ? 'bg-red-50 border-red-300 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-400'}">
-                                        <i class="fa-solid fa-ban text-[13px]"></i>
-                                    </button>
+                        <div id="row_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex flex-col gap-1${notReq ? ' opacity-60' : ''}">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-[15px] font-bold text-slate-900 leading-tight">${esc(item.name)}</h3>
+                                    <p class="text-[13px] font-medium text-slate-500 flex items-center gap-2">${esc(item.uom)} <span class="text-[12px] font-bold text-slate-400">${esc(item.code)}</span><span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-emerald-600"><i class="fa-solid fa-circle-check"></i></span></p>
+                                    <label id="notreq_${item.id}" class="flex items-center gap-1.5 text-[12.5px] font-bold ${notReq ? 'text-red-700' : 'text-slate-400'} select-none mt-1">
+                                        Not required
+                                        <input type="checkbox" ${notReq ? 'checked' : ''} onchange="toggleNotRequired(${item.id})" class="w-3.5 h-3.5 accent-red-600">
+                                    </label>
                                 </div>
-                                <h3 class="text-base font-bold text-slate-900 leading-snug">${esc(item.name)} <span class="text-sm font-medium text-slate-500">(${esc(item.uom)})</span></h3>
-                            </div>
-                            <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl shrink-0">
-                                <button onclick="updateStock(${item.id}, -1)" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
-                                <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-14 text-center text-base font-bold bg-transparent outline-none">
-                                <button onclick="updateStock(${item.id}, 1)" class="w-14 h-14 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform">+</button>
+                                <div class="flex flex-col items-center shrink-0">
+                                    <div class="flex items-center gap-1 text-[11.5px] font-bold mb-1">
+                                        <span class="text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Min ${effMin}</span>
+                                        <span id="need_${item.id}" class="px-1.5 py-0.5 rounded border ${needClass}">Need ${need}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl">
+                                        <button onclick="updateStock(${item.id}, -1)" class="w-12 h-12 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
+                                        <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-12 text-center text-base font-bold bg-transparent outline-none">
+                                        <button onclick="updateStock(${item.id}, 1)" class="w-12 h-12 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform">+</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -5550,21 +5552,17 @@
             const need = needFor(item);
             const hasCount = shelfStock[id] !== undefined;
             input.value = hasCount ? shelfStock[id] : '';
-            badge.innerHTML = `Need: ${need}`;
-            badge.className = "text-[13px] font-extrabold px-2 py-0.5 rounded-md border " +
-                (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+            badge.innerHTML = `Need ${need}`;
+            badge.className = "px-1.5 py-0.5 rounded border " + (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
             const row = document.getElementById(`row_${id}`);
             const notReq = isNotRequired(id);
             // Keep "swipe-row-content" — dropping it here would strip the position/z-index
             // that keeps this row stacked above its (hidden-until-swiped) gear button.
-            if (row) row.className = "swipe-row-content bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5" + (notReq ? ' opacity-60' : '');
+            if (row) row.className = "swipe-row-content bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex flex-col gap-1" + (notReq ? ' opacity-60' : '');
             const countedBadge = document.getElementById(`counted_${id}`);
             if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
-            const notReqBtn = document.getElementById(`notreq_${id}`);
-            if (notReqBtn) {
-                notReqBtn.className = "ml-auto shrink-0 w-7 h-7 flex items-center justify-center rounded-md border " + (notReq ? 'bg-red-50 border-red-300 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-400');
-                notReqBtn.title = notReq ? 'Marked not required for this dispatch — tap to undo' : 'Mark not required for this dispatch';
-            }
+            const notReqLabel = document.getElementById(`notreq_${id}`);
+            if (notReqLabel) notReqLabel.className = "flex items-center gap-1.5 text-[12.5px] font-bold " + (notReq ? 'text-red-700' : 'text-slate-400') + " select-none mt-1";
         }
 
         function updateStock(id, change) {
