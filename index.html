@@ -246,17 +246,9 @@
                 <span id="homeSyncNowLabel" class="text-[11px] font-bold text-indigo-500 uppercase tracking-wide">Sync Now</span>
             </div>
 
-            <p class="text-[13px] font-bold text-slate-500 uppercase px-1">What do you want to do?</p>
+            <p class="text-[13px] font-bold text-slate-500 uppercase px-1">Select your branch — Packing Request</p>
 
-            <button onclick="showPackingRequirementSection()" class="relative w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
-                <span id="homePackingCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-emerald-900 text-[12px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
-                <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-box-open"></i></div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold">Packing Request</p>
-                    <p class="text-[13px] text-emerald-50 mt-0.5">Shelf counts, branch transfer & dispatch — in-store, Lalitha Naturals only</p>
-                </div>
-                <i class="fa-solid fa-chevron-right text-white/70"></i>
-            </button>
+            <div id="homeBranchTiles" class="space-y-3"></div>
 
             <button onclick="showVendorRequirementSection()" class="relative w-full bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
                 <span id="homeVendorCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-cyan-900 text-[12px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
@@ -325,23 +317,16 @@
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
                 <button id="repeatLastTransferBtn" type="button" onclick="repeatLastTransfer()" class="hidden w-full text-left text-[13px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2"><i class="fa-solid fa-rotate-left mr-1"></i><span id="repeatLastTransferLabel">Repeat last transfer</span></button>
                 <div class="grid grid-cols-2 gap-2.5">
-                    <div>
+                    <!-- Source is already set by the branch tile tapped on the home screen —
+                         no need to show/pick it again here, so this stays in the DOM (code
+                         still reads its value) but hidden, and Staff Name takes its place. -->
+                    <div class="hidden">
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Source</label>
                         <select id="sourceBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                             <option value="Gajuwaka">Gajuwaka</option>
                             <option value="Kurmannapalem">Kurmannapalem</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Destination</label>
-                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
-                            <option value="Kurmannapalem Packing">Kurmannapalem Pkg</option>
-                            <option value="Gajuwaka Packing">Gajuwaka Pkg</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2.5 items-center">
                     <div class="relative">
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
                         <div class="relative flex items-center">
@@ -352,18 +337,28 @@
                         <div id="staffDropdownList" onclick="event.stopPropagation()" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-40 overflow-y-auto p-1 space-y-0.5"></div>
                     </div>
                     <div>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Destination</label>
+                        <select id="destBranch" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                            <option value="Kurmannapalem Packing">Kurmannapalem Pkg</option>
+                            <option value="Gajuwaka Packing">Gajuwaka Pkg</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 items-start">
+                    <!-- Staff Remarks now sits where Staff Name used to be, instead of its
+                         own full-width row below — saves a row of vertical space. -->
+                    <div>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Notes</label>
+                        <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
+                    </div>
+                    <div>
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
                         <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
                             <button onclick="setAuditMode('available')" id="modeAvailBtn" class="py-2 rounded-lg text-sm font-bold transition bg-emerald-600 text-white">Available</button>
                             <button onclick="setAuditMode('shortage')" id="modeShortBtn" class="py-2 rounded-lg text-sm font-bold transition bg-transparent text-slate-600">Missing</button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Staff Remarks / Notes Input -->
-                <div>
-                    <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Staff Remarks / Notes (Optional)</label>
-                    <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
                 </div>
             </div>
 
@@ -398,17 +393,12 @@
                     </div>
                 </div>
 
-                <!-- Dispatch List — batches items across brands before one combined dispatch -->
-                <div class="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 space-y-1.5">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-[13px] font-bold text-slate-600"><i class="fa-solid fa-layer-group mr-1 text-slate-400"></i>Dispatch List: <span id="dispatchListCount">0</span> item(s)</span>
-                        <div class="flex gap-1.5 shrink-0">
-                            <button onclick="addCurrentToDispatchList()" class="text-[13px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200"><i class="fa-solid fa-plus mr-1"></i>Add to List</button>
-                            <button id="clearDispatchListBtn" onclick="clearDispatchList()" class="hidden text-[13px] font-bold text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">Clear List</button>
-                        </div>
-                    </div>
-                    <div id="dispatchListBrandBreakdown" class="hidden text-[13px] text-slate-500"></div>
-                </div>
+                <!-- Dispatch List card removed from view per request — the list itself
+                     (dispatchList) still exists and stays synced in the background (see
+                     syncDispatchListFromCurrentView / getGroupedShortages); only this
+                     summary bar is gone. #dispatchListCount / #clearDispatchListBtn /
+                     #dispatchListBrandBreakdown are referenced defensively elsewhere
+                     (null-checked), so removing them here is safe. -->
             </div>
 
             <!-- Items List -->
@@ -815,7 +805,7 @@
                         </select>
                         <button id="dupOnlyToggle" onclick="toggleDupOnlyFilter()" class="px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-[13px] font-bold text-slate-600 shrink-0" title="Show only items with a duplicate code">Duplicates only</button>
                     </div>
-                    <div id="catalogEditorList" class="space-y-2 max-h-72 overflow-y-auto"></div>
+                    <div id="catalogEditorList" class="space-y-2"></div>
                     <button onclick="printCatalogPdf()" class="w-full px-3 py-2.5 bg-slate-700 text-white font-bold rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5"><i class="fa-solid fa-print"></i> Print Full Catalog (PDF)</button>
                 </div>
 
@@ -1142,9 +1132,10 @@
                     <select id="itemSettingsPopupVendor" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"></select>
                 </div>
                 <div class="flex items-center gap-1.5 pt-1">
-                    <span class="text-[13px] text-slate-500 font-bold">Min (reorder qty):</span>
+                    <span id="itemSettingsPopupMinLabel" class="text-[13px] text-slate-500 font-bold">Min (reorder qty):</span>
                     <input type="number" id="itemSettingsPopupMin" class="w-16 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center">
                 </div>
+                <p id="itemSettingsPopupMinNote" class="hidden text-[13px] text-slate-400"></p>
             </div>
             <div class="bg-white border-t border-slate-200 p-3 flex justify-end gap-2">
                 <button onclick="closeItemSettingsPopup()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-sm">Cancel</button>
@@ -1163,7 +1154,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-25";
+        const APP_VERSION = "v2026.10.10-29";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4220,6 +4211,12 @@
         }
 
         let inventoryData = loadInventory();
+        // Declared up here (not down near the rest of the branch-management functions
+        // further below) because showHomeSection() reads it for the home-screen branch
+        // tiles, and showHomeSection() is called once during page init, long before the
+        // script reaches that later section — referencing a `let` before its declaration
+        // line has run throws, which silently blanked the branch-tile list on load.
+        let branchList = readJson('lalitha_branches', ['Gajuwaka', 'Kurmannapalem']);
         // Counts catalog pushes currently in flight. While this is > 0, a background
         // catalog PULL must not blindly overwrite inventoryData (see syncCatalogFromCloud)
         // — the cloud copy it would fetch is, by definition, still the OLD one that hasn't
@@ -4230,6 +4227,41 @@
         // category was clearly showing (as a now-orphaned, already-rendered dropdown
         // option) moments earlier.
         let catalogPushInFlight = 0;
+
+        // Per-branch Min (reorder qty) — every other item field (name, code, uom,
+        // category, brand, vendor, hidden) is shared across every branch; only Min can
+        // differ. item.min stays the single shared DEFAULT (what Settings → catalog
+        // editor, Excel import/export and the catalog PDF read/write — those have no
+        // one-branch context, so they always mean "the default for every branch").
+        // item.minOverrides, when present, is {branchName: number} — a branch only gets
+        // an entry once someone changes Min specifically while that branch is active
+        // (inside Packing/Vendor Request); every other branch keeps following the shared
+        // default automatically, including a brand-new branch added later.
+        function getEffectiveMin(item, branch) {
+            if (branch && item && item.minOverrides && Object.prototype.hasOwnProperty.call(item.minOverrides, branch)) {
+                return item.minOverrides[branch];
+            }
+            return Number(item && item.min) || 0;
+        }
+        // Sets (or clears) a per-branch Min override on an item and persists it. Passing
+        // a value equal to the shared default clears the override instead of storing a
+        // redundant one, so a branch that's simply never been customized stays that way
+        // (and automatically follows the default if it's edited later).
+        function setBranchMin(itemId, branch, value) {
+            const found = findCatalogItemById(itemId);
+            if (!found || !branch) return false;
+            const item = found.item;
+            const n = parseInt(value, 10);
+            if (isNaN(n) || n < 0) return false;
+            if (!item.minOverrides) item.minOverrides = {};
+            if (n === (Number(item.min) || 0)) {
+                delete item.minOverrides[branch];
+            } else {
+                item.minOverrides[branch] = n;
+            }
+            saveInventory();
+            return true;
+        }
         function saveInventory() {
             writeJson('lalitha_master_inventory', inventoryData);
             pushCatalogToCloud();
@@ -4540,6 +4572,7 @@
                     renderVendorItems(document.getElementById('vendorSearchBox') ? document.getElementById('vendorSearchBox').value : '');
                 }
                 if (document.getElementById('settingsView_branches') && !document.getElementById('settingsView_branches').classList.contains('hidden') && typeof renderBranchManageList === 'function') renderBranchManageList();
+                if (document.getElementById('homeSection') && !document.getElementById('homeSection').classList.contains('hidden')) renderHomeBranchTiles();
                 return true;
             } catch (e) {
                 applyingRemoteSettings = false;
@@ -4601,6 +4634,18 @@
         // not an actual sync failure, but the merge faithfully bringing the vendor back.
         let deletedVendorIds = new Set(readJson('lalitha_deleted_vendor_ids', []));
         let dispatchList = readJson('lalitha_dispatch_list', []);
+
+        // "Not Required" — a per-item, per-dispatch toggle (Packing Request only).
+        // Deliberately NOT persisted to storage: it's scoped to "this dispatch only"
+        // and resets automatically next time (and also cleared right after a send).
+        let notRequiredIds = new Set();
+        function isNotRequired(id) { return notRequiredIds.has(id); }
+        function toggleNotRequired(id) {
+            if (notRequiredIds.has(id)) notRequiredIds.delete(id); else notRequiredIds.add(id);
+            patchRow(id);
+            syncDispatchListFromCurrentView();
+            hapticTap();
+        }
 
         // Per-vendor category hiding — e.g. hide "Cosmetics" just for one vendor, while it
         // stays visible for others. Keys are "vendorId||category".
@@ -4831,6 +4876,7 @@
             renderItems();
             renderVendorSelectDropdown();
             renderDispatchListSummary();
+            renderHomeBranchTiles();
             document.getElementById('lookupDateInput').value = localDateStr(new Date());
             document.getElementById('searchBox').addEventListener('input', (e) => {
                 renderItems(e.target.value);
@@ -5029,6 +5075,31 @@
             document.getElementById('vendorBottomBar').classList.add('hidden');
             setHeaderTitle('Branch Transfer', true);
             renderHomeCartBadges();
+            renderHomeBranchTiles();
+        }
+
+        // Home screen shows one tile per branch instead of a single "Packing Request"
+        // button — tapping a branch jumps straight into Packing Request with Source
+        // preset to that branch (Destination is still picked normally inside), so staff
+        // don't have to find their branch in a dropdown every time. The branch list
+        // itself is only managed from Settings → Branches, never from here.
+        function renderHomeBranchTiles() {
+            const container = document.getElementById('homeBranchTiles');
+            if (!container) return;
+            if (!branchList.length) {
+                container.innerHTML = `<div class="text-center text-slate-400 text-sm font-semibold bg-white rounded-xl border border-slate-200 py-4">No branches yet — add one in Settings → Branches.</div>`;
+                return;
+            }
+            container.innerHTML = branchList.map(b => `
+                <button onclick="showPackingRequirementSection('${esc(b)}')" class="relative w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
+                    <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-box-open"></i></div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold">${esc(b)}</p>
+                        <p class="text-[13px] text-emerald-50 mt-0.5">Packing request — shelf counts & dispatch</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-white/70"></i>
+                </button>
+            `).join('');
         }
 
         // Pending-item badges on the Home cards — how many items are waiting in each
@@ -5046,7 +5117,7 @@
                 vendorBadge.classList.toggle('hidden', total === 0);
             }
         }
-        function showPackingRequirementSection() {
+        function showPackingRequirementSection(branch) {
             document.getElementById('homeSection').classList.add('hidden');
             document.getElementById('vendorRequirementSection').classList.add('hidden');
             document.getElementById('vendorBottomBar').classList.add('hidden');
@@ -5055,13 +5126,19 @@
             // (switchMode keeps it hidden while on the Ledger Sheets sub-tab).
             const onAudit = !document.getElementById('auditViewSection').classList.contains('hidden');
             document.getElementById('bottomActionBar').classList.toggle('hidden', !onAudit);
-            setHeaderTitle('Packing Request', false);
-            // Convenience only: if this device is locked to a branch, default Source to
-            // it (still freely changeable) — doesn't touch Destination's own options.
+            setHeaderTitle(branch ? `Packing Request — ${branch}` : 'Packing Request', false);
             const srcSel = document.getElementById('sourceBranch');
-            if (srcSel && lockedBranch && Array.from(srcSel.options).some(o => o.value === lockedBranch)) {
+            // Tapping a branch tile on Home passes that branch explicitly — it wins over
+            // the device-level lock, since the whole point of per-branch tiles is letting
+            // one device work across branches in one session.
+            if (srcSel && branch && Array.from(srcSel.options).some(o => o.value === branch)) {
+                srcSel.value = branch;
+            } else if (srcSel && lockedBranch && Array.from(srcSel.options).some(o => o.value === lockedBranch)) {
+                // Convenience only: if this device is locked to a branch, default Source to
+                // it (still freely changeable) — doesn't touch Destination's own options.
                 srcSel.value = lockedBranch;
             }
+            if (srcSel) renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
             updateRepeatLastTransferBtn();
         }
 
@@ -5166,7 +5243,9 @@
         // Missing mode: you enter what's MISSING directly, so blank = nothing reported missing (Need = 0).
         function needFor(item) {
             const v = shelfStock[item.id] !== undefined ? shelfStock[item.id] : 0;
-            return auditMode === 'available' ? Math.max(0, item.min - v) : Math.max(0, v);
+            const srcSel = document.getElementById('sourceBranch');
+            const min = getEffectiveMin(item, srcSel ? srcSel.value : '');
+            return auditMode === 'available' ? Math.max(0, min - v) : Math.max(0, v);
         }
 
         // ---------- Swipe-to-reveal item settings ----------
@@ -5272,11 +5351,13 @@
         // ---------- Single-item settings popup (opened from the swipe gear button) ----------
         let itemSettingsPopupId = null;
 
-        function openItemSettingsPopup(itemId) {
+        let itemSettingsPopupBranch = '';
+        function openItemSettingsPopup(itemId, branch) {
             const found = findCatalogItemById(itemId);
             if (!found) return;
             const item = found.item;
             itemSettingsPopupId = itemId;
+            itemSettingsPopupBranch = branch || '';
             hapticTap();
 
             document.getElementById('itemSettingsPopupTitle').innerText = `${item.name} — Item Settings`;
@@ -5284,7 +5365,27 @@
             document.getElementById('itemSettingsPopupName').value = item.name;
             document.getElementById('itemSettingsPopupUom').value = item.uom;
             document.getElementById('itemSettingsPopupBrand').value = item.brand || DEFAULT_BRAND;
-            document.getElementById('itemSettingsPopupMin').value = item.min;
+
+            // Min is the one field that can be branch-specific. Opened from inside a
+            // branch's Packing/Vendor Request, it edits THAT branch's override only
+            // (falling back to the shared default until changed); opened with no branch
+            // context (shouldn't normally happen from these two call sites, but keeps
+            // this safe either way) it edits the shared default all branches follow.
+            const minLabel = document.getElementById('itemSettingsPopupMinLabel');
+            const minNote = document.getElementById('itemSettingsPopupMinNote');
+            if (itemSettingsPopupBranch) {
+                document.getElementById('itemSettingsPopupMin').value = getEffectiveMin(item, itemSettingsPopupBranch);
+                minLabel.textContent = `Min for ${itemSettingsPopupBranch}:`;
+                const overridden = item.minOverrides && Object.prototype.hasOwnProperty.call(item.minOverrides, itemSettingsPopupBranch);
+                minNote.textContent = overridden
+                    ? `Set just for ${itemSettingsPopupBranch} — other branches use the shared default (${Number(item.min) || 0}).`
+                    : `Following the shared default (${Number(item.min) || 0}) used by every branch. Change it here to set ${itemSettingsPopupBranch} on its own.`;
+                minNote.classList.remove('hidden');
+            } else {
+                document.getElementById('itemSettingsPopupMin').value = item.min;
+                minLabel.textContent = 'Min (reorder qty, shared default):';
+                minNote.classList.add('hidden');
+            }
 
             const catSel = document.getElementById('itemSettingsPopupCat');
             catSel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}" ${c === found.cat ? 'selected' : ''}>${esc(c)}</option>`).join('');
@@ -5300,10 +5401,12 @@
         function closeItemSettingsPopup() {
             document.getElementById('itemSettingsModal').classList.add('hidden');
             itemSettingsPopupId = null;
+            itemSettingsPopupBranch = '';
         }
 
         function saveItemSettingsPopup() {
             if (itemSettingsPopupId === null) return;
+            const minVal = document.getElementById('itemSettingsPopupMin').value;
             const fields = {
                 code: document.getElementById('itemSettingsPopupCode').value.trim(),
                 name: document.getElementById('itemSettingsPopupName').value.trim(),
@@ -5311,10 +5414,15 @@
                 brand: document.getElementById('itemSettingsPopupBrand').value.trim() || DEFAULT_BRAND,
                 cat: document.getElementById('itemSettingsPopupCat').value,
                 vendorId: document.getElementById('itemSettingsPopupVendor').value,
-                min: parseInt(document.getElementById('itemSettingsPopupMin').value, 10),
+                // When editing a specific branch's Min, don't touch the shared default
+                // here — commitCatalogItemEdit gets the item's CURRENT default so its
+                // "did anything change" / confirm-dialog logic doesn't light up over a
+                // per-branch-only change. The override itself is applied separately below.
+                min: itemSettingsPopupBranch ? (findCatalogItemById(itemSettingsPopupId).item.min) : parseInt(minVal, 10),
             };
             const ok = commitCatalogItemEdit(itemSettingsPopupId, fields, { confirmFirst: false, refreshRowLists: true });
             if (ok) {
+                if (itemSettingsPopupBranch) setBranchMin(itemSettingsPopupId, itemSettingsPopupBranch, minVal);
                 hapticTap();
                 closeItemSettingsPopup();
             }
@@ -5374,24 +5482,31 @@
                 return;
             }
 
+            const packingBranch = (document.getElementById('sourceBranch') || {}).value || '';
             container.innerHTML = itemsToDisplay.map((item) => {
                 const need = needFor(item);
                 const hasCount = shelfStock[item.id] !== undefined;
                 const inputDisplayVal = hasCount ? shelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                const effMin = getEffectiveMin(item, packingBranch);
+                const notReq = isNotRequired(item.id);
 
                 return `
                     <div class="swipe-row-wrap">
-                        <button type="button" onclick="openItemSettingsPopup(${item.id})" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
-                        <div id="row_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
+                        <button type="button" onclick="openItemSettingsPopup(${item.id}, '${esc(packingBranch)}')" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
+                        <div id="row_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5${notReq ? ' opacity-60' : ''}">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                     <span class="text-[13px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${effMin}</span>
                                     <span id="need_${item.id}" class="text-[13px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
                                     ${showCatTag ? `<span class="text-[13px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
                                     ${showBrandTag ? `<span class="text-[13px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">${esc(item.brand || DEFAULT_BRAND)}</span>` : ''}
                                     <span id="counted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[13px] font-extrabold text-emerald-700"><i class="fa-solid fa-circle-check"></i></span>
+                                    <label id="notreq_${item.id}" class="ml-auto flex items-center gap-1.5 text-[12.5px] font-bold ${notReq ? 'text-red-700' : 'text-slate-400'} select-none">
+                                        <input type="checkbox" ${notReq ? 'checked' : ''} onchange="toggleNotRequired(${item.id})" class="w-3.5 h-3.5 accent-red-600">
+                                        Not required
+                                    </label>
                                 </div>
                                 <h3 class="text-base font-bold text-slate-900 leading-snug">${esc(item.name)}</h3>
                                 <p class="text-sm text-slate-500 font-medium">${esc(item.uom)}</p>
@@ -5410,6 +5525,7 @@
                 const rowEl = document.getElementById(`row_${item.id}`);
                 attachSwipeReveal(rowEl ? rowEl.parentElement : null, rowEl, item.id);
             });
+            syncDispatchListFromCurrentView();
         }
 
         // Updates one item row in place (input value + Need badge) instead of rebuilding
@@ -5432,11 +5548,14 @@
             badge.className = "text-[13px] font-extrabold px-2 py-0.5 rounded-md border " +
                 (need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
             const row = document.getElementById(`row_${id}`);
+            const notReq = isNotRequired(id);
             // Keep "swipe-row-content" — dropping it here would strip the position/z-index
             // that keeps this row stacked above its (hidden-until-swiped) gear button.
-            if (row) row.className = "swipe-row-content bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5";
+            if (row) row.className = "swipe-row-content bg-white p-4 rounded-xl border " + (hasCount ? 'border-l-4 border-l-emerald-500 border-slate-200' : 'border-slate-200') + " shadow-sm flex items-center justify-between gap-2.5" + (notReq ? ' opacity-60' : '');
             const countedBadge = document.getElementById(`counted_${id}`);
             if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
+            const notReqLabel = document.getElementById(`notreq_${id}`);
+            if (notReqLabel) notReqLabel.className = "ml-auto flex items-center gap-1.5 text-[12.5px] font-bold " + (notReq ? 'text-red-700' : 'text-slate-400') + " select-none";
         }
 
         function updateStock(id, change) {
@@ -5756,7 +5875,6 @@
         // localStorage — the list isn't pushed to the shared backend (same as the rest
         // of Settings today), and the lock is explicitly per-device by design: two
         // phones can each be locked to a different branch at the same time.
-        let branchList = readJson('lalitha_branches', ['Gajuwaka', 'Kurmannapalem']);
         // Branch list previously never left the device it was edited on — it wasn't part of
         // the settings payload pushed to the cloud, so adding/renaming/deleting a branch on
         // one phone silently never showed up on the other. Now included in settingsPayload
@@ -5808,6 +5926,7 @@
             renderBranchManageList();
             renderDeviceBranchLockSelect();
             renderVendorBranchSelect();
+            renderHomeBranchTiles();
         }
         function renameBranch(oldName) {
             const newName = prompt(`Rename "${oldName}" to:`, oldName);
@@ -5821,6 +5940,7 @@
             renderBranchManageList();
             renderDeviceBranchLockSelect();
             renderVendorBranchSelect();
+            renderHomeBranchTiles();
         }
         function deleteBranch(name) {
             if (branchList.length <= 1) { alert("At least one branch is required."); return; }
@@ -5831,6 +5951,7 @@
             renderBranchManageList();
             renderDeviceBranchLockSelect();
             renderVendorBranchSelect();
+            renderHomeBranchTiles();
         }
 
         // ---------- Vendors (name + mobile, for sending requirements directly) ----------
@@ -6525,7 +6646,9 @@
 
         function needForVendor(item) {
             const v = vendorShelfStock[item.id] !== undefined ? vendorShelfStock[item.id] : 0;
-            return vendorAuditMode === 'available' ? Math.max(0, item.min - v) : Math.max(0, v);
+            const branchSel = document.getElementById('vendorBranchSelect');
+            const min = getEffectiveMin(item, branchSel ? branchSel.value : '');
+            return vendorAuditMode === 'available' ? Math.max(0, min - v) : Math.max(0, v);
         }
 
         function showVendorRequirementSection() {
@@ -6715,19 +6838,21 @@
                 return;
             }
 
+            const vendorBranch = (document.getElementById('vendorBranchSelect') || {}).value || '';
             container.innerHTML = itemsToDisplay.map(item => {
                 const need = needForVendor(item);
                 const hasCount = vendorShelfStock[item.id] !== undefined;
                 const inputDisplayVal = hasCount ? vendorShelfStock[item.id] : '';
                 const needClass = need > 0 ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                const effMin = getEffectiveMin(item, vendorBranch);
                 return `
                     <div class="swipe-row-wrap">
-                        <button type="button" onclick="openItemSettingsPopup(${item.id})" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
+                        <button type="button" onclick="openItemSettingsPopup(${item.id}, '${esc(vendorBranch)}')" class="swipe-row-gear" title="Item settings"><i class="fa-solid fa-gear"></i></button>
                         <div id="vrow_${item.id}" class="swipe-row-content bg-white p-4 rounded-xl border ${hasCount ? 'border-l-4 border-l-cyan-500 border-slate-200' : 'border-slate-200'} shadow-sm flex items-center justify-between gap-2.5">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap mb-1">
                                     <span class="text-[13px] font-bold px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md">${esc(item.code)}</span>
-                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${item.min}</span>
+                                    <span class="text-[13px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Min: ${effMin}</span>
                                     <span id="vneed_${item.id}" class="text-[13px] font-extrabold px-2 py-0.5 rounded-md border ${needClass}">Need: ${need}</span>
                                     ${showCatTag ? `<span class="text-[13px] font-semibold text-slate-500">${esc(item.category)}</span>` : ''}
                                     <span id="vcounted_${item.id}" class="${hasCount ? '' : 'hidden'} text-[13px] font-extrabold text-cyan-700"><i class="fa-solid fa-circle-check"></i></span>
@@ -6810,6 +6935,7 @@
         function currentVendorFilterShortages() {
             const results = [];
             const vendor = currentVendorObj();
+            const vendorBranch = (document.getElementById('vendorBranchSelect') || {}).value || '';
             for (const cat in inventoryData) {
                 if (hiddenCategories.has(cat)) continue;
                 if (vendorActiveCategoryFilter !== 'All Categories' && cat !== vendorActiveCategoryFilter) continue;
@@ -6823,7 +6949,7 @@
                     const need = needForVendor(item);
                     if (need > 0) {
                         const stockVal = vendorShelfStock[item.id] !== undefined ? vendorShelfStock[item.id] : 0;
-                        results.push({ id: item.id, cat, brand: vendorActiveBrand, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: stockVal, reqQty: need });
+                        results.push({ id: item.id, cat, brand: vendorActiveBrand, name: item.name, uom: item.uom, code: item.code, min: getEffectiveMin(item, vendorBranch), stock: stockVal, reqQty: need });
                     }
                 });
             }
@@ -7097,6 +7223,7 @@
         // used by both "Add to List" and, as a fallback, the direct one-tap dispatch.
         function currentFilterShortages() {
             const results = [];
+            const packingBranch = (document.getElementById('sourceBranch') || {}).value || '';
             for (const cat in inventoryData) {
                 if (hiddenCategories.has(cat)) continue;
                 if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
@@ -7106,10 +7233,11 @@
                     if (hiddenBrands.has(brand)) return;
                     if (activeBrand !== 'All Brands' && brand !== activeBrand) return;
                     if (isCatHiddenForBrand(brand, cat)) return;
+                    if (isNotRequired(item.id)) return; // excluded from this dispatch only
                     const need = needFor(item);
                     if (need > 0) {
                         const stockVal = shelfStock[item.id] !== undefined ? shelfStock[item.id] : 0;
-                        results.push({ id: item.id, cat, brand, name: item.name, uom: item.uom, code: item.code, min: item.min, stock: stockVal, reqQty: need });
+                        results.push({ id: item.id, cat, brand, name: item.name, uom: item.uom, code: item.code, min: getEffectiveMin(item, packingBranch), stock: stockVal, reqQty: need });
                     }
                 });
             }
@@ -7118,18 +7246,34 @@
 
         function saveDispatchList() { writeJson('lalitha_dispatch_list', dispatchList); renderDispatchListSummary(); }
 
-        function addCurrentToDispatchList() {
-            const items = currentFilterShortages();
-            if (items.length === 0) { showToast("Nothing to add — no items need dispatching in this view"); return; }
-            items.forEach(it => {
+        // Keeps the Dispatch List shown directly in sync with whatever's visible in the
+        // current Brand/Category filter — no manual "Add to List" tap needed. Items added
+        // from a DIFFERENT filter view earlier are left untouched (that's how shortages
+        // get batched across brands before one combined dispatch); only items that are
+        // actually part of the current view get added, updated, or dropped here — dropped
+        // when their Need has gone back to 0, or they've just been marked Not Required.
+        function syncDispatchListFromCurrentView() {
+            const seenIds = new Set();
+            for (const cat in inventoryData) {
+                if (hiddenCategories.has(cat)) continue;
+                if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
+                inventoryData[cat].forEach(item => {
+                    if (item.hidden) return;
+                    const brand = item.brand || DEFAULT_BRAND;
+                    if (hiddenBrands.has(brand)) return;
+                    if (activeBrand !== 'All Brands' && brand !== activeBrand) return;
+                    if (isCatHiddenForBrand(brand, cat)) return;
+                    seenIds.add(item.id);
+                });
+            }
+            const shortages = currentFilterShortages(); // already excludes Not Required items
+            const shortageIds = new Set(shortages.map(s => s.id));
+            dispatchList = dispatchList.filter(d => !seenIds.has(d.id) || shortageIds.has(d.id));
+            shortages.forEach(it => {
                 const idx = dispatchList.findIndex(d => d.id === it.id);
                 if (idx >= 0) dispatchList[idx] = it; else dispatchList.push(it);
-                delete shelfStock[it.id];
             });
             saveDispatchList();
-            renderItems(document.getElementById('searchBox').value);
-            hapticTap();
-            showToast(`Added ${items.length} item(s) to the dispatch list`);
         }
 
         function clearDispatchList() {
@@ -7791,7 +7935,7 @@
                 // Dispatch is scoped to whatever's on the Dispatch List (added from other
                 // brands via "Add to List") plus whatever's currently entered for the
                 // active Brand/Category filter — NOT the whole catalog.
-                const merged = [...dispatchList];
+                const merged = [...dispatchList].filter(it => !isNotRequired(it.id));
                 currentFilterShortages().forEach(it => {
                     const idx = merged.findIndex(d => d.id === it.id);
                     if (idx >= 0) merged[idx] = it;
@@ -8305,6 +8449,7 @@
             // so the next transfer can start clean rather than staying half-filled on screen.
             for (const k in shelfStock) delete shelfStock[k];
             dispatchList = [];
+            notRequiredIds.clear();
             saveDispatchList();
             document.getElementById('transitNotesInput').value = "";
             document.getElementById('searchBox').value = "";
