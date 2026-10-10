@@ -815,23 +815,42 @@
                 <div id="settingsView_addItem" class="hidden space-y-2.5">
                     <button onclick="backFromAddItem()" id="addItemBackBtn" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2.5">
+                    <div>
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Item name</label>
+                        <input type="text" id="newItemName" placeholder="e.g. White Pepper Powder" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                    </div>
                     <div class="grid grid-cols-2 gap-2.5">
-                        <select id="newItemCat" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
-                        <div class="flex gap-1.5">
-                            <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
-                            <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-sm"><i class="fa-solid fa-barcode"></i></button>
+                        <div>
+                            <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Category</label>
+                            <select id="newItemCat" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Brand</label>
+                            <input type="text" id="newItemBrand" list="newItemBrandList" placeholder="Brand" value="Lalitha Naturals" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                            <datalist id="newItemBrandList"></datalist>
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2.5">
-                        <input type="text" id="newItemName" placeholder="Item Name" class="col-span-2 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
-                        <input type="text" id="newItemUom" placeholder="UOM" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                        <div class="col-span-2">
+                            <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Code</label>
+                            <div class="flex gap-1.5">
+                                <input type="text" id="newItemCode" placeholder="Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                                <button onclick="openScannerModal('newItem')" class="bg-indigo-600 text-white px-3 py-2.5 rounded-xl text-sm shrink-0"><i class="fa-solid fa-barcode"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">UOM</label>
+                            <input type="text" id="newItemUom" placeholder="250GM" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <input type="text" id="newItemBrand" list="newItemBrandList" placeholder="Brand" value="Lalitha Naturals" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
-                        <datalist id="newItemBrandList"></datalist>
-                        <input type="number" id="newItemMin" placeholder="Min" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                    <div class="w-1/2 pr-1.5">
+                        <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Min stock</label>
+                        <input type="number" id="newItemMin" placeholder="Min" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
                     </div>
-                    <div>
+                    <button type="button" onclick="toggleAddItemMoreDetails()" id="addItemMoreDetailsToggle" class="text-[13px] font-bold text-indigo-600 flex items-center gap-1 pt-0.5">
+                        <i class="fa-solid fa-chevron-right text-[11px]"></i> More details (vendor)
+                    </button>
+                    <div id="addItemMoreDetails" class="hidden">
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Vendor <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
                         <select id="newItemVendor" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none"></select>
                     </div>
@@ -1219,7 +1238,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-47";
+        const APP_VERSION = "v2026.10.10-49";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4710,15 +4729,32 @@
             renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
             renderBrandManageList();
         }
-        function assignSelectedCategoryToBrand(brand) {
-            const sel = document.getElementById(`assignCatSelect_${brand}`);
-            const cat = sel ? sel.value : '';
-            if (!cat) return;
-            categoryBrandAssign.add(bcKey(brand, cat));
-            saveCategoryBrandAssign();
-            logCatalogHistory('Assigned category to brand', `${cat} → ${brand}`);
-            renderTabs();
-            renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+        // Single source of truth for "does this category show as a tab for this
+        // brand" — folds the three underlying bits (has an item under this brand,
+        // explicitly assigned, explicitly hidden-for-this-brand) into one yes/no so
+        // the UI only ever needs to show and toggle ONE thing per category, instead
+        // of exposing hide/assign as separate confusing controls.
+        function isCatVisibleForBrand(brand, cat) {
+            if (isCatHiddenForBrand(brand, cat)) return false;
+            const hasItem = (inventoryData[cat] || []).some(item => !item.hidden && (item.brand || DEFAULT_BRAND) === brand);
+            return hasItem || isCatAssignedToBrand(brand, cat);
+        }
+        function toggleCatVisibleForBrand(brand, cat) {
+            const hasItem = (inventoryData[cat] || []).some(item => (item.brand || DEFAULT_BRAND) === brand);
+            const visible = isCatVisibleForBrand(brand, cat);
+            if (visible) {
+                // Turning off: if there's a real item in this category under this brand,
+                // the only way to hide the tab is the hide-for-brand flag. If it was only
+                // ever an empty assignment, just remove the assignment — cleaner than
+                // leaving a stray "hidden" flag on a category with nothing to hide.
+                if (hasItem) toggleCategoryHiddenForBrand(brand, cat);
+                else if (isCatAssignedToBrand(brand, cat)) toggleCategoryAssignedToBrand(brand, cat);
+            } else {
+                // Turning on: clear any hide-for-brand flag, and if there's no item yet
+                // to imply the brand, assign it explicitly so the tab shows right away.
+                if (isCatHiddenForBrand(brand, cat)) toggleCategoryHiddenForBrand(brand, cat);
+                if (!hasItem && !isCatAssignedToBrand(brand, cat)) toggleCategoryAssignedToBrand(brand, cat);
+            }
             renderBrandManageList();
         }
 
@@ -4801,11 +4837,7 @@
         function categoriesForActiveBrand() {
             const cats = visibleCategories();
             if (activeBrand === 'All Brands') return cats;
-            return cats.filter(cat => {
-                if (isCatHiddenForBrand(activeBrand, cat)) return false;
-                const hasItem = (inventoryData[cat] || []).some(item => !item.hidden && (item.brand || DEFAULT_BRAND) === activeBrand);
-                return hasItem || isCatAssignedToBrand(activeBrand, cat);
-            });
+            return cats.filter(cat => isCatVisibleForBrand(activeBrand, cat));
         }
 
         function categoryTabClass(cat) {
@@ -5638,10 +5670,10 @@
                                         <span class="text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Min ${effMin}</span>
                                         <span id="need_${item.id}" class="px-1.5 py-0.5 rounded border ${needClass}">Need ${need}</span>
                                     </div>
-                                    <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl">
-                                        <button onclick="updateStock(${item.id}, -1)" class="w-12 h-12 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform">-</button>
-                                        <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" class="w-12 text-center text-base font-bold bg-transparent outline-none">
-                                        <button onclick="updateStock(${item.id}, 1)" class="w-12 h-12 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform">+</button>
+                                    <div id="stepper_${item.id}" class="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-2xl">
+                                        <button onclick="updateStock(${item.id}, -1)" ${notReq ? 'disabled' : ''} class="w-12 h-12 flex items-center justify-center bg-white border border-slate-300 rounded-xl text-slate-800 font-extrabold text-xl shadow-sm active:bg-slate-100 active:scale-90 transition-transform disabled:opacity-40 disabled:active:scale-100">-</button>
+                                        <input type="number" inputmode="numeric" min="0" id="stock_${item.id}" value="${inputDisplayVal}" placeholder="0" onchange="setStock(${item.id}, this.value)" ${notReq ? 'disabled' : ''} class="w-12 text-center text-base font-bold bg-transparent outline-none disabled:opacity-40">
+                                        <button onclick="updateStock(${item.id}, 1)" ${notReq ? 'disabled' : ''} class="w-12 h-12 flex items-center justify-center bg-emerald-600 text-white rounded-xl font-extrabold text-xl shadow-sm active:bg-emerald-700 active:scale-90 transition-transform disabled:opacity-40 disabled:active:scale-100">+</button>
                                     </div>
                                 </div>
                             </div>
@@ -5684,9 +5716,15 @@
             if (countedBadge) countedBadge.classList.toggle('hidden', !hasCount);
             const notReqLabel = document.getElementById(`notreq_${id}`);
             if (notReqLabel) notReqLabel.className = "flex items-center gap-1.5 text-[12.5px] font-bold " + (notReq ? 'text-red-700' : 'text-slate-400') + " select-none mt-1";
+            // Disable the whole stepper (both buttons + the number input) while this item
+            // is marked "Not required" — it was only greyed out visually before, which
+            // still let the +/- buttons and typing into the box add a count underneath.
+            const stepper = document.getElementById(`stepper_${id}`);
+            if (stepper) stepper.querySelectorAll('button, input').forEach(el => { el.disabled = notReq; });
         }
 
         function updateStock(id, change) {
+            if (isNotRequired(id)) return; // can't add a count while marked "Not required"
             const current = shelfStock[id] !== undefined ? shelfStock[id] : 0;
             shelfStock[id] = Math.max(0, current + change);
             patchRow(id);
@@ -5703,6 +5741,7 @@
         }
 
         function setStock(id, val) {
+            if (isNotRequired(id)) { patchRow(id); return; } // can't add a count while marked "Not required"
             const parsed = parseInt(val, 10);
             if (isNaN(parsed) || val === "") {
                 delete shelfStock[id];
@@ -5732,6 +5771,11 @@
             document.getElementById('settingsTitle').innerText = SETTINGS_TITLES[view] || 'Settings';
             document.getElementById('settingsBackBtn').classList.toggle('hidden', view === 'menu');
             if (view === 'existing') renderCatalogEditorList();
+            if (view === 'addItem') {
+                const panel = document.getElementById('addItemMoreDetails');
+                const btn = document.getElementById('addItemMoreDetailsToggle');
+                if (panel && !panel.classList.contains('hidden')) { panel.classList.add('hidden'); if (btn) btn.innerHTML = '<i class="fa-solid fa-chevron-right text-[11px]"></i> More details (vendor)'; }
+            }
             if (view === 'categories') { document.getElementById('newCategoryName').value = ''; document.getElementById('categorySearch').value = ''; renderCategoryManageList(); }
             if (view === 'brands') { document.getElementById('brandSearch').value = ''; renderBrandManageList(); }
             if (view === 'branches') { document.getElementById('newBranchName').value = ''; renderBranchManageList(); renderDeviceBranchLockSelect(); }
@@ -5940,13 +5984,9 @@
             }
             container.innerHTML = brands.map(brand => {
                 const hidden = hiddenBrands.has(brand);
-                // Categories with at least one item under this brand, PLUS any category
-                // explicitly assigned to this brand (even if still empty) — so a brand-new
-                // category can be hidden/unhidden or unassigned here too, not just at creation.
-                const catsForBrand = Object.keys(inventoryData).filter(cat =>
-                    inventoryData[cat].some(item => (item.brand || DEFAULT_BRAND) === brand) ||
-                    isCatAssignedToBrand(brand, cat)
-                ).sort((a, b) => a.localeCompare(b));
+                // Every category gets one row with one Shown/Hidden toggle — a single
+                // control per category instead of separate hide/assign mechanics.
+                const allCats = Object.keys(inventoryData).sort((a, b) => a.localeCompare(b));
                 const expanded = expandedBrandForCats === brand;
                 return `
                     <div class="bg-white rounded-xl border ${hidden ? 'border-slate-200 opacity-60' : 'border-slate-200'} overflow-hidden">
@@ -5956,37 +5996,23 @@
                                 <p class="text-[13px] text-slate-500">${counts[brand]} item${counts[brand] === 1 ? '' : 's'}</p>
                             </div>
                             <div class="flex gap-2 shrink-0">
-                                <button onclick="toggleBrandCatsExpanded('${esc(brand)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Hide categories for this brand"><i class="fa-solid fa-layer-group"></i></button>
+                                <button onclick="toggleBrandCatsExpanded('${esc(brand)}')" class="${expanded ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="Choose categories for this brand"><i class="fa-solid fa-layer-group"></i></button>
                                 <button onclick="toggleBrandHidden('${esc(brand)}')" class="${hidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center" title="${hidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                 <button onclick="renameBrand('${esc(brand)}')" class="text-blue-600 bg-blue-50 w-10 h-10 rounded-lg text-base font-bold flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         ${expanded ? `
                             <div class="border-t border-slate-100 bg-slate-50 p-3 space-y-1.5">
-                                <p class="text-[13px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(brand)}" — it stays visible for other brands.</p>
-                                ${catsForBrand.map(cat => {
-                                    const catHidden = isCatHiddenForBrand(brand, cat);
-                                    const hasItem = inventoryData[cat].some(item => (item.brand || DEFAULT_BRAND) === brand);
-                                    const assignedOnly = !hasItem && isCatAssignedToBrand(brand, cat);
+                                <p class="text-[13px] text-slate-500 px-0.5 pb-0.5">Which categories show as a tab for "${esc(brand)}" in Packing Request. Tap to switch a category on or off — nothing is deleted either way.</p>
+                                ${allCats.map(cat => {
+                                    const visible = isCatVisibleForBrand(brand, cat);
                                     return `
                                         <div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
-                                            <span class="text-sm font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''} ${assignedOnly ? '<span class="text-[13px] font-semibold text-indigo-400">(assigned, no items yet)</span>' : ''}</span>
-                                            <div class="flex gap-1.5 shrink-0">
-                                                ${assignedOnly ? `<button onclick="toggleCategoryAssignedToBrand('${esc(brand)}', '${esc(cat)}')" class="text-red-600 bg-red-50 w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center" title="Unassign"><i class="fa-solid fa-link-slash"></i></button>` : ''}
-                                                <button onclick="toggleCategoryHiddenForBrand('${esc(brand)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center" title="${catHidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-                                            </div>
+                                            <span class="text-sm font-semibold text-slate-700 truncate">${esc(cat)}</span>
+                                            <button onclick="toggleCatVisibleForBrand('${esc(brand)}', '${esc(cat)}')" class="${visible ? 'text-emerald-700 bg-emerald-50' : 'text-slate-400 bg-slate-100'} px-3 py-1.5 rounded-lg text-[13px] font-bold shrink-0">${visible ? 'Shown' : 'Hidden'}</button>
                                         </div>
                                     `;
-                                }).join('') || '<p class="text-[13px] text-slate-400 px-0.5">No categories for this brand.</p>'}
-                                <div class="pt-1.5">
-                                    <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1 px-0.5">Assign another category to "${esc(brand)}"</label>
-                                    <div class="flex gap-1.5">
-                                        <select id="assignCatSelect_${esc(brand)}" class="flex-1 bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
-                                            ${Object.keys(inventoryData).filter(cat => !catsForBrand.includes(cat)).map(cat => `<option value="${esc(cat)}">${esc(cat)}</option>`).join('') || '<option value="">No other categories</option>'}
-                                        </select>
-                                        <button onclick="assignSelectedCategoryToBrand('${esc(brand)}')" class="px-4 py-2.5 bg-indigo-500 text-white font-bold rounded-xl text-sm shadow shrink-0">Assign</button>
-                                    </div>
-                                </div>
+                                }).join('') || '<p class="text-[13px] text-slate-400 px-0.5">No categories yet.</p>'}
                             </div>
                         ` : ''}
                     </div>
@@ -8024,6 +8050,19 @@
             }
 
             pdf.save(`Lalitha_Catalog_${localDateStr(new Date())}.pdf`);
+        }
+
+        // Vendor is optional and rarely needed when adding an item, so it's tucked
+        // behind this disclosure to keep the main Add Item form short by default.
+        function toggleAddItemMoreDetails() {
+            const panel = document.getElementById('addItemMoreDetails');
+            const btn = document.getElementById('addItemMoreDetailsToggle');
+            if (!panel || !btn) return;
+            const opening = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !opening);
+            btn.innerHTML = opening
+                ? '<i class="fa-solid fa-chevron-down text-[11px]"></i> More details (vendor)'
+                : '<i class="fa-solid fa-chevron-right text-[11px]"></i> More details (vendor)';
         }
 
         function addNewCatalogItem() {
