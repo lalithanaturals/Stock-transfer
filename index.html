@@ -876,6 +876,13 @@
                             <input type="text" id="newCategoryName" placeholder="Category name" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold outline-none">
                             <button onclick="addNewCategory()" class="px-4 py-3 bg-amber-500 text-white font-bold rounded-xl text-sm shadow">Add</button>
                         </div>
+                        <div>
+                            <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Only for brand <span class="text-slate-300 font-semibold normal-case">(optional)</span></label>
+                            <select id="newCategoryBrand" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                                <option value="">All brands (default)</option>
+                            </select>
+                            <p class="text-[13px] text-slate-400 mt-1">Pick a brand so this category shows up as a tab for it right away — otherwise an empty category only appears once you add an item to it.</p>
+                        </div>
                     </div>
                     <div class="relative">
                         <input type="text" id="categorySearch" placeholder="Search categories..." oninput="renderCategoryManageList()" class="w-full bg-white border border-slate-300 rounded-xl p-3 pr-9 text-sm font-semibold outline-none">
@@ -1212,7 +1219,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-44";
+        const APP_VERSION = "v2026.10.10-45";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4525,6 +4532,7 @@
                     hiddenCategories: Array.from(hiddenCategories),
                     hiddenBrandCategories: Array.from(hiddenBrandCategories),
                     hiddenVendorCategories: Array.from(hiddenVendorCategories),
+                    categoryBrandAssign: Array.from(categoryBrandAssign),
                     branchList
                 };
                 try {
@@ -4616,6 +4624,7 @@
                 if (Array.isArray(s.hiddenCategories)) { hiddenCategories = new Set(s.hiddenCategories); writeJson('lalitha_hidden_categories', s.hiddenCategories); }
                 if (Array.isArray(s.hiddenBrandCategories)) { hiddenBrandCategories = new Set(s.hiddenBrandCategories); writeJson('lalitha_hidden_brand_categories', s.hiddenBrandCategories); }
                 if (Array.isArray(s.hiddenVendorCategories)) { hiddenVendorCategories = new Set(s.hiddenVendorCategories); writeJson('lalitha_hidden_vendor_categories', s.hiddenVendorCategories); }
+                if (Array.isArray(s.categoryBrandAssign)) { categoryBrandAssign = new Set(s.categoryBrandAssign); writeJson('lalitha_category_brand_assign', s.categoryBrandAssign); }
                 if (Array.isArray(s.branchList) && s.branchList.length > 0) { branchList = s.branchList; writeJson('lalitha_branches', branchList); }
                 applyingRemoteSettings = false;
 
@@ -4668,6 +4677,36 @@
             if (hiddenBrandCategories.has(key)) hiddenBrandCategories.delete(key);
             else hiddenBrandCategories.add(key);
             saveHiddenBrandCategories();
+            renderTabs();
+            renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+            renderBrandManageList();
+        }
+
+        // Explicit brand<->category assignment — separate from the "hide for this
+        // brand" toggle above, which only ever applies to a category that ALREADY has
+        // at least one item under that brand. A brand-new, still-empty category (e.g.
+        // "Dry Fruits" with no items yet) has nothing to infer its brand from, so
+        // without this it can never show up as a tab for a specific brand until an
+        // item is added — this lets it be assigned to a brand up front instead.
+        let categoryBrandAssign = new Set(readJson('lalitha_category_brand_assign', []));
+        function isCatAssignedToBrand(brand, cat) { return categoryBrandAssign.has(bcKey(brand, cat)); }
+        function saveCategoryBrandAssign() { writeJson('lalitha_category_brand_assign', Array.from(categoryBrandAssign)); if (!applyingRemoteSettings) pushSettingsToCloud(); }
+        function toggleCategoryAssignedToBrand(brand, cat) {
+            const key = bcKey(brand, cat);
+            if (categoryBrandAssign.has(key)) categoryBrandAssign.delete(key);
+            else categoryBrandAssign.add(key);
+            saveCategoryBrandAssign();
+            renderTabs();
+            renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+            renderBrandManageList();
+        }
+        function assignSelectedCategoryToBrand(brand) {
+            const sel = document.getElementById(`assignCatSelect_${brand}`);
+            const cat = sel ? sel.value : '';
+            if (!cat) return;
+            categoryBrandAssign.add(bcKey(brand, cat));
+            saveCategoryBrandAssign();
+            logCatalogHistory('Assigned category to brand', `${cat} → ${brand}`);
             renderTabs();
             renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
             renderBrandManageList();
@@ -4752,7 +4791,11 @@
         function categoriesForActiveBrand() {
             const cats = visibleCategories();
             if (activeBrand === 'All Brands') return cats;
-            return cats.filter(cat => !isCatHiddenForBrand(activeBrand, cat) && (inventoryData[cat] || []).some(item => !item.hidden && (item.brand || DEFAULT_BRAND) === activeBrand));
+            return cats.filter(cat => {
+                if (isCatHiddenForBrand(activeBrand, cat)) return false;
+                const hasItem = (inventoryData[cat] || []).some(item => !item.hidden && (item.brand || DEFAULT_BRAND) === activeBrand);
+                return hasItem || isCatAssignedToBrand(activeBrand, cat);
+            });
         }
 
         function categoryTabClass(cat) {
@@ -5732,6 +5775,14 @@
 
         // ---------- Category management ----------
         function renderCategoryManageList() {
+            const brandSel = document.getElementById('newCategoryBrand');
+            if (brandSel) {
+                const prevVal = brandSel.value;
+                const allBrands = allBrandsInCatalog();
+                brandSel.innerHTML = '<option value="">All brands (default)</option>' +
+                    allBrands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+                if (allBrands.includes(prevVal)) brandSel.value = prevVal;
+            }
             const container = document.getElementById('categoryManageList');
             if (!container) return;
             const searchEl = document.getElementById('categorySearch');
@@ -5770,8 +5821,18 @@
             inventoryData[name] = [];
             saveInventory();
             logCatalogHistory('Added category', name);
+
+            const brandSel = document.getElementById('newCategoryBrand');
+            const brandValue = brandSel ? brandSel.value : '';
+            if (brandValue) {
+                categoryBrandAssign.add(bcKey(brandValue, name));
+                saveCategoryBrandAssign();
+                logCatalogHistory('Assigned category to brand', `${name} → ${brandValue}`);
+            }
+
             renderTabs();
             input.value = '';
+            if (brandSel) brandSel.value = '';
 
             const sel = document.getElementById('newItemCat');
             sel.innerHTML = Object.keys(inventoryData).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
@@ -5860,10 +5921,12 @@
             }
             container.innerHTML = brands.map(brand => {
                 const hidden = hiddenBrands.has(brand);
-                // Categories that actually have at least one item under this brand —
-                // these are the only ones worth offering a per-brand hide toggle for.
+                // Categories with at least one item under this brand, PLUS any category
+                // explicitly assigned to this brand (even if still empty) — so a brand-new
+                // category can be hidden/unhidden or unassigned here too, not just at creation.
                 const catsForBrand = Object.keys(inventoryData).filter(cat =>
-                    inventoryData[cat].some(item => (item.brand || DEFAULT_BRAND) === brand)
+                    inventoryData[cat].some(item => (item.brand || DEFAULT_BRAND) === brand) ||
+                    isCatAssignedToBrand(brand, cat)
                 ).sort((a, b) => a.localeCompare(b));
                 const expanded = expandedBrandForCats === brand;
                 return `
@@ -5884,13 +5947,27 @@
                                 <p class="text-[13px] text-slate-500 px-0.5 pb-0.5">Hide a category just for "${esc(brand)}" — it stays visible for other brands.</p>
                                 ${catsForBrand.map(cat => {
                                     const catHidden = isCatHiddenForBrand(brand, cat);
+                                    const hasItem = inventoryData[cat].some(item => (item.brand || DEFAULT_BRAND) === brand);
+                                    const assignedOnly = !hasItem && isCatAssignedToBrand(brand, cat);
                                     return `
                                         <div class="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
-                                            <span class="text-sm font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''}</span>
-                                            <button onclick="toggleCategoryHiddenForBrand('${esc(brand)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center shrink-0"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                                            <span class="text-sm font-semibold text-slate-700 truncate">${esc(cat)} ${catHidden ? '<span class="text-[13px] font-semibold text-slate-400">(hidden for this brand)</span>' : ''} ${assignedOnly ? '<span class="text-[13px] font-semibold text-indigo-400">(assigned, no items yet)</span>' : ''}</span>
+                                            <div class="flex gap-1.5 shrink-0">
+                                                ${assignedOnly ? `<button onclick="toggleCategoryAssignedToBrand('${esc(brand)}', '${esc(cat)}')" class="text-red-600 bg-red-50 w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center" title="Unassign"><i class="fa-solid fa-link-slash"></i></button>` : ''}
+                                                <button onclick="toggleCategoryHiddenForBrand('${esc(brand)}', '${esc(cat)}')" class="${catHidden ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100'} w-9 h-9 rounded-lg text-sm font-bold flex items-center justify-center" title="${catHidden ? 'Unhide' : 'Hide'}"><i class="fa-solid ${catHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                                            </div>
                                         </div>
                                     `;
                                 }).join('') || '<p class="text-[13px] text-slate-400 px-0.5">No categories for this brand.</p>'}
+                                <div class="pt-1.5">
+                                    <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1 px-0.5">Assign another category to "${esc(brand)}"</label>
+                                    <div class="flex gap-1.5">
+                                        <select id="assignCatSelect_${esc(brand)}" class="flex-1 bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none">
+                                            ${Object.keys(inventoryData).filter(cat => !catsForBrand.includes(cat)).map(cat => `<option value="${esc(cat)}">${esc(cat)}</option>`).join('') || '<option value="">No other categories</option>'}
+                                        </select>
+                                        <button onclick="assignSelectedCategoryToBrand('${esc(brand)}')" class="px-4 py-2.5 bg-indigo-500 text-white font-bold rounded-xl text-sm shadow shrink-0">Assign</button>
+                                    </div>
+                                </div>
                             </div>
                         ` : ''}
                     </div>
