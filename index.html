@@ -1153,7 +1153,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-40";
+        const APP_VERSION = "v2026.10.10-41";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -9122,9 +9122,31 @@
                     // pixel offset, so a row is always kept whole on one page or the other.
                     const containerRect = container.getBoundingClientRect();
                     const pxPerCssPx = canvas.width / containerRect.width;
-                    const rowBreaks = Array.from(container.querySelectorAll('tbody tr'))
-                        .map(tr => (tr.getBoundingClientRect().bottom - containerRect.top) * pxPerCssPx)
-                        .sort((a, b) => a - b);
+                    // The sheet is a 2-column layout: two independent category tables run
+                    // side by side, and their rows do NOT line up — row 12 of the left
+                    // column can be a completely different height/position than row 12 of
+                    // the right column. Picking a cut at the bottom edge of just ONE row
+                    // (as before) only guarantees that row is whole; a row in the OTHER
+                    // column can still straddle that same Y and get sliced in half. So
+                    // instead of individual row edges, build the union of every row's
+                    // [top,bottom) span across BOTH columns, merge any that overlap
+                    // vertically, and only snap to a boundary that sits in a gap outside
+                    // every merged span — safe for every row on the page, in either column.
+                    const rowIntervals = Array.from(container.querySelectorAll('tbody tr'))
+                        .map(tr => {
+                            const r = tr.getBoundingClientRect();
+                            return [(r.top - containerRect.top) * pxPerCssPx, (r.bottom - containerRect.top) * pxPerCssPx];
+                        })
+                        .sort((a, b) => a[0] - b[0]);
+                    const mergedSpans = [];
+                    for (const [top, bottom] of rowIntervals) {
+                        if (mergedSpans.length && top <= mergedSpans[mergedSpans.length - 1][1]) {
+                            mergedSpans[mergedSpans.length - 1][1] = Math.max(mergedSpans[mergedSpans.length - 1][1], bottom);
+                        } else {
+                            mergedSpans.push([top, bottom]);
+                        }
+                    }
+                    const rowBreaks = mergedSpans.map(span => span[1]);
                     function snapToRowBreak(targetY, afterY) {
                         let best = null;
                         for (const bp of rowBreaks) {
