@@ -1238,7 +1238,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-49";
+        const APP_VERSION = "v2026.10.10-52";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4358,6 +4358,7 @@
         }
         function saveInventory() {
             writeJson('lalitha_master_inventory', inventoryData);
+            _itemCatIndexCache = null; // inventoryData just changed shape — see findCatalogItemById
             pushCatalogToCloud();
         }
 
@@ -4975,7 +4976,30 @@
         let editingOriginal = null;       // original record being edited (to keep time & status)
         let pendingDraft = null;          // {id,time} reused if a save could not be confirmed
 
+        // findCatalogItemById runs on every +/- stepper tap and every "Not required"
+        // toggle — with ~2,800 items in the catalog, scanning every category's full
+        // item array on every single tap was real, felt latency (this is almost
+        // certainly most of what "the app feels slow" is). A cached id → category map
+        // turns that into one Map lookup plus a findIndex scoped to just that one
+        // category's items, instead of the whole catalog. The cache is invalidated by
+        // saveInventory() (called after every add/edit/move/delete/import) so it can
+        // never point at stale data.
+        let _itemCatIndexCache = null;
         function findCatalogItemById(id) {
+            if (!_itemCatIndexCache) {
+                _itemCatIndexCache = new Map();
+                for (const cat in inventoryData) {
+                    inventoryData[cat].forEach(it => _itemCatIndexCache.set(it.id, cat));
+                }
+            }
+            const cachedCat = _itemCatIndexCache.get(id);
+            if (cachedCat !== undefined && inventoryData[cachedCat]) {
+                const index = inventoryData[cachedCat].findIndex(i => i.id === id);
+                if (index !== -1) return { cat: cachedCat, index, item: inventoryData[cachedCat][index] };
+            }
+            // Cache miss (shouldn't normally happen since saveInventory() clears the
+            // cache on every structural change) — fall back to a full scan so a stale
+            // or missing cache entry never means an item silently can't be found.
             for (const cat in inventoryData) {
                 const index = inventoryData[cat].findIndex(i => i.id === id);
                 if (index !== -1) return { cat, index, item: inventoryData[cat][index] };
@@ -5021,8 +5045,14 @@
             renderDispatchListSummary();
             renderHomeBranchTiles();
             document.getElementById('lookupDateInput').value = localDateStr(new Date());
+            // Debounced — typing fast used to rebuild the whole filtered item list (DOM
+            // included) on every single keystroke, which is wasted work the user never
+            // even sees since the next keystroke replaces it a moment later anyway.
+            let _searchBoxRenderTimer = null;
             document.getElementById('searchBox').addEventListener('input', (e) => {
-                renderItems(e.target.value);
+                const val = e.target.value;
+                clearTimeout(_searchBoxRenderTimer);
+                _searchBoxRenderTimer = setTimeout(() => renderItems(val), 150);
             });
 
             updateLastSyncedText();
@@ -5601,6 +5631,12 @@
                 const query = filter.trim().toLowerCase();
                 for (const cat in inventoryData) {
                     if (hiddenCategories.has(cat)) continue;
+                    // Tapping a category tab while a search is active used to do nothing
+                    // visible — the tab would highlight, but every search result from
+                    // every category stayed on screen regardless of which tab was
+                    // selected. A search should still be scoped to whichever category tab
+                    // is active, same as when there's no search text at all.
+                    if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
                     inventoryData[cat].forEach(item => {
                         if (item.hidden) return;
                         if (item.name.toLowerCase().includes(query) || String(item.code).includes(query)) itemsToDisplay.push({ ...item, category: cat });
@@ -7834,7 +7870,26 @@
 
             saveInventory();
             logCatalogHistory('Edited item', `${found.item.name} (${found.item.uom}) — ${found.item.code}→${code}, ${found.item.name}→${name}, ${found.item.uom}→${uom}, Brand ${found.item.brand || DEFAULT_BRAND}→${brand}, Category ${found.cat}→${newCat}, Min ${found.item.min}→${min}`);
+
+            // Moving an item to a different category used to just make it vanish from
+            // the Existing Items list (it's correctly no longer in whatever category is
+            // currently filtered to) with no indication it actually worked. Jump the
+            // category filter to the item's new category so it shows up immediately —
+            // only when a specific category was already selected, so "All categories"
+            // stays showing everything as before.
+            if (catChanged) {
+                const catFilterEl = document.getElementById('catalogCategoryFilter');
+                if (catFilterEl && catFilterEl.value) catFilterEl.value = newCat;
+            }
             renderCatalogEditorList();
+            if (catChanged) {
+                const movedRow = document.getElementById(`catalog_row_${id}`);
+                if (movedRow) {
+                    movedRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    movedRow.classList.add('ring-2', 'ring-emerald-500');
+                    setTimeout(() => movedRow.classList.remove('ring-2', 'ring-emerald-500'), 1500);
+                }
+            }
             renderBrandFilter();
 
             // The full editor refreshes the Packing/Vendor lists only when its modal
