@@ -177,6 +177,34 @@
                Printing uses the fixed, per-page overlay border below instead. */
             .sheet-preview-border { border: 2px solid #047857; border-radius: 5px; }
         }
+
+        /* ===== Packing Sheet print layout (Settings > Packing Sheet) ===== */
+        #packSheetPrint { display: none; }
+        @media print {
+            body.printing-pack-sheet { margin: 0; padding: 0; background: #fff; }
+            body.printing-pack-sheet > *:not(#packSheetPrint) { display: none !important; }
+            body.printing-pack-sheet #packSheetPrint { display: block !important; }
+        }
+        #packSheetPrint .ps-page { width: 190mm; height: 275mm; overflow: hidden; page-break-after: always; break-after: page; font-family: Arial, Helvetica, sans-serif; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #packSheetPrint .ps-page:last-child { page-break-after: auto; break-after: auto; }
+        #packSheetPrint .ps-title { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 0.45mm solid #1f5f3b; padding-bottom: 1.2mm; }
+        #packSheetPrint .ps-title b { font-size: 16pt; color: #1f5f3b; }
+        #packSheetPrint .ps-title i { font-style: normal; font-size: 10pt; color: #444; margin-left: 3mm; }
+        #packSheetPrint .ps-title span { font-size: 9pt; }
+        #packSheetPrint .ps-fields { display: flex; gap: 4mm; font-size: 8.5pt; color: #444; margin: 2.5mm 0 3mm; }
+        #packSheetPrint .ps-fields span { flex: 1; border-bottom: 0.2mm solid #999; height: 4mm; }
+        #packSheetPrint .ps-cols { display: flex; gap: 5mm; align-items: flex-start; }
+        #packSheetPrint table { width: 92.5mm; border-collapse: collapse; table-layout: fixed; border: 0.3mm solid #1f5f3b; }
+        #packSheetPrint th { height: 6mm; font-size: 6pt; letter-spacing: -0.1pt; color: #1f5f3b; border-bottom: 0.35mm solid #1f5f3b; border-right: 0.15mm solid #b9c4bd; }
+        #packSheetPrint td { height: 7.4mm; border-bottom: 0.15mm solid #b9c4bd; border-right: 0.15mm solid #b9c4bd; padding: 0 1mm; font-size: 7.5pt; overflow: hidden; white-space: nowrap; }
+        #packSheetPrint th:last-child, #packSheetPrint td:last-child { border-right: none; }
+        #packSheetPrint tr.ps-sec td { height: 5.8mm; font-weight: 700; font-size: 9pt; color: #1f5f3b; border-bottom: 0.3mm solid #1f5f3b; border-right: none; }
+        #packSheetPrint td.c { text-align: center; padding: 0; }
+        #packSheetPrint td.sn, #packSheetPrint td.cd { color: #555; }
+        #packSheetPrint td.mn { font-weight: 700; font-size: 10pt; }
+        #packSheetPrint td.nm b { font-size: 8pt; }
+        #packSheetPrint td.nm em { font-style: normal; font-size: 6.5pt; color: #555; margin-left: 1.3mm; }
+        #packSheetPrint .tk { display: inline-block; width: 5mm; height: 5mm; border: 0.25mm solid #555; vertical-align: middle; }
         @media print {
             /* Fixed 1cm margin on every side, on every page. */
             @page { size: A4; margin: 10mm; }
@@ -313,6 +341,16 @@
                 </div>
                 <i class="fa-solid fa-chevron-right text-white/70"></i>
             </button>
+
+            <!-- Packing Sheet quick access: one tap downloads the printable A4 PDF; the pencil opens the editor. -->
+            <div class="w-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 text-white shadow-lg flex items-center gap-3.5">
+                <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold">Packing Sheet</p>
+                    <p class="text-[13px] text-amber-50 mt-0.5">Printable A4 list for staff</p>
+                </div>
+                <button onclick="packDownloadPdf()" class="pack-pdf-btn px-4 h-11 rounded-xl bg-white text-orange-700 font-extrabold text-sm active:scale-[0.95] transition shrink-0"><i class="fa-solid fa-download mr-1.5"></i>PDF</button>
+            </div>
 
             <!-- The old tile(s) here — "Settings" and, before that, a duplicate "Ledger
                  Sheets" shortcut into Packing's own Ledger Sheets tab — are gone, per
@@ -798,6 +836,14 @@
                             </div>
                             <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                         </button>
+                        <button data-settings-item="print packing sheet list staff paper" onclick="switchSettingsView('packSheet')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
+                            <div class="w-12 h-12 rounded-xl text-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-print"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">Packing Sheet (Print)</p>
+                                <p class="text-[13px] text-slate-500 mt-0.5">Edit the paper list for staff, then print it on A4</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
                         <button data-settings-item="catalog history changes log" onclick="switchSettingsView('history')" class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition text-left">
                             <div class="w-12 h-12 rounded-xl text-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
                             <div class="flex-1">
@@ -1057,6 +1103,23 @@
                 </div>
 
                 <!-- Catalog History view -->
+                <!-- Packing Sheet (print) view -->
+                <div id="settingsView_packSheet" class="hidden space-y-2.5">
+                    <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
+                    <div class="flex gap-2">
+                        <button id="packSheetPdfBtn" onclick="packDownloadPdf()" class="pack-pdf-btn flex-1 py-3 bg-emerald-700 text-white font-extrabold rounded-xl text-sm active:scale-[0.98] transition"><i class="fa-solid fa-file-pdf mr-1.5"></i>Download PDF</button>
+                        <button onclick="printPackSheet()" class="px-3 py-3 bg-slate-800 text-white font-bold rounded-xl text-sm active:scale-[0.98] transition"><i class="fa-solid fa-print mr-1"></i>Print</button>
+                        <button id="packSheetResetBtn" onclick="packResetSheet()" class="px-3 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Reset</button>
+                    </div>
+                    <p class="text-[13px] text-slate-400"><span id="packSheetCount">0</span> items. Changes here only affect this printed list. They do not change your catalog or stock. Prints as A4, two columns per sheet.</p>
+                    <div id="packSheetEditor" class="space-y-3"></div>
+                    <div class="flex gap-2">
+                        <input id="packNewSection" type="text" placeholder="New section name" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm">
+                        <button onclick="packAddSection()" class="px-4 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-sm">Add section</button>
+                    </div>
+                    <div id="packSheetRemoved"></div>
+                </div>
+
                 <div id="settingsView_history" class="hidden space-y-2.5">
                     <button onclick="switchSettingsView('menu')" class="text-sm font-bold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Back to Settings</button>
                     <p class="text-[13px] text-slate-400">Only shows changes made from this phone — an edit made on the other branch's phone won't appear here.</p>
@@ -1238,7 +1301,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.10-53";
+        const APP_VERSION = "v2026.10.12-58";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5219,24 +5282,27 @@
             const msgEl = document.getElementById('reloadConfirmMsg');
             if (hasUnsaved) {
                 if (iconEl) iconEl.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-red-100 text-red-600";
-                if (msgEl) msgEl.textContent = "You have entries on this screen that haven't been dispatched yet. Reloading will sync, then clear them.";
+                if (msgEl) msgEl.textContent = "You have entries on this screen that haven't been dispatched yet. Reloading will clear them.";
             } else {
                 if (iconEl) iconEl.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-amber-100 text-amber-600";
-                if (msgEl) msgEl.textContent = "This will sync, then refresh the app with a clean slate.";
+                if (msgEl) msgEl.textContent = "This will refresh the app with a clean slate.";
             }
             document.getElementById('reloadConfirmModal').classList.remove('hidden');
         }
         function closeReloadConfirmModal() {
             document.getElementById('reloadConfirmModal').classList.add('hidden');
         }
-        async function doConfirmedReload() {
+        function doConfirmedReload() {
             // Reload used to just refresh the page — shelfStock (the in-progress tick
             // marks / entered counts) is saved to localStorage, so it survived a reload
-            // completely untouched, which looked like "reload" wasn't resetting anything.
-            // Now every reload explicitly syncs first, then clears the in-progress counts,
-            // so pressing it always leaves a genuinely clean, freshly-synced screen.
-            setOverlay(true, 'Syncing...');
-            try { await runManualSync(); } catch (e) { /* still reset+reload even if the sync itself failed */ }
+            // completely untouched, which looked like "reload" wasn't resetting anything,
+            // and also meant a stale "Mark All 0" from a while back could leave every
+            // item showing the green "counted" bar from the moment the app opens.
+            // A previous version also ran a full network sync (push+pull) before
+            // reloading to guarantee a "fresh" state, but that round trip is what was
+            // actually making this button feel slow — background sync already keeps
+            // things current on its own, so reload doesn't need to redo that work. This
+            // just clears the in-progress counts (instant, local-only) and reloads.
             shelfStock = {};
             flushShelfStockNow_();
             window.location.reload();
@@ -5806,8 +5872,8 @@
         }
 
         // ---------- Catalog manager / Settings ----------
-        const SETTINGS_VIEWS = ['menu', 'addItem', 'existing', 'categories', 'brands', 'branches', 'vendors', 'vendorForm', 'excel', 'history'];
-        const SETTINGS_TITLES = { menu: 'Settings', addItem: 'Add Item', existing: 'Existing Items', categories: 'Categories', brands: 'Brands', branches: 'Branches', vendors: 'Vendors', vendorForm: 'Vendor', excel: 'Import / Export Excel', history: 'Catalog History' };
+        const SETTINGS_VIEWS = ['menu', 'addItem', 'existing', 'categories', 'brands', 'branches', 'vendors', 'vendorForm', 'excel', 'history', 'packSheet'];
+        const SETTINGS_TITLES = { menu: 'Settings', addItem: 'Add Item', existing: 'Existing Items', categories: 'Categories', brands: 'Brands', branches: 'Branches', vendors: 'Vendors', vendorForm: 'Vendor', excel: 'Import / Export Excel', history: 'Catalog History', packSheet: 'Packing Sheet' };
 
         function switchSettingsView(view) {
             SETTINGS_VIEWS.forEach(v => {
@@ -5826,6 +5892,7 @@
             if (view === 'branches') { document.getElementById('newBranchName').value = ''; renderBranchManageList(); renderDeviceBranchLockSelect(); }
             if (view === 'vendors') { document.getElementById('vendorSearch').value = ''; renderVendorManageList(); }
             if (view === 'history') renderCatalogHistoryList();
+            if (view === 'packSheet') { packAddOpen = null; renderPackSheetEditor(); }
         }
 
         // "+ New item" from inside the vendor form — lets you add a missing catalog item
@@ -7558,6 +7625,338 @@
 
         // Settings menu search — filters the grouped settings tiles by their keywords,
         // and hides a group header entirely if none of its tiles match.
+
+        // ======================================================================
+        // PACKING SHEET (Settings > Packing Sheet (Print))
+        // A paper checklist for staff: S.No, item, code, min, Required, Packed, tick.
+        // It is its OWN editable list (saved on this phone) — editing a name, size or
+        // min here never touches the catalog or stock, and vice-versa. Items can be
+        // added from the catalog (or typed in), edited, moved between sections and
+        // removed (removed items can be restored). Inside every section the items are
+        // always kept in A–Z order (then by pack size, small to large). Print uses the
+        // browser's native print engine, same approach as the Transit sheet.
+        // ======================================================================
+        const PACK_SHEET_KEY = 'lalitha_pack_sheet_v1';
+        const PACK_SHEET_DEFAULT = {"sections":["Dryfruits","Spices","Seeds","Flours","Ravva"],"items":[{"id":"d0","sec":"Dryfruits","name":"Cashew 210","uom":"100GM","code":"LN0006","min":8},{"id":"d1","sec":"Dryfruits","name":"Green Kismis","uom":"100GM","code":"1189","min":8},{"id":"d2","sec":"Dryfruits","name":"Yellow Kismis","uom":"250GM","code":"1212","min":8},{"id":"d3","sec":"Dryfruits","name":"Yellow Kismis","uom":"100GM","code":"1211","min":8},{"id":"d4","sec":"Dryfruits","name":"Yellow Dry Dates","uom":"500GM","code":"1210","min":8},{"id":"d5","sec":"Dryfruits","name":"Yellow Dry Dates","uom":"250GM","code":"1209","min":8},{"id":"d6","sec":"Dryfruits","name":"Wallnuts","uom":"250GM","code":"1206","min":8},{"id":"d7","sec":"Dryfruits","name":"Wallnuts","uom":"100GM","code":"1205","min":8},{"id":"d8","sec":"Dryfruits","name":"Skin Cashew","uom":"250GM","code":"1202","min":8},{"id":"d9","sec":"Dryfruits","name":"Salted Pista","uom":"500GM","code":"1201","min":8},{"id":"d10","sec":"Dryfruits","name":"Salted Pista","uom":"250GM","code":"1200","min":8},{"id":"d11","sec":"Dryfruits","name":"Salted Pista","uom":"100GM","code":"1199","min":8},{"id":"d12","sec":"Dryfruits","name":"Plain Pista","uom":"250GM","code":"1196","min":8},{"id":"d13","sec":"Dryfruits","name":"Plain Pista","uom":"100GM","code":"1195","min":8},{"id":"d14","sec":"Dryfruits","name":"Moto Badam","uom":"500GM","code":"1194","min":8},{"id":"d15","sec":"Dryfruits","name":"Moto Badam","uom":"250GM","code":"1193","min":8},{"id":"d16","sec":"Dryfruits","name":"Moto Badam","uom":"100GM","code":"1192","min":8},{"id":"d17","sec":"Dryfruits","name":"Mango Slice","uom":"100GM","code":"1191","min":8},{"id":"d18","sec":"Dryfruits","name":"Green Kismis","uom":"250GM","code":"1190","min":8},{"id":"d19","sec":"Dryfruits","name":"Dry Kiwi","uom":"100GM","code":"1188","min":8},{"id":"d20","sec":"Dryfruits","name":"Dry Grapes","uom":"250GM","code":"1187","min":8},{"id":"d21","sec":"Dryfruits","name":"Dry Grape","uom":"100GM","code":"1186","min":8},{"id":"d22","sec":"Dryfruits","name":"Cashew Jh","uom":"500GM","code":"1182","min":8},{"id":"d23","sec":"Dryfruits","name":"Cherries","uom":"100GM","code":"1185","min":8},{"id":"d24","sec":"Dryfruits","name":"Cashew Jh","uom":"1KG","code":"1183","min":8},{"id":"d25","sec":"Dryfruits","name":"Cashew Jh","uom":"250GM","code":"1181","min":8},{"id":"d26","sec":"Dryfruits","name":"Cashew 210","uom":"500GM","code":"1179","min":8},{"id":"d27","sec":"Dryfruits","name":"Cashew 210","uom":"250GM","code":"1178","min":8},{"id":"d28","sec":"Dryfruits","name":"Cashew 210","uom":"1KG","code":"1177","min":8},{"id":"d29","sec":"Dryfruits","name":"Cashew 210","uom":"100GM","code":"1176","min":8},{"id":"d30","sec":"Dryfruits","name":"Black Kismis","uom":"250GM","code":"1175","min":8},{"id":"d31","sec":"Dryfruits","name":"Black Kismis","uom":"100GM","code":"1174","min":8},{"id":"d32","sec":"Dryfruits","name":"Black Dry Dates","uom":"500GM","code":"1173","min":8},{"id":"d33","sec":"Dryfruits","name":"Black Dry Dates","uom":"250GM","code":"1172","min":8},{"id":"d34","sec":"Dryfruits","name":"Anjeer","uom":"250GM","code":"1171","min":8},{"id":"d35","sec":"Dryfruits","name":"Anjeer","uom":"100GM","code":"1170","min":8},{"id":"d36","sec":"Spices","name":"White pepper","uom":"25GM","code":"LN0022","min":8},{"id":"d37","sec":"Spices","name":"Kurra Karam","uom":"1KG","code":"LN0021","min":8},{"id":"d38","sec":"Spices","name":"Kura Karam","uom":"500GM","code":"LN0020","min":8},{"id":"d39","sec":"Spices","name":"Kura Karam","uom":"250GM","code":"LN0019","min":8},{"id":"d40","sec":"Spices","name":"Masala Karam","uom":"1KG","code":"LN0018","min":8},{"id":"d41","sec":"Spices","name":"Masala Karam","uom":"500GM","code":"LN0017","min":8},{"id":"d42","sec":"Spices","name":"Masala Karam","uom":"250GM","code":"LN0016","min":8},{"id":"d43","sec":"Spices","name":"Red chilli Pickle","uom":"250GM","code":"LN0005","min":8},{"id":"d44","sec":"Spices","name":"Mango Pickle","uom":"500GM","code":"LN0004","min":8},{"id":"d45","sec":"Spices","name":"Gonura Pickle","uom":"250GM","code":"LN0003","min":8},{"id":"d46","sec":"Spices","name":"Nalleru Pickle","uom":"250GM","code":"1351","min":8},{"id":"d47","sec":"Spices","name":"Red Chilli Pickle","uom":"250GM","code":"1350","min":8},{"id":"d48","sec":"Spices","name":"Mustard Small","uom":"100GM","code":"1340","min":8},{"id":"d49","sec":"Spices","name":"Star Anise","uom":"20GM","code":"1332","min":8},{"id":"d50","sec":"Spices","name":"Shajeera","uom":"50GM","code":"1331","min":8},{"id":"d51","sec":"Spices","name":"Mustard Big","uom":"50GM","code":"1327","min":8},{"id":"d52","sec":"Spices","name":"Marati Moggu Big","uom":"50GM","code":"1326","min":8},{"id":"d53","sec":"Spices","name":"Kasturimethi","uom":"25GM","code":"1325","min":8},{"id":"d54","sec":"Spices","name":"Karakkayi","uom":"25GM","code":"1324","min":8},{"id":"d55","sec":"Spices","name":"Kalonji","uom":"50GM","code":"1323","min":8},{"id":"d56","sec":"Spices","name":"Jeera","uom":"250GM","code":"1322","min":8},{"id":"d57","sec":"Spices","name":"Jeera","uom":"50GM","code":"1321","min":8},{"id":"d58","sec":"Spices","name":"Javithri","uom":"20G","code":"1320","min":8},{"id":"d59","sec":"Spices","name":"Jaifal With Shell","uom":"20GM","code":"1319","min":8},{"id":"d60","sec":"Spices","name":"Green Sounf","uom":"50GM","code":"1318","min":8},{"id":"d61","sec":"Spices","name":"Fenugreek","uom":"250GM","code":"1317","min":8},{"id":"d62","sec":"Spices","name":"Fenugreek","uom":"100GM","code":"1316","min":8},{"id":"d63","sec":"Spices","name":"Dry Ginger","uom":"50GM","code":"1315","min":8},{"id":"d64","sec":"Spices","name":"Coriander","uom":"250GM","code":"1314","min":8},{"id":"d65","sec":"Spices","name":"Coriander","uom":"100GM","code":"1313","min":8},{"id":"d66","sec":"Spices","name":"Cloves","uom":"25GM","code":"1312","min":8},{"id":"d67","sec":"Spices","name":"Cinamon Roll","uom":"50GM","code":"1311","min":8},{"id":"d68","sec":"Spices","name":"Cardamom","uom":"25GM","code":"1310","min":8},{"id":"d69","sec":"Spices","name":"Black Pepper","uom":"25GM","code":"1309","min":8},{"id":"d70","sec":"Spices","name":"Bay Leaf","uom":"20GM","code":"1308","min":8},{"id":"d71","sec":"Spices","name":"Ajwain","uom":"50GM","code":"1307","min":8},{"id":"d72","sec":"Spices","name":"Turmeric Powder","uom":"250GM","code":"1270","min":8},{"id":"d73","sec":"Spices","name":"Turmeric Powder","uom":"100GM","code":"1269","min":8},{"id":"d74","sec":"Spices","name":"Tamrind","uom":"500GM","code":"1263","min":8},{"id":"d75","sec":"Spices","name":"Tamarind","uom":"1KG","code":"1262","min":8},{"id":"d76","sec":"Spices","name":"Kalonji","uom":"50GM","code":"1247","min":8},{"id":"d77","sec":"Spices","name":"Dry Chilli","uom":"100GM","code":"1240","min":8},{"id":"d78","sec":"Seeds","name":"Poppy Seeds","uom":"100GM","code":"1329","min":8},{"id":"d79","sec":"Seeds","name":"Poppy Seeds","uom":"50GM","code":"1328","min":8},{"id":"d80","sec":"Seeds","name":"Flax seeds","uom":"250GM","code":"1288","min":8},{"id":"d81","sec":"Seeds","name":"Flax seeds","uom":"100GM","code":"1287","min":8},{"id":"d82","sec":"Seeds","name":"Basil seeds","uom":"50GM","code":"1286","min":8},{"id":"d83","sec":"Seeds","name":"White Sesame Seeds","uom":"500GM","code":"1283","min":8},{"id":"d84","sec":"Seeds","name":"White Sesame Seeds","uom":"250G","code":"1282","min":8},{"id":"d85","sec":"Seeds","name":"White Sesame Seeds","uom":"1KG","code":"1281","min":8},{"id":"d86","sec":"Seeds","name":"Black Sesame Seeds","uom":"500GM","code":"1233","min":8},{"id":"d87","sec":"Seeds","name":"Black Sesame Seeds","uom":"250GM","code":"1232","min":8},{"id":"d88","sec":"Seeds","name":"Black Sesame Seeds","uom":"1KG","code":"1231","min":8},{"id":"d89","sec":"Seeds","name":"Halim Seeds","uom":"100GM","code":"LN0029","min":8},{"id":"d90","sec":"Seeds","name":"Halim Seeds","uom":"250GM","code":"LN0028","min":8},{"id":"d91","sec":"Seeds","name":"Flax Seeds","uom":"250GM","code":"1337","min":8},{"id":"d92","sec":"Seeds","name":"Flax Seeds","uom":"100GM","code":"1336","min":8},{"id":"d93","sec":"Seeds","name":"Raw Basil Seeds","uom":"50GM","code":"1334","min":8},{"id":"d94","sec":"Seeds","name":"Watermelon Seeds","uom":"250GM","code":"1208","min":8},{"id":"d95","sec":"Seeds","name":"Watermelon Seeds","uom":"100GM","code":"1207","min":8},{"id":"d96","sec":"Seeds","name":"Sunflower Seeds","uom":"250GM","code":"1204","min":8},{"id":"d97","sec":"Seeds","name":"Sunflower Seeds","uom":"100GM","code":"1203","min":8},{"id":"d98","sec":"Seeds","name":"Pumpkin Seeds","uom":"250GM","code":"1198","min":8},{"id":"d99","sec":"Seeds","name":"Pumpkin Seeds","uom":"100GM","code":"1197","min":8},{"id":"d100","sec":"Flours","name":"Besan Flour","uom":"500GM","code":"1227","min":8},{"id":"d101","sec":"Flours","name":"Ambali Mix","uom":"1KG","code":"1026","min":8},{"id":"d102","sec":"Flours","name":"Jowar Flour","uom":"500GM","code":"1025","min":8},{"id":"d103","sec":"Flours","name":"7 Grain Atta","uom":"1KG","code":"1024","min":8},{"id":"d104","sec":"Flours","name":"Ragi Flour","uom":"500GM","code":"1023","min":8},{"id":"d105","sec":"Flours","name":"Ragi Flour","uom":"1KG","code":"1022","min":8},{"id":"d106","sec":"Flours","name":"Atta","uom":"1KG","code":"1021","min":8},{"id":"d107","sec":"Ravva","name":"Yellow Jowar Ravva","uom":"500GM","code":"1226","min":8},{"id":"d108","sec":"Ravva","name":"Yellow Jowar Ravva","uom":"1KG","code":"1225","min":8},{"id":"d109","sec":"Ravva","name":"White Jowar Ravva","uom":"500GM","code":"1224","min":8},{"id":"d110","sec":"Ravva","name":"White Jowar Ravva","uom":"1KG","code":"1223","min":8},{"id":"d111","sec":"Ravva","name":"Wheat Ravva","uom":"500GM","code":"1222","min":8},{"id":"d112","sec":"Ravva","name":"Wheat Ravva","uom":"1KG","code":"1221","min":8},{"id":"d113","sec":"Ravva","name":"Rice Ravva","uom":"500GM","code":"1220","min":8},{"id":"d114","sec":"Ravva","name":"Rice Ravva","uom":"1KG","code":"1219","min":8},{"id":"d115","sec":"Ravva","name":"Idly Ravva","uom":"500GM","code":"1218","min":8},{"id":"d116","sec":"Ravva","name":"Idly Ravva","uom":"1KG","code":"1217","min":8},{"id":"d117","sec":"Ravva","name":"Bombay Ravva","uom":"500GM","code":"1216","min":8},{"id":"d118","sec":"Ravva","name":"Bombay Ravva","uom":"1KG","code":"1215","min":8},{"id":"d119","sec":"Ravva","name":"Bansi Ravva","uom":"500GM","code":"1214","min":8},{"id":"d120","sec":"Ravva","name":"Bansi Ravva","uom":"1KG","code":"1213","min":8}],"removed":[]};
+        let packSheet = (function () {
+            const j = readJson(PACK_SHEET_KEY, null);
+            if (j && Array.isArray(j.items) && Array.isArray(j.sections)) { if (!Array.isArray(j.removed)) j.removed = []; return j; }
+            return deepClone(PACK_SHEET_DEFAULT);
+        })();
+        let packAddOpen = null;   // section name whose "add item" panel is open
+        let packResetArmed = false;
+        function savePackSheet() { packSortAll(); writeJson(PACK_SHEET_KEY, packSheet); }
+        function packUid() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+        function packSectionItems(sec) { return packSheet.items.filter(i => i.sec === sec); }
+        // pack size -> grams/ml so 100GM sorts before 250GM before 1KG
+        function packSizeValue(u) {
+            const m = String(u || '').toLowerCase().replace(/\s+/g, '').match(/^([\d.]+)(kg|gm|g|ml|l)?/);
+            if (!m) return 0;
+            const v = parseFloat(m[1]) || 0;
+            return (m[2] === 'kg' || m[2] === 'l') ? v * 1000 : v;
+        }
+        function packSortAll() {
+            const order = packSheet.sections;
+            const idx = new Map(packSheet.items.map((x, i) => [x, i]));
+            packSheet.items.sort((a, b) => {
+                const sa = order.indexOf(a.sec), sb = order.indexOf(b.sec);
+                if (sa !== sb) return sa - sb;
+                const n = String(a.name).toLowerCase().localeCompare(String(b.name).toLowerCase(), undefined, { numeric: true });
+                if (n) return n;
+                const z = packSizeValue(a.uom) - packSizeValue(b.uom);
+                if (z) return z;
+                return idx.get(a) - idx.get(b);
+            });
+        }
+        packSortAll();
+
+        function renderPackSheetEditor() {
+            const root = document.getElementById('packSheetEditor');
+            if (!root) return;
+            document.getElementById('packSheetCount').textContent = packSheet.items.length;
+            const secOpts = (cur) => packSheet.sections.map(s => `<option value="${esc(s)}" ${s === cur ? 'selected' : ''}>${esc(s)}</option>`).join('');
+            root.innerHTML = packSheet.sections.map((sec, si) => {
+                const list = packSectionItems(sec);
+                const rows = list.map((it) => `
+                    <div class="bg-white border border-slate-200 rounded-xl p-2 space-y-1.5">
+                        <div class="flex items-center gap-1.5">
+                            <input type="text" value="${esc(it.name)}" onchange="packEdit('${it.id}','name',this.value)" class="flex-1 min-w-0 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold" aria-label="Item name">
+                            <button onclick="packRemove('${it.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" title="Remove from sheet"><i class="fa-solid fa-xmark text-xs"></i></button>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <input type="text" value="${esc(it.uom)}" placeholder="Size" onchange="packEdit('${it.id}','uom',this.value)" class="w-[4.5rem] px-2 py-1.5 border border-slate-200 rounded-lg text-xs" aria-label="Size">
+                            <input type="text" value="${esc(it.code)}" placeholder="Code" onchange="packEdit('${it.id}','code',this.value)" class="w-[5.5rem] px-2 py-1.5 border border-slate-200 rounded-lg text-xs" aria-label="Code">
+                            <input type="number" value="${esc(it.min === null || it.min === undefined ? '' : it.min)}" placeholder="Min" onchange="packEdit('${it.id}','min',this.value)" class="w-14 px-2 py-1.5 border border-slate-200 rounded-lg text-xs" aria-label="Min">
+                            <select onchange="packMoveTo('${it.id}',this.value)" class="flex-1 min-w-0 px-1.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" aria-label="Move to section">${secOpts(sec)}</select>
+                        </div>
+                    </div>`).join('');
+                const addPanel = packAddOpen === sec ? packAddPanelHtml(sec) : '';
+                return `
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-1.5">
+                        <input type="text" value="${esc(sec)}" onchange="packRenameSection(${si},this.value)" class="flex-1 min-w-0 px-2 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-sm font-extrabold text-emerald-800" aria-label="Section name">
+                        <span class="text-xs text-slate-400">${list.length}</span>
+                        <button onclick="packMoveSection(${si},-1)" ${si === 0 ? 'disabled' : ''} class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 disabled:opacity-30" title="Move section up"><i class="fa-solid fa-arrow-up text-xs"></i></button>
+                        <button onclick="packMoveSection(${si},1)" ${si === packSheet.sections.length - 1 ? 'disabled' : ''} class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 disabled:opacity-30" title="Move section down"><i class="fa-solid fa-arrow-down text-xs"></i></button>
+                        <button onclick="packDeleteSection(${si})" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" title="Delete section (items go to Removed)"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                    ${rows}
+                    ${addPanel}
+                    <button onclick="packToggleAdd(${si})" class="w-full py-2 border border-dashed border-slate-300 rounded-xl text-sm font-bold text-slate-500">+ Add item to ${esc(sec)}</button>
+                </div>`;
+            }).join('');
+            const rem = document.getElementById('packSheetRemoved');
+            rem.innerHTML = packSheet.removed.length ? `
+                <div class="border-t border-dashed border-slate-300 pt-3 space-y-1.5">
+                    <p class="text-[13px] font-extrabold uppercase tracking-wide text-slate-400">Removed (${packSheet.removed.length})</p>
+                    ${packSheet.removed.map((it, i) => `<div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-1.5"><button onclick="packRestore(${i})" class="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-md">Restore</button><span class="text-sm text-slate-700 flex-1 min-w-0 truncate">${esc(it.name)} <span class="text-xs text-slate-400">${esc(it.uom)} · ${esc(it.sec)}</span></span></div>`).join('')}
+                </div>` : '';
+            const rb = document.getElementById('packSheetResetBtn');
+            if (rb) rb.textContent = packResetArmed ? 'Tap again' : 'Reset';
+        }
+
+        function packCatalogMatches(q) {
+            q = (q || '').trim().toLowerCase();
+            const onSheet = new Set(packSheet.items.map(i => String(i.code)));
+            const out = [];
+            for (const cat of Object.keys(inventoryData)) {
+                for (const it of (inventoryData[cat] || [])) {
+                    if (it.hidden) continue;
+                    if (q && !(String(it.name).toLowerCase().includes(q) || String(it.code || '').toLowerCase().includes(q))) continue;
+                    out.push({ cat, it, on: onSheet.has(String(it.code)) });
+                    if (out.length >= 12) return out;
+                }
+            }
+            return out;
+        }
+        function packAddPanelHtml(sec) {
+            return `<div class="bg-slate-50 border border-slate-200 rounded-xl p-2 space-y-1.5">
+                <input id="packAddSearch" type="text" placeholder="Search catalog by name or code" oninput="packRenderMatches()" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                <div id="packAddResults" class="space-y-1">${packMatchesHtml('')}</div>
+                <button onclick="packAddCustom()" class="w-full py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-700">Add a blank row (type it yourself)</button>
+            </div>`;
+        }
+        function packMatchesHtml(q) {
+            const m = packCatalogMatches(q);
+            if (!m.length) return '<p class="text-xs text-slate-400 px-1">No catalog items match.</p>';
+            return m.map(x => `<button onclick="packAddFromCatalog(${JSON.stringify(x.cat).replace(/"/g, '&quot;')},${x.it.id})" class="w-full text-left bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 flex items-center gap-2 ${x.on ? 'opacity-50' : ''}"><span class="flex-1 min-w-0 truncate text-sm font-semibold text-slate-800">${esc(x.it.name)} <span class="text-xs text-slate-400 font-normal">${esc(x.it.uom || '')}</span></span><span class="text-xs text-slate-400">${esc(x.it.code || '')}${x.on ? ' · on sheet' : ''}</span></button>`).join('');
+        }
+        function packRenderMatches() {
+            const box = document.getElementById('packAddResults');
+            if (box) box.innerHTML = packMatchesHtml(document.getElementById('packAddSearch').value);
+        }
+        function packToggleAdd(si) {
+            const sec = packSheet.sections[si];
+            packAddOpen = (packAddOpen === sec) ? null : sec;
+            renderPackSheetEditor();
+            if (packAddOpen) { const i = document.getElementById('packAddSearch'); if (i) i.focus(); }
+        }
+        function packAddFromCatalog(cat, id) {
+            const it = (inventoryData[cat] || []).find(x => x.id === id);
+            if (!it || !packAddOpen) return;
+            const name = String(it.name).replace(/^\s*ln\s+/i, '').replace(/\s+/g, ' ').trim();
+            packSheet.items.push({ id: packUid(), sec: packAddOpen, name, uom: String(it.uom || '').toUpperCase(), code: String(it.code || ''), min: it.min === undefined ? null : it.min });
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packAddCustom() {
+            if (!packAddOpen) return;
+            packSheet.items.push({ id: packUid(), sec: packAddOpen, name: 'New item', uom: '', code: '', min: null });
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packEdit(id, field, val) {
+            const it = packSheet.items.find(x => x.id === id); if (!it) return;
+            val = String(val).trim();
+            if (field === 'min') it.min = val === '' ? null : Number(val);
+            else if (field === 'uom') it.uom = val.toUpperCase();
+            else it[field] = val;
+            savePackSheet();
+            // name / size change the A–Z position, so redraw
+            if (field === 'name' || field === 'uom') renderPackSheetEditor();
+        }
+        function packMoveTo(id, sec) {
+            const it = packSheet.items.find(x => x.id === id); if (!it) return;
+            it.sec = sec;
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packRemove(id) {
+            const i = packSheet.items.findIndex(x => x.id === id); if (i < 0) return;
+            packSheet.removed.push(packSheet.items.splice(i, 1)[0]);
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packRestore(i) {
+            const [it] = packSheet.removed.splice(i, 1);
+            if (!packSheet.sections.includes(it.sec)) packSheet.sections.push(it.sec);
+            packSheet.items.push(it); savePackSheet(); renderPackSheetEditor();
+        }
+        function packAddSection() {
+            const el = document.getElementById('packNewSection');
+            const name = (el.value || '').trim();
+            if (!name || packSheet.sections.some(s => s.toLowerCase() === name.toLowerCase())) { el.focus(); return; }
+            packSheet.sections.push(name); el.value = '';
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packRenameSection(si, val) {
+            val = (val || '').trim(); const old = packSheet.sections[si];
+            if (!val || val === old || packSheet.sections.some((s, i) => i !== si && s.toLowerCase() === val.toLowerCase())) { renderPackSheetEditor(); return; }
+            packSheet.sections[si] = val;
+            packSheet.items.forEach(x => { if (x.sec === old) x.sec = val; });
+            packSheet.removed.forEach(x => { if (x.sec === old) x.sec = val; });
+            if (packAddOpen === old) packAddOpen = val;
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packMoveSection(si, dir) {
+            const t = si + dir; if (t < 0 || t >= packSheet.sections.length) return;
+            [packSheet.sections[si], packSheet.sections[t]] = [packSheet.sections[t], packSheet.sections[si]];
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packDeleteSection(si) {
+            const sec = packSheet.sections[si];
+            packSheet.removed.push(...packSheet.items.filter(x => x.sec === sec));
+            packSheet.items = packSheet.items.filter(x => x.sec !== sec);
+            packSheet.sections.splice(si, 1);
+            savePackSheet(); renderPackSheetEditor();
+        }
+        function packResetSheet() {
+            if (!packResetArmed) { packResetArmed = true; renderPackSheetEditor(); setTimeout(() => { packResetArmed = false; renderPackSheetEditor(); }, 3000); return; }
+            packResetArmed = false; packSheet = deepClone(PACK_SHEET_DEFAULT); packAddOpen = null;
+            savePackSheet(); renderPackSheetEditor();
+        }
+
+        // Same page layout used by both the print preview and the PDF download.
+        function packLayout() {
+            const ROW = 1, SEC = 0.78, CAP = 32;
+            const entries = []; let n = 0;
+            packSheet.sections.forEach(sec => {
+                const list = packSectionItems(sec); if (!list.length) return;
+                entries.push({ h: sec });
+                list.forEach(it => { n++; entries.push({ it, n }); });
+            });
+            const cols = [[]]; let used = 0;
+            entries.forEach(e => {
+                const u = e.h ? SEC : ROW;
+                if (used + u > CAP + 0.001) { cols.push([]); used = 0; }
+                cols[cols.length - 1].push(e); used += u;
+            });
+            cols.forEach((c, i) => { if (i < cols.length - 1 && c.length && c[c.length - 1].h) { cols[i + 1].unshift(c.pop()); } });
+            return { cols, pages: Math.max(1, Math.ceil(cols.length / 2)) };
+        }
+        function packEditFromHome() { openCatalogModal(); switchSettingsView('packSheet'); }
+        function packLoadJsPdf() {
+            return new Promise((resolve, reject) => {
+                if (window.jspdf && window.jspdf.jsPDF) return resolve(window.jspdf.jsPDF);
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                s.onload = () => (window.jspdf && window.jspdf.jsPDF) ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF missing'));
+                s.onerror = () => reject(new Error('Could not load the PDF library (check internet).'));
+                document.head.appendChild(s);
+            });
+        }
+        // Draws the sheet straight into a PDF file (vector text, A4) and downloads it.
+        async function packDownloadPdf() {
+            if (!packSheet.items.length) { showToast('The packing sheet is empty.'); return; }
+            const btns = Array.from(document.querySelectorAll('.pack-pdf-btn'));
+            const labels = btns.map(b => b.innerHTML);
+            btns.forEach(b => { b.disabled = true; b.innerHTML = 'Preparing...'; });
+            try {
+                const JsPDF = await packLoadJsPdf();
+                const doc = new JsPDF({ unit: 'mm', format: 'a4' });
+                const { cols, pages } = packLayout();
+                const GREEN = [31, 95, 59], GRID = [185, 196, 189], GREY = [85, 85, 85], BLACK = [0, 0, 0];
+                const M = 10, COLW = 92.5, GAP = 5, RH = 7.4, HH = 6, SH = 5.8, TOP = 29;
+                const pct = [6, 45, 11, 7, 11.5, 11.5, 8];
+                const heads = ['NO', 'ITEM', 'CODE', 'MIN', 'REQUIRED', 'PACKED', 'TICK'];
+                const draw = (c) => doc.setDrawColor(c[0], c[1], c[2]);
+                const fill = (c) => doc.setTextColor(c[0], c[1], c[2]);
+                for (let p = 0; p < pages; p++) {
+                    if (p > 0) doc.addPage();
+                    // title
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(16); fill(GREEN); doc.text('Lalitha Naturals', M, 16);
+                    const tw = doc.getTextWidth('Lalitha Naturals');
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); fill(GREY); doc.text('Packing Sheet', M + tw + 3, 16);
+                    doc.setFontSize(9); fill(BLACK); doc.text(`Sheet ${p + 1} of ${pages}`, 210 - M, 16, { align: 'right' });
+                    draw(GREEN); doc.setLineWidth(0.45); doc.line(M, 19, 210 - M, 19);
+                    // Branch / Date / Staff / Checked by
+                    doc.setFontSize(8.5); fill(GREY);
+                    let fx = M;
+                    [['Branch', 46], ['Date', 32], ['Staff', 46], ['Checked by', 46]].forEach(([lab, w]) => {
+                        doc.text(lab, fx, 25); const lw = doc.getTextWidth(lab);
+                        draw([150, 150, 150]); doc.setLineWidth(0.2); doc.line(fx + lw + 1.5, 25.4, fx + w, 25.4); fx += w + 3;
+                    });
+                    for (let k = 0; k < 2; k++) {
+                        const col = cols[p * 2 + k]; if (!col) continue;
+                        const x0 = M + k * (COLW + GAP);
+                        const xs = [x0]; pct.forEach(w => xs.push(xs[xs.length - 1] + COLW * w / 100));
+                        // column heads
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(6); fill(GREEN);
+                        heads.forEach((h, i) => doc.text(h, (xs[i] + xs[i + 1]) / 2, TOP + 4, { align: 'center' }));
+                        draw(GREEN); doc.setLineWidth(0.35); doc.line(x0, TOP + HH, x0 + COLW, TOP + HH);
+                        let y = TOP + HH;
+                        col.forEach(e => {
+                            if (e.h) {
+                                doc.setFont('helvetica', 'bold'); doc.setFontSize(9); fill(GREEN); doc.text(String(e.h), x0 + 1.5, y + 4);
+                                draw(GREEN); doc.setLineWidth(0.3); doc.line(x0, y + SH, x0 + COLW, y + SH);
+                                y += SH; return;
+                            }
+                            const it = e.it, by = y + RH / 2 + 1;
+                            draw(GRID); doc.setLineWidth(0.15); doc.line(x0, y + RH, x0 + COLW, y + RH);
+                            for (let i = 1; i < 7; i++) doc.line(xs[i], y, xs[i], y + RH);
+                            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); fill(GREY);
+                            doc.text(String(e.n), (xs[0] + xs[1]) / 2, by, { align: 'center' });
+                            // name (bold) + size (small grey), shrink the name if it is too long
+                            const uom = String(it.uom || ''), avail = xs[2] - xs[1] - 2;
+                            let fs = 8;
+                            doc.setFont('helvetica', 'bold');
+                            const uomW = () => { if (!uom) return 0; doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); const w = doc.getTextWidth(uom) + 1.3; doc.setFont('helvetica', 'bold'); return w; };
+                            const uw = uomW();
+                            doc.setFontSize(fs);
+                            while (doc.getTextWidth(String(it.name)) + uw > avail && fs > 5) { fs -= 0.25; doc.setFontSize(fs); }
+                            fill(BLACK); doc.text(String(it.name), xs[1] + 1, by);
+                            if (uom) { const nw = doc.getTextWidth(String(it.name)); doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); fill(GREY); doc.text(uom, xs[1] + 1 + nw + 1.3, by); }
+                            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); fill(GREY);
+                            doc.text(String(it.code || ''), (xs[2] + xs[3]) / 2, by, { align: 'center', maxWidth: xs[3] - xs[2] - 0.5 });
+                            if (it.min !== null && it.min !== undefined && it.min !== '') { doc.setFont('helvetica', 'bold'); doc.setFontSize(10); fill(BLACK); doc.text(String(it.min), (xs[3] + xs[4]) / 2, by, { align: 'center' }); }
+                            draw(GREY); doc.setLineWidth(0.25);
+                            doc.rect((xs[6] + xs[7]) / 2 - 2.5, y + RH / 2 - 2.5, 5, 5);
+                            y += RH;
+                        });
+                        draw(GREEN); doc.setLineWidth(0.3); doc.rect(x0, TOP, COLW, y - TOP);
+                    }
+                }
+                const d = new Date(), pad = n => String(n).padStart(2, '0');
+                doc.save(`Lalitha_Packing_Sheet_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.pdf`);
+                showToast('PDF downloaded');
+            } catch (err) {
+                showToast('Could not make the PDF: ' + (err && err.message ? err.message : err));
+            } finally {
+                btns.forEach((b, i) => { b.disabled = false; b.innerHTML = labels[i]; });
+            }
+        }
+
+        function packBuildPrintHtml() {
+            const { cols } = packLayout();
+            const colHtml = (c) => `<table><colgroup><col style="width:6%"><col style="width:45%"><col style="width:11%"><col style="width:7%"><col style="width:11.5%"><col style="width:11.5%"><col style="width:8%"></colgroup>
+                <thead><tr><th>NO</th><th>ITEM</th><th>CODE</th><th>MIN</th><th>REQUIRED</th><th>PACKED</th><th>TICK</th></tr></thead><tbody>` +
+                c.map(e => e.h ? `<tr class="ps-sec"><td colspan="7">${esc(e.h)}</td></tr>` :
+                    `<tr><td class="c sn">${e.n}</td><td class="nm"><b>${esc(e.it.name)}</b>${e.it.uom ? `<em>${esc(e.it.uom)}</em>` : ''}</td><td class="c cd">${esc(e.it.code)}</td><td class="c mn">${e.it.min === null || e.it.min === undefined ? '' : esc(e.it.min)}</td><td></td><td></td><td class="c"><span class="tk"></span></td></tr>`).join('') +
+                `</tbody></table>`;
+            const pages = Math.max(1, Math.ceil(cols.length / 2));
+            let html = '';
+            for (let p = 0; p < pages; p++) {
+                html += `<div class="ps-page"><div class="ps-title"><div><b>Lalitha Naturals</b><i>Packing Sheet</i></div><span>Sheet ${p + 1} of ${pages}</span></div>
+                    <div class="ps-fields">Branch<span></span>Date<span></span>Staff<span></span>Checked by<span></span></div>
+                    <div class="ps-cols">${cols[p * 2] ? colHtml(cols[p * 2]) : ''}${cols[p * 2 + 1] ? colHtml(cols[p * 2 + 1]) : ''}</div></div>`;
+            }
+            return html;
+        }
+        function printPackSheet() {
+            if (!packSheet.items.length) { showToast('The packing sheet is empty.'); return; }
+            document.getElementById('packSheetPrint').innerHTML = packBuildPrintHtml();
+            document.body.classList.add('printing-pack-sheet');
+            const cleanup = () => { document.body.classList.remove('printing-pack-sheet'); window.removeEventListener('afterprint', cleanup); };
+            window.addEventListener('afterprint', cleanup);
+            setTimeout(() => { window.print(); setTimeout(cleanup, 1000); }, 50);
+        }
+
         function filterSettingsMenu() {
             const q = (document.getElementById('settingsMenuSearch').value || '').trim().toLowerCase();
             const groups = document.querySelectorAll('[data-settings-group]');
@@ -9658,5 +10057,6 @@
             });
         }
     </script>
+    <div id="packSheetPrint"></div>
 </body>
 </html>
