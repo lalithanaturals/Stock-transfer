@@ -185,26 +185,31 @@
             body.printing-pack-sheet > *:not(#packSheetPrint) { display: none !important; }
             body.printing-pack-sheet #packSheetPrint { display: block !important; }
         }
-        #packSheetPrint .ps-page { width: 190mm; height: 275mm; overflow: hidden; page-break-after: always; break-after: page; font-family: Arial, Helvetica, sans-serif; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        #packSheetPrint .ps-page:last-child { page-break-after: auto; break-after: auto; }
-        #packSheetPrint .ps-title { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 0.45mm solid #1f5f3b; padding-bottom: 1.2mm; }
-        #packSheetPrint .ps-title b { font-size: 16pt; color: #1f5f3b; }
-        #packSheetPrint .ps-title i { font-style: normal; font-size: 10pt; color: #444; margin-left: 3mm; }
-        #packSheetPrint .ps-title span { font-size: 9pt; }
-        #packSheetPrint .ps-fields { display: flex; gap: 4mm; font-size: 8.5pt; color: #444; margin: 2.5mm 0 3mm; }
-        #packSheetPrint .ps-fields span { flex: 1; border-bottom: 0.2mm solid #999; height: 4mm; }
-        #packSheetPrint .ps-cols { display: flex; gap: 5mm; align-items: flex-start; }
-        #packSheetPrint table { width: 92.5mm; border-collapse: collapse; table-layout: fixed; border: 0.3mm solid #1f5f3b; }
-        #packSheetPrint th { height: 6mm; font-size: 6pt; letter-spacing: -0.1pt; color: #1f5f3b; border-bottom: 0.35mm solid #1f5f3b; border-right: 0.15mm solid #b9c4bd; }
-        #packSheetPrint td { height: 7.4mm; border-bottom: 0.15mm solid #b9c4bd; border-right: 0.15mm solid #b9c4bd; padding: 0 1mm; font-size: 7.5pt; overflow: hidden; white-space: nowrap; }
-        #packSheetPrint th:last-child, #packSheetPrint td:last-child { border-right: none; }
-        #packSheetPrint tr.ps-sec td { height: 5.8mm; font-weight: 700; font-size: 9pt; color: #1f5f3b; border-bottom: 0.3mm solid #1f5f3b; border-right: none; }
-        #packSheetPrint td.c { text-align: center; padding: 0; }
-        #packSheetPrint td.sn, #packSheetPrint td.cd { color: #555; }
-        #packSheetPrint td.mn { font-weight: 700; font-size: 10pt; }
-        #packSheetPrint td.nm b { font-size: 8pt; }
-        #packSheetPrint td.nm em { font-style: normal; font-size: 6.5pt; color: #555; margin-left: 1.3mm; }
-        #packSheetPrint .tk { display: inline-block; width: 5mm; height: 5mm; border: 0.25mm solid #555; vertical-align: middle; }
+        .ps-scope .ps-page { width: 190mm; height: 275mm; overflow: hidden; background: #fff; page-break-after: always; break-after: page; font-family: Arial, Helvetica, sans-serif; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .ps-scope .ps-page:last-child { page-break-after: auto; break-after: auto; }
+        .ps-scope .ps-title { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 0.45mm solid #1f5f3b; padding-bottom: 1.2mm; }
+        .ps-scope .ps-title b { font-size: 16pt; color: #1f5f3b; }
+        .ps-scope .ps-title i { font-style: normal; font-size: 10pt; color: #444; margin-left: 3mm; }
+        .ps-scope .ps-title span { font-size: 9pt; }
+        .ps-scope .ps-fields { display: flex; gap: 4mm; font-size: 8.5pt; color: #444; margin: 2.5mm 0 3mm; }
+        .ps-scope .ps-fields span { flex: 1; border-bottom: 0.2mm solid #999; height: 4mm; }
+        .ps-scope .ps-cols { display: flex; gap: 5mm; align-items: flex-start; }
+        .ps-scope table { width: 92.5mm; border-collapse: collapse; table-layout: fixed; border: 0.3mm solid #1f5f3b; }
+        .ps-scope th { height: 6mm; font-size: 6pt; letter-spacing: -0.1pt; color: #1f5f3b; border-bottom: 0.35mm solid #1f5f3b; border-right: 0.15mm solid #b9c4bd; }
+        .ps-scope td { height: 7.4mm; border-bottom: 0.15mm solid #b9c4bd; border-right: 0.15mm solid #b9c4bd; padding: 0 1mm; font-size: 7.5pt; overflow: hidden; white-space: nowrap; }
+        .ps-scope th:last-child, #packSheetPrint td:last-child { border-right: none; }
+        .ps-scope tr.ps-sec td { height: 5.8mm; font-weight: 700; font-size: 9pt; color: #1f5f3b; border-bottom: 0.3mm solid #1f5f3b; border-right: none; }
+        .ps-scope td.c { text-align: center; padding: 0; }
+        .ps-scope td.sn, #packSheetPrint td.cd { color: #555; }
+        .ps-scope td.mn { font-weight: 700; font-size: 10pt; }
+        .ps-scope td.nm b { font-size: 8pt; }
+        .ps-scope td.nm em { font-style: normal; font-size: 6.5pt; color: #555; margin-left: 1.3mm; }
+        .ps-scope .tk { display: inline-block; width: 5mm; height: 5mm; border: 0.25mm solid #555; vertical-align: middle; }
+        .ps-scope .ps-page + .ps-page { margin-top: 6mm; }
+        @media print { .ps-scope .ps-page + .ps-page { margin-top: 0; } }
+        .ps-scope .ps-fields.ps-filled { display: block; font-size: 8.5pt; color: #222; border-bottom: 0.2mm solid #999; padding-bottom: 1.5mm; }
+        .ps-scope .ps-notes { margin-top: 3mm; border: 0.3mm solid #1f5f3b; padding: 1.5mm 2mm; font-size: 8pt; min-height: 9mm; }
+        .ps-scope .ps-req { font-weight: 800; font-size: 10pt; color: #1f5f3b; }
         @media print {
             /* Fixed 1cm margin on every side, on every page. */
             @page { size: A4; margin: 10mm; }
@@ -1112,6 +1117,10 @@
                         <button id="packSheetResetBtn" onclick="packResetSheet()" class="px-3 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Reset</button>
                     </div>
                     <p class="text-[13px] text-slate-400"><span id="packSheetCount">0</span> items. Changes here only affect this printed list. They do not change your catalog or stock. Prints as A4, two columns per sheet.</p>
+                    <label class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-3 cursor-pointer">
+                        <input id="packFollowToggle" type="checkbox" class="mt-0.5 w-5 h-5 accent-emerald-600" onchange="setPackFollow(this.checked)">
+                        <span class="text-sm text-slate-700"><b>Use this list on the Packing screens</b><br><span class="text-[13px] text-slate-500">Gajuwaka and Kurmannapalem show only these items, in these sections. Everything else is hidden. Turn off to see the full catalog again.</span></span>
+                    </label>
                     <div id="packSheetEditor" class="space-y-3"></div>
                     <div class="flex gap-2">
                         <input id="packNewSection" type="text" placeholder="New section name" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm">
@@ -1301,7 +1310,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v2026.10.12-60";
+        const APP_VERSION = "v2026.10.12-64";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -4568,6 +4577,7 @@
                 const data = await res.json();
                 const s = data && data.settings;
                 if (!s) return;
+                packApplyCloud_(s.packSheet);
                 // Pick up any vendor deletions another device already pushed, so this
                 // device both (a) doesn't re-add that vendor below and (b) drops it from
                 // its own local list too — deletion is meant to propagate everywhere, not
@@ -4626,7 +4636,8 @@
                     hiddenBrandCategories: Array.from(hiddenBrandCategories),
                     hiddenVendorCategories: Array.from(hiddenVendorCategories),
                     categoryBrandAssign: Array.from(categoryBrandAssign),
-                    branchList
+                    branchList,
+                    packSheet: packToCloud_()
                 };
                 try {
                     return fetchWithTimeout(GOOGLE_SCRIPT_URL, {
@@ -4719,6 +4730,7 @@
                 if (Array.isArray(s.hiddenVendorCategories)) { hiddenVendorCategories = new Set(s.hiddenVendorCategories); writeJson('lalitha_hidden_vendor_categories', s.hiddenVendorCategories); }
                 if (Array.isArray(s.categoryBrandAssign)) { categoryBrandAssign = new Set(s.categoryBrandAssign); writeJson('lalitha_category_brand_assign', s.categoryBrandAssign); }
                 if (Array.isArray(s.branchList) && s.branchList.length > 0) { branchList = s.branchList; writeJson('lalitha_branches', branchList); }
+                packApplyCloud_(s.packSheet);
                 applyingRemoteSettings = false;
 
                 // Re-render whatever's currently on screen that this could affect.
@@ -4911,10 +4923,45 @@
                 : "px-3.5 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition border bg-white text-slate-700 border-slate-200";
         }
 
+        // ---- Packing screens follow the Packing Sheet ----
+        // When ON (default), the Gajuwaka / Kurmannapalem Packing Request screens show
+        // exactly the items on the Packing Sheet, grouped under the sheet's sections
+        // (Dryfruits, Spices, Seeds, Flours, Ravva) and in the sheet's A-Z order, so the
+        // paper list and the app list are always the same. Matching is by item code.
+        function packFollowOn() { try { return localStorage.getItem('lalitha_pack_follow') !== '0'; } catch (e) { return true; } }
+        function packingView() {
+            if (!packFollowOn() || typeof packSheet === 'undefined') return inventoryData;
+            const map = new Map();
+            packSheet.items.forEach((x, i) => { const k = String(x.code); if (k && !map.has(k)) map.set(k, { sec: x.sec, i, name: x.name, uom: x.uom }); });
+            const found = [], seen = new Set();
+            for (const cat in inventoryData) {
+                inventoryData[cat].forEach(it => {
+                    const k = String(it.code), m = map.get(k);
+                    // show the sheet's own name/size (e.g. "Anjeer", not the catalog's "LN Anjeer")
+                    if (m && !seen.has(k)) { seen.add(k); found.push({ it: { ...it, name: m.name || it.name, uom: m.uom || it.uom }, m }); }
+                });
+            }
+            found.sort((a, b) => a.m.i - b.m.i);
+            const view = {};
+            found.forEach(f => { (view[f.m.sec] = view[f.m.sec] || []).push(f.it); });
+            // keep the sheet's own section order
+            const ordered = {};
+            packSheet.sections.forEach(sec => { if (view[sec]) ordered[sec] = view[sec]; });
+            Object.keys(view).forEach(sec => { if (!ordered[sec]) ordered[sec] = view[sec]; });
+            return ordered;
+        }
+        function setPackFollow(on) {
+            try { localStorage.setItem('lalitha_pack_follow', on ? '1' : '0'); } catch (e) {}
+            activeCategoryFilter = 'All Categories';
+            try { localStorage.setItem('lalitha_active_category_filter', activeCategoryFilter); } catch (e) {}
+            renderTabs();
+            renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : '');
+        }
+
         function renderCategoryTabs() {
             const container = document.getElementById('categoryTabs');
             if (!container) return;
-            const cats = categoriesForActiveBrand();
+            const cats = packFollowOn() ? Object.keys(packingView()) : categoriesForActiveBrand();
             // If the currently selected category tab doesn't apply to this brand anymore
             // (or was hidden), fall back to "All Categories" rather than showing an empty list.
             if (activeCategoryFilter !== 'All Categories' && !cats.includes(activeCategoryFilter)) {
@@ -4983,10 +5030,11 @@
             const catLabel = activeCategoryFilter === 'All Categories' ? 'all shown categories' : activeCategoryFilter;
             const brandLabel = activeBrand === 'All Brands' ? '' : ` (${activeBrand})`;
             if (!confirm(`Clear entered counts for ${catLabel}${brandLabel}?`)) return;
-            for (const cat in inventoryData) {
-                if (hiddenCategories.has(cat)) continue;
+            const _pv = packingView();
+            for (const cat in _pv) {
+                if (!packFollowOn() && hiddenCategories.has(cat)) continue;
                 if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
-                inventoryData[cat].forEach(item => {
+                _pv[cat].forEach(item => {
                     if (item.hidden) return;
                     const brand = item.brand || DEFAULT_BRAND;
                     if (hiddenBrands.has(brand)) return;
@@ -5003,10 +5051,11 @@
             const catLabel = activeCategoryFilter === 'All Categories' ? 'all shown categories' : activeCategoryFilter;
             const brandLabel = activeBrand === 'All Brands' ? '' : ` (${activeBrand})`;
             if (!confirm(`Set every shown item in ${catLabel}${brandLabel} to 0?`)) return;
-            for (const cat in inventoryData) {
-                if (hiddenCategories.has(cat)) continue;
+            const _pv = packingView();
+            for (const cat in _pv) {
+                if (!packFollowOn() && hiddenCategories.has(cat)) continue;
                 if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
-                inventoryData[cat].forEach(item => {
+                _pv[cat].forEach(item => {
                     if (item.hidden) return;
                     const brand = item.brand || DEFAULT_BRAND;
                     if (hiddenBrands.has(brand)) return;
@@ -5711,24 +5760,26 @@
 
             if (searching) {
                 const query = filter.trim().toLowerCase();
-                for (const cat in inventoryData) {
-                    if (hiddenCategories.has(cat)) continue;
+                const _pv = packingView();
+                for (const cat in _pv) {
+                    if (!packFollowOn() && hiddenCategories.has(cat)) continue;
                     // Tapping a category tab while a search is active used to do nothing
                     // visible — the tab would highlight, but every search result from
                     // every category stayed on screen regardless of which tab was
                     // selected. A search should still be scoped to whichever category tab
                     // is active, same as when there's no search text at all.
                     if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
-                    inventoryData[cat].forEach(item => {
+                    _pv[cat].forEach(item => {
                         if (item.hidden) return;
                         if (item.name.toLowerCase().includes(query) || String(item.code).includes(query)) itemsToDisplay.push({ ...item, category: cat });
                     });
                 }
             } else {
-                for (const cat in inventoryData) {
-                    if (hiddenCategories.has(cat)) continue;
+                const _pv = packingView();
+                for (const cat in _pv) {
+                    if (!packFollowOn() && hiddenCategories.has(cat)) continue;
                     if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
-                    inventoryData[cat].forEach(item => {
+                    _pv[cat].forEach(item => {
                         if (item.hidden) return;
                         itemsToDisplay.push({ ...item, category: cat });
                     });
@@ -5739,7 +5790,7 @@
                 const brand = item.brand || DEFAULT_BRAND;
                 if (hiddenBrands.has(brand)) return false;
                 if (activeBrand !== 'All Brands' && brand !== activeBrand) return false;
-                if (isCatHiddenForBrand(brand, item.category)) return false;
+                if (!packFollowOn() && isCatHiddenForBrand(brand, item.category)) return false;
                 return true;
             });
 
@@ -5899,7 +5950,7 @@
             if (view === 'branches') { document.getElementById('newBranchName').value = ''; renderBranchManageList(); renderDeviceBranchLockSelect(); }
             if (view === 'vendors') { document.getElementById('vendorSearch').value = ''; renderVendorManageList(); }
             if (view === 'history') renderCatalogHistoryList();
-            if (view === 'packSheet') { packAddOpen = null; renderPackSheetEditor(); }
+            if (view === 'packSheet') { packAddOpen = null; const ft = document.getElementById('packFollowToggle'); if (ft) ft.checked = packFollowOn(); renderPackSheetEditor(); }
         }
 
         // "+ New item" from inside the vendor form — lets you add a missing catalog item
@@ -7531,15 +7582,16 @@
         function currentFilterShortages() {
             const results = [];
             const packingBranch = (document.getElementById('sourceBranch') || {}).value || '';
-            for (const cat in inventoryData) {
-                if (hiddenCategories.has(cat)) continue;
+            const _pv = packingView();
+            for (const cat in _pv) {
+                if (!packFollowOn() && hiddenCategories.has(cat)) continue;
                 if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
-                inventoryData[cat].forEach(item => {
+                _pv[cat].forEach(item => {
                     if (item.hidden) return;
                     const brand = item.brand || DEFAULT_BRAND;
                     if (hiddenBrands.has(brand)) return;
                     if (activeBrand !== 'All Brands' && brand !== activeBrand) return;
-                    if (isCatHiddenForBrand(brand, cat)) return;
+                    if (!packFollowOn() && isCatHiddenForBrand(brand, cat)) return;
                     if (isNotRequired(item.id)) return; // excluded from this dispatch only
                     const need = needFor(item);
                     if (need > 0) {
@@ -7561,15 +7613,16 @@
         // when their Need has gone back to 0, or they've just been marked Not Required.
         function syncDispatchListFromCurrentView() {
             const seenIds = new Set();
-            for (const cat in inventoryData) {
-                if (hiddenCategories.has(cat)) continue;
+            const _pv = packingView();
+            for (const cat in _pv) {
+                if (!packFollowOn() && hiddenCategories.has(cat)) continue;
                 if (activeCategoryFilter !== 'All Categories' && cat !== activeCategoryFilter) continue;
-                inventoryData[cat].forEach(item => {
+                _pv[cat].forEach(item => {
                     if (item.hidden) return;
                     const brand = item.brand || DEFAULT_BRAND;
                     if (hiddenBrands.has(brand)) return;
                     if (activeBrand !== 'All Brands' && brand !== activeBrand) return;
-                    if (isCatHiddenForBrand(brand, cat)) return;
+                    if (!packFollowOn() && isCatHiddenForBrand(brand, cat)) return;
                     seenIds.add(item.id);
                 });
             }
@@ -7663,7 +7716,36 @@
         })();
         let packAddOpen = null;   // section name whose "add item" panel is open
         let packResetArmed = false;
-        function savePackSheet() { packSortAll(); writeJson(PACK_SHEET_KEY, packSheet); }
+        // ---- Packing Sheet cloud sync (rides along with the shared settings) ----
+        // Last edit wins: every save stamps packSheet.ts; a phone only adopts the cloud copy
+        // when its stamp is newer than its own. Items are sent as compact arrays to keep
+        // the settings blob small.
+        function packToCloud_() {
+            const row = x => [x.id, x.sec, x.name, x.uom, x.code, x.min === undefined ? null : x.min];
+            return { ts: packSheet.ts || 0, sections: packSheet.sections, items: packSheet.items.map(row), removed: packSheet.removed.map(row) };
+        }
+        function packApplyCloud_(c) {
+            try {
+                if (!c || !Array.isArray(c.items) || !Array.isArray(c.sections)) return false;
+                if (!((c.ts || 0) > (packSheet.ts || 0))) return false;
+                const obj = a => ({ id: a[0], sec: a[1], name: a[2], uom: a[3], code: a[4], min: a[5] });
+                packSheet = { sections: c.sections, items: c.items.map(obj), removed: (c.removed || []).map(obj), mig: 1, ts: c.ts };
+                packSortAll(); writeJson(PACK_SHEET_KEY, packSheet);
+                packAddOpen = null;
+                const ed = document.getElementById('settingsView_packSheet');
+                if (ed && !ed.classList.contains('hidden')) renderPackSheetEditor();
+                return true;
+            } catch (e) { return false; }
+        }
+        let _packPushTimer = null;
+        function savePackSheet() {
+            packSheet.ts = Date.now();
+            clearTimeout(_packPushTimer);
+            _packPushTimer = setTimeout(() => { try { if (!applyingRemoteSettings) pushSettingsToCloud(); } catch (e) {} }, 1200);
+            packSortAll(); writeJson(PACK_SHEET_KEY, packSheet);
+            // the Packing screens follow this list, so refresh them after any edit
+            try { if (packFollowOn()) { renderTabs(); renderItems(document.getElementById('searchBox') ? document.getElementById('searchBox').value : ''); } } catch (e) {}
+        }
         function packUid() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
         function packSectionItems(sec) { return packSheet.items.filter(i => i.sec === sec); }
         // pack size -> grams/ml so 100GM sorts before 250GM before 1KG
@@ -7950,21 +8032,46 @@
             }
         }
 
-        function packBuildPrintHtml() {
-            const { cols } = packLayout();
+        // Builds the A4 two-column sheet from a list of sections. Used for the blank
+        // Packing Sheet AND for the Transit sheet printed from the Packing screen, so
+        // both always look the same. groups = [{ sec, items: [{name, uom, code, min, req}] }]
+        function psBuildHtml(groups, opts) {
+            opts = opts || {};
+            const ROW = 1, SEC = 0.78, CAP = opts.cap || 32;
+            const entries = []; let n = 0;
+            groups.forEach(g => {
+                if (!g.items.length) return;
+                entries.push({ h: g.sec });
+                g.items.forEach(it => { n++; entries.push({ it, n }); });
+            });
+            const cols = [[]]; let used = 0;
+            entries.forEach(e => {
+                const u = e.h ? SEC : ROW;
+                if (used + u > CAP + 0.001) { cols.push([]); used = 0; }
+                cols[cols.length - 1].push(e); used += u;
+            });
+            cols.forEach((c, i) => { if (i < cols.length - 1 && c.length && c[c.length - 1].h) { cols[i + 1].unshift(c.pop()); } });
+            const showReq = !!opts.showReq;
             const colHtml = (c) => `<table><colgroup><col style="width:6%"><col style="width:45%"><col style="width:11%"><col style="width:7%"><col style="width:11.5%"><col style="width:11.5%"><col style="width:8%"></colgroup>
                 <thead><tr><th>NO</th><th>ITEM</th><th>CODE</th><th>MIN</th><th>REQUIRED</th><th>PACKED</th><th>TICK</th></tr></thead><tbody>` +
                 c.map(e => e.h ? `<tr class="ps-sec"><td colspan="7">${esc(e.h)}</td></tr>` :
-                    `<tr><td class="c sn">${e.n}</td><td class="nm"><b>${esc(e.it.name)}</b>${e.it.uom ? `<em>${esc(e.it.uom)}</em>` : ''}</td><td class="c cd">${esc(e.it.code)}</td><td class="c mn">${e.it.min === null || e.it.min === undefined ? '' : esc(e.it.min)}</td><td></td><td></td><td class="c"><span class="tk"></span></td></tr>`).join('') +
+                    `<tr><td class="c sn">${e.n}</td><td class="nm"><b>${esc(e.it.name)}</b>${e.it.uom ? `<em>${esc(e.it.uom)}</em>` : ''}</td><td class="c cd">${esc(e.it.code)}</td><td class="c mn">${e.it.min === null || e.it.min === undefined || e.it.min === '' ? '' : esc(e.it.min)}</td><td class="c ${showReq ? 'ps-req' : ''}">${showReq && e.it.req !== undefined ? esc(e.it.req) : ''}</td><td></td><td class="c"><span class="tk"></span></td></tr>`).join('') +
                 `</tbody></table>`;
             const pages = Math.max(1, Math.ceil(cols.length / 2));
+            const fields = opts.fieldsHtml || 'Branch<span></span>Date<span></span>Staff<span></span>Checked by<span></span>';
+            const fieldsCls = opts.fieldsHtml ? 'ps-fields ps-filled' : 'ps-fields';
             let html = '';
             for (let p = 0; p < pages; p++) {
-                html += `<div class="ps-page"><div class="ps-title"><div><b>Lalitha Naturals</b><i>Packing Sheet</i></div><span>Sheet ${p + 1} of ${pages}</span></div>
-                    <div class="ps-fields">Branch<span></span>Date<span></span>Staff<span></span>Checked by<span></span></div>
-                    <div class="ps-cols">${cols[p * 2] ? colHtml(cols[p * 2]) : ''}${cols[p * 2 + 1] ? colHtml(cols[p * 2 + 1]) : ''}</div></div>`;
+                html += `<div class="ps-page"><div class="ps-title"><div><b>Lalitha Naturals</b><i>${esc(opts.title || 'Packing Sheet')}</i></div><span>Sheet ${p + 1} of ${pages}</span></div>
+                    <div class="${fieldsCls}">${fields}</div>
+                    <div class="ps-cols">${cols[p * 2] ? colHtml(cols[p * 2]) : ''}${cols[p * 2 + 1] ? colHtml(cols[p * 2 + 1]) : ''}</div>
+                    ${opts.notes !== undefined && p === pages - 1 ? `<div class="ps-notes"><b>Staff remarks:</b> ${esc(opts.notes)}</div>` : ''}</div>`;
             }
             return html;
+        }
+        function packBuildPrintHtml() {
+            const groups = packSheet.sections.map(sec => ({ sec, items: packSectionItems(sec) }));
+            return psBuildHtml(groups, { title: 'Packing Sheet' });
         }
         function printPackSheet() {
             if (!packSheet.items.length) { showToast('The packing sheet is empty.'); return; }
@@ -9902,6 +10009,20 @@
             });
             const cols = colsHtml.map(c => c.join(''));
 
+            if (packFollowOn()) {
+                // Same layout as the Packing Sheet: sections, A-Z, two columns per sheet,
+                // with REQUIRED pre-filled and PACKED / TICK left for staff to complete.
+                const secOrder = packSheet.sections.slice();
+                Object.keys(grouped).forEach(c => { if (!secOrder.includes(c)) secOrder.push(c); });
+                const nameOf = it => String(it.name);
+                const groups = secOrder.filter(c => (grouped[c] || []).length).map(c => ({
+                    sec: c,
+                    items: grouped[c].slice().sort((a, b) => nameOf(a).toLowerCase().localeCompare(nameOf(b).toLowerCase(), undefined, { numeric: true }) || packSizeValue(a.uom) - packSizeValue(b.uom))
+                        .map(it => ({ name: it.name, uom: it.uom, code: it.code, min: it.min, req: it.reqQty }))
+                }));
+                const fieldsHtml = `<b>From:</b> ${esc(src)} &rarr; <b>To:</b> ${esc(dst)} &nbsp;|&nbsp; <b>Staff:</b> ${esc(staff)} &nbsp;|&nbsp; <b>Date:</b> ${esc(dateTimeStr)} &nbsp;|&nbsp; <b>Items:</b> ${totalCount}`;
+                document.getElementById('pdfTemplateContainer').innerHTML = `<div class="ps-scope">${psBuildHtml(groups, { title: 'Transit Sheet', fieldsHtml, showReq: true, notes: notes || '', cap: 30 })}</div>`;
+            } else
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:190mm;box-sizing:border-box;">
                   <!-- The print-only page border + footer are position:fixed overlays
@@ -9961,8 +10082,12 @@
 
         function openStaffCheckModal() {
             if (preparePrintData()) {
-                document.getElementById('previewPaper').innerHTML = document.getElementById('pdfTemplateContainer').innerHTML;
+                const paper = document.getElementById('previewPaper');
+                paper.innerHTML = document.getElementById('pdfTemplateContainer').innerHTML;
                 document.getElementById('previewModal').classList.remove('hidden');
+                // The sheet is a fixed A4 width — shrink it to fit a phone screen in the preview.
+                paper.style.zoom = '';
+                if (packFollowOn()) requestAnimationFrame(() => { paper.style.zoom = Math.min(1, (paper.clientWidth - 26) / 718); });
             }
         }
         function closeStaffCheckModal() { document.getElementById('previewModal').classList.add('hidden'); }
@@ -10075,6 +10200,6 @@
             });
         }
     </script>
-    <div id="packSheetPrint"></div>
+    <div id="packSheetPrint" class="ps-scope"></div>
 </body>
 </html>
