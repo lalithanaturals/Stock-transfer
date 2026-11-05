@@ -357,14 +357,15 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
         .ps-scope .ps-cols { display: flex; gap: 5mm; align-items: flex-start; }
         .ps-scope table { width: 92.5mm; border-collapse: collapse; table-layout: fixed; border: 0.3mm solid #1f5f3b; }
         .ps-scope th { height: 6mm; font-size: 6pt; letter-spacing: -0.1pt; color: #1f5f3b; border-bottom: 0.35mm solid #1f5f3b; border-right: 0.15mm solid #b9c4bd; }
-        .ps-scope td { height: 7.4mm; border-bottom: 0.15mm solid #b9c4bd; border-right: 0.15mm solid #b9c4bd; padding: 0 1mm; font-size: 7.5pt; overflow: hidden; white-space: nowrap; }
+        .ps-scope td { height: 6.2mm; border-bottom: 0.15mm solid #b9c4bd; border-right: 0.15mm solid #b9c4bd; padding: 0 1mm; font-size: 7.5pt; overflow: hidden; white-space: nowrap; }
         .ps-scope th:last-child, #packSheetPrint td:last-child { border-right: none; }
-        .ps-scope tr.ps-sec td { height: 5.8mm; font-weight: 700; font-size: 9pt; color: #1f5f3b; border-bottom: 0.3mm solid #1f5f3b; border-right: none; }
+        .ps-scope tr.ps-sec td { height: 4.9mm; font-weight: 700; font-size: 9pt; color: #1f5f3b; border-bottom: 0.3mm solid #1f5f3b; border-right: none; }
         .ps-scope td.c { text-align: center; padding: 0; }
+        .ps-scope td.cd { font-size: 6.8pt; }
         .ps-scope td.sn, #packSheetPrint td.cd { color: #555; }
         .ps-scope td.mn { font-weight: 700; font-size: 10pt; }
-        .ps-scope td.nm b { font-size: 8pt; }
-        .ps-scope td.nm em { font-style: normal; font-size: 6.5pt; color: #555; margin-left: 1.3mm; }
+        .ps-scope td.nm b { font-size: 7.6pt; }
+        .ps-scope td.nm em { font-style: normal; font-size: 6pt; color: #555; margin-left: 1mm; }
         .ps-scope .tk { display: inline-block; width: 5mm; height: 5mm; border: 0.25mm solid #555; vertical-align: middle; }
         .ps-scope .ps-page + .ps-page { margin-top: 6mm; }
         @media print { .ps-scope .ps-page + .ps-page { margin-top: 0; } }
@@ -1476,7 +1477,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v71";
+        const APP_VERSION = "v75";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -7900,6 +7901,15 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                 sh.sections = sh.sections.filter(n => n !== "Grocery").concat("Grocery");
                 sh.items.forEach(x => { if (x.sec === "Seeds" && /sesame/i.test(x.name) && /white/i.test(x.name)) x.sec = "Grocery"; });
             };
+            // v72: 25 more items from the Grocery price list (Grocery + Flax Seeds).
+            const MORE = [{"id": "g1", "sec": "Grocery", "name": "Bajra Whole", "uom": "1KG", "code": "1228", "min": 8}, {"id": "g2", "sec": "Grocery", "name": "Bajra Whole", "uom": "500GM", "code": "1229", "min": 8}, {"id": "g3", "sec": "Grocery", "name": "Bobbarlu", "uom": "500GM", "code": "1234", "min": 8}, {"id": "g4", "sec": "Grocery", "name": "Groundnut", "uom": "1KG", "code": "1243", "min": 8}, {"id": "g5", "sec": "Grocery", "name": "Groundnut", "uom": "500GM", "code": "1244", "min": 8}, {"id": "g6", "sec": "Grocery", "name": "Ragi Whole", "uom": "1KG", "code": "1251", "min": 8}, {"id": "g7", "sec": "Grocery", "name": "Ragi Whole", "uom": "500GM", "code": "1252", "min": 8}, {"id": "g8", "sec": "Grocery", "name": "Reetha Seedless", "uom": "500GM", "code": "1254", "min": 8}, {"id": "g9", "sec": "Grocery", "name": "Roasted Bengal Gram", "uom": "1KG", "code": "1255", "min": 8}, {"id": "g10", "sec": "Grocery", "name": "Roasted Bengal Gram", "uom": "500GM", "code": "1256", "min": 8}, {"id": "g11", "sec": "Grocery", "name": "Sabudana Big", "uom": "250GM", "code": "1257", "min": 8}, {"id": "g12", "sec": "Grocery", "name": "Sabudana Small", "uom": "250GM", "code": "1258", "min": 8}, {"id": "g13", "sec": "Grocery", "name": "Sugar", "uom": "1KG", "code": "1259", "min": 8}, {"id": "g14", "sec": "Grocery", "name": "Sugar", "uom": "500GM", "code": "1260", "min": 8}, {"id": "g15", "sec": "Grocery", "name": "Sugar Candy", "uom": "250GM", "code": "1261", "min": 8}, {"id": "g16", "sec": "Grocery", "name": "Tamarind", "uom": "1KG", "code": "1262", "min": 8}, {"id": "g17", "sec": "Grocery", "name": "Wheat Whole", "uom": "1KG", "code": "1275", "min": 8}, {"id": "g18", "sec": "Grocery", "name": "Wheat Whole", "uom": "500GM", "code": "1276", "min": 8}, {"id": "g19", "sec": "Grocery", "name": "White Cristal Salt", "uom": "1KG", "code": "1277", "min": 8}, {"id": "g20", "sec": "Grocery", "name": "White Jowar Whole", "uom": "1KG", "code": "1278", "min": 8}, {"id": "g21", "sec": "Grocery", "name": "White Jowar Whole", "uom": "500GM", "code": "1279", "min": 8}, {"id": "g22", "sec": "Grocery", "name": "Yellow Jowar Whole", "uom": "1KG", "code": "1284", "min": 8}, {"id": "g23", "sec": "Grocery", "name": "Yellow Jowar Whole", "uom": "500GM", "code": "1285", "min": 8}, {"id": "g24", "sec": "Seeds", "name": "Flax Seeds", "uom": "100GM", "code": "1287", "min": 8}, {"id": "g25", "sec": "Seeds", "name": "Flax Seeds", "uom": "250GM", "code": "1288", "min": 8}];
+            const addMore = sh => {
+                const codes = new Set(MORE.map(x => String(x.code)));
+                sh.removed = (sh.removed || []).filter(x => !codes.has(String(x.code)));
+                const have = new Set(sh.items.map(x => String(x.code)));
+                MORE.forEach(x => { if (!have.has(String(x.code))) sh.items.push(Object.assign({}, x)); });
+            };
+            addMore(PACK_SHEET_DEFAULT);
             regroup(PACK_SHEET_DEFAULT);
             try {
                 if (!localStorage.getItem('lalitha_pack_grocery_v1')) {
@@ -7907,6 +7917,11 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                     writeJson(PACK_SHEET_KEY, packSheet);
                     localStorage.setItem('lalitha_pack_grocery_v1', '1');
                     localStorage.setItem('lalitha_pack_pulses_v1', '1');
+                }
+                if (!localStorage.getItem('lalitha_pack_more_v1')) {
+                    addMore(packSheet); packSheet.ts = Date.now();
+                    writeJson(PACK_SHEET_KEY, packSheet);
+                    localStorage.setItem('lalitha_pack_more_v1', '1');
                 }
             } catch (e) {}
         })();
@@ -8120,7 +8135,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
 
         // Same page layout used by both the print preview and the PDF download.
         function packLayout() {
-            const ROW = 1, SEC = 0.78, CAP = 32;
+            const ROW = 1, SEC = 0.79, CAP = 38;
             const entries = []; let n = 0;
             packSheet.sections.forEach(sec => {
                 const list = packSectionItems(sec); if (!list.length) return;
@@ -8158,9 +8173,9 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                 const doc = new JsPDF({ unit: 'mm', format: 'a4' });
                 const { cols, pages } = packLayout();
                 const GREEN = [31, 95, 59], GRID = [185, 196, 189], GREY = [85, 85, 85], BLACK = [0, 0, 0];
-                const M = 10, COLW = 92.5, GAP = 5, RH = 7.4, HH = 6, SH = 5.8, TOP = 29;
-                const pct = [6, 45, 11, 7, 11.5, 11.5, 8];
-                const heads = ['NO', 'ITEM', 'CODE', 'MIN', 'REQUIRED', 'PACKED', 'TICK'];
+                const M = 10, COLW = 92.5, GAP = 5, RH = 6.2, HH = 6, SH = 4.9, TOP = 29;
+                const pct = [6, 43, 11, 7, 16.5, 16.5];
+                const heads = ['NO', 'ITEM', 'CODE', 'MIN', 'REQUIRED', 'PACKED'];
                 const draw = (c) => doc.setDrawColor(c[0], c[1], c[2]);
                 const fill = (c) => doc.setTextColor(c[0], c[1], c[2]);
                 for (let p = 0; p < pages; p++) {
@@ -8195,7 +8210,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                             }
                             const it = e.it, by = y + RH / 2 + 1;
                             draw(GRID); doc.setLineWidth(0.15); doc.line(x0, y + RH, x0 + COLW, y + RH);
-                            for (let i = 1; i < 7; i++) doc.line(xs[i], y, xs[i], y + RH);
+                            for (let i = 1; i < 6; i++) doc.line(xs[i], y, xs[i], y + RH);
                             doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); fill(GREY);
                             doc.text(String(e.n), (xs[0] + xs[1]) / 2, by, { align: 'center' });
                             // name (bold) + size (small grey), shrink the name if it is too long
@@ -8209,10 +8224,9 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                             fill(BLACK); doc.text(String(it.name), xs[1] + 1, by);
                             if (uom) { const nw = doc.getTextWidth(String(it.name)); doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); fill(GREY); doc.text(uom, xs[1] + 1 + nw + 1.3, by); }
                             doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); fill(GREY);
-                            doc.text(String(it.code || ''), (xs[2] + xs[3]) / 2, by, { align: 'center', maxWidth: xs[3] - xs[2] - 0.5 });
+                            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); fill(GREY);
+                            { const ct = String(it.code || ''); let cf = 7.5; doc.setFontSize(cf); while (doc.getTextWidth(ct) > xs[3] - xs[2] - 1 && cf > 5) { cf -= 0.25; doc.setFontSize(cf); } doc.text(ct, (xs[2] + xs[3]) / 2, by, { align: 'center' }); }
                             if (it.min !== null && it.min !== undefined && it.min !== '') { doc.setFont('helvetica', 'bold'); doc.setFontSize(10); fill(BLACK); doc.text(String(it.min), (xs[3] + xs[4]) / 2, by, { align: 'center' }); }
-                            draw(GREY); doc.setLineWidth(0.25);
-                            doc.rect((xs[6] + xs[7]) / 2 - 2.5, y + RH / 2 - 2.5, 5, 5);
                             y += RH;
                         });
                         draw(GREEN); doc.setLineWidth(0.3); doc.rect(x0, TOP, COLW, y - TOP);
@@ -8233,7 +8247,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
         // both always look the same. groups = [{ sec, items: [{name, uom, code, min, req}] }]
         function psBuildHtml(groups, opts) {
             opts = opts || {};
-            const ROW = 1, SEC = 0.78, CAP = opts.cap || 32;
+            const ROW = 1, SEC = 0.79, CAP = opts.cap || 38;
             const entries = []; let n = 0;
             groups.forEach(g => {
                 if (!g.items.length) return;
@@ -8248,10 +8262,10 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
             });
             cols.forEach((c, i) => { if (i < cols.length - 1 && c.length && c[c.length - 1].h) { cols[i + 1].unshift(c.pop()); } });
             const showReq = !!opts.showReq;
-            const colHtml = (c) => `<table><colgroup><col style="width:6%"><col style="width:45%"><col style="width:11%"><col style="width:7%"><col style="width:11.5%"><col style="width:11.5%"><col style="width:8%"></colgroup>
-                <thead><tr><th>NO</th><th>ITEM</th><th>CODE</th><th>MIN</th><th>REQUIRED</th><th>PACKED</th><th>TICK</th></tr></thead><tbody>` +
-                c.map(e => e.h ? `<tr class="ps-sec"><td colspan="7">${esc(e.h)}</td></tr>` :
-                    `<tr><td class="c sn">${e.n}</td><td class="nm"><b>${esc(e.it.name)}</b>${e.it.uom ? `<em>${esc(e.it.uom)}</em>` : ''}</td><td class="c cd">${esc(e.it.code)}</td><td class="c mn">${e.it.min === null || e.it.min === undefined || e.it.min === '' ? '' : esc(e.it.min)}</td><td class="c ${showReq ? 'ps-req' : ''}">${showReq && e.it.req !== undefined ? esc(e.it.req) : ''}</td><td></td><td class="c"><span class="tk"></span></td></tr>`).join('') +
+            const colHtml = (c) => `<table><colgroup><col style="width:6%"><col style="width:43%"><col style="width:11%"><col style="width:7%"><col style="width:16.5%"><col style="width:16.5%"></colgroup>
+                <thead><tr><th>NO</th><th>ITEM</th><th>CODE</th><th>MIN</th><th>REQUIRED</th><th>PACKED</th></tr></thead><tbody>` +
+                c.map(e => e.h ? `<tr class="ps-sec"><td colspan="6">${esc(e.h)}</td></tr>` :
+                    `<tr><td class="c sn">${e.n}</td><td class="nm"><b>${esc(e.it.name)}</b>${e.it.uom ? `<em>${esc(e.it.uom)}</em>` : ''}</td><td class="c cd">${esc(e.it.code)}</td><td class="c mn">${e.it.min === null || e.it.min === undefined || e.it.min === '' ? '' : esc(e.it.min)}</td><td class="c ${showReq ? 'ps-req' : ''}">${showReq && e.it.req !== undefined ? esc(e.it.req) : ''}</td><td></td></tr>`).join('') +
                 `</tbody></table>`;
             const pages = Math.max(1, Math.ceil(cols.length / 2));
             const fields = opts.fieldsHtml || 'Branch<span></span>Date<span></span>Staff<span></span>Checked by<span></span>';
@@ -10261,7 +10275,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                         .map(it => ({ name: it.name, uom: it.uom, code: it.code, min: it.min, req: it.reqQty }))
                 }));
                 const fieldsHtml = `<b>From:</b> ${esc(src)} &rarr; <b>To:</b> ${esc(dst)} &nbsp;|&nbsp; <b>Staff:</b> ${esc(staff)} &nbsp;|&nbsp; <b>Date:</b> ${esc(dateTimeStr)} &nbsp;|&nbsp; <b>Items:</b> ${totalCount}`;
-                document.getElementById('pdfTemplateContainer').innerHTML = `<div class="ps-scope">${psBuildHtml(groups, { title: 'Transit Sheet', fieldsHtml, showReq: true, notes: notes || '', cap: 30 })}</div>`;
+                document.getElementById('pdfTemplateContainer').innerHTML = `<div class="ps-scope">${psBuildHtml(groups, { title: 'Transit Sheet', fieldsHtml, showReq: true, notes: notes || '', cap: 34 })}</div>`;
             } else
             document.getElementById('pdfTemplateContainer').innerHTML = `
                 <div style="font-family:'Inter',sans-serif;margin:0;padding:0;color:#0f172a;width:190mm;box-sizing:border-box;">
