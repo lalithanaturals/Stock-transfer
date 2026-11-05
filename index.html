@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Lalitha Naturals - Branch Transfer</title>
-    <meta name="theme-color" content="#047857">
+    <meta name="theme-color" content="#ffffff">
 
     <!-- iOS "Add to Home Screen" — without these, Safari ignores manifest.json's
          "standalone" display mode and always opens with the browser's own address
@@ -178,6 +178,27 @@
             .sheet-preview-border { border: 2px solid #047857; border-radius: 5px; }
         }
 
+
+        .hm-hero{background:linear-gradient(135deg,#0f172a,#1e293b 55%,#312e81);background-size:200% 200%;animation:hmGrad 14s ease infinite}
+        .hm-branch{background:#fff;border:1px solid #e2e8f0}
+        /* ===== Home animations + scan ===== */
+        #homeSection .hm-hero-anim{background-size:200% 200%;animation:hmGrad 12s ease infinite}
+        @keyframes hmGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        #homeSection .hm-float{animation:hmFloat 9s ease-in-out infinite}
+        @keyframes hmFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(10px,-14px)}}
+        .hm-wave{display:inline-block;animation:hmWave 2.4s ease-in-out infinite;transform-origin:70% 70%}
+        @keyframes hmWave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(16deg)}20%,40%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+        .hm-in{opacity:0;transform:translateY(14px);animation:hmUp .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:var(--d,0s)}
+        @keyframes hmUp{to{opacity:1;transform:none}}
+        .hm-shine{position:relative;overflow:hidden}
+        .hm-shine::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-20deg);animation:hmShine 5s ease-in-out infinite;pointer-events:none}
+        @keyframes hmShine{0%,60%{left:-60%}100%{left:130%}}
+        .hm-pulse{position:relative}
+        .hm-pulse::after{content:"";position:absolute;inset:0;border-radius:12px;border:2px solid #7c3aed;animation:hmRing 2s ease-out infinite}
+        @keyframes hmRing{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.7);opacity:0}}
+        @media (prefers-reduced-motion: reduce){#homeSection *,#homeSection *::after{animation:none!important}.hm-in{opacity:1!important;transform:none!important}}
+        #scanResultModal .sr-card{animation:srUp .3s cubic-bezier(.2,.8,.2,1)}
+        @keyframes srUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
         /* ===== Packing Sheet print layout (Settings > Packing Sheet) ===== */
         #packSheetPrint { display: none; }
         @media print {
@@ -284,22 +305,22 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex justify-between items-center" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
+    <header class="bg-white text-slate-900 border-b border-slate-200 shadow-sm sticky top-0 z-40 px-4 py-3 flex justify-between items-center" style="padding-top: max(0.75rem, env(safe-area-inset-top));">
         <div class="flex items-center gap-2 cursor-pointer" onclick="showHomeSection()" title="Tap to go Home">
             <div onclick="event.stopPropagation(); openLogoPreview();" class="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow flex items-center justify-center cursor-pointer">
                 <img src="./logo.png" alt="Lalitha Naturals Logo" class="w-full h-full object-cover">
             </div>
             <div>
                 <h1 id="headerTitle" class="text-sm font-bold tracking-wide">LALITHA NATURALS</h1>
-                <p class="text-[13px] text-emerald-100 flex items-center gap-1"><span id="headerSubtitle">Branch Transfer</span><i id="headerHomeChevron" class="hidden fa-solid fa-house text-[12px] opacity-80"></i></p>
+                <p class="text-[13px] text-slate-500 flex items-center gap-1"><span id="headerSubtitle">Branch Transfer</span><i id="headerHomeChevron" class="hidden fa-solid fa-house text-[12px] opacity-80"></i></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
             <div class="text-right">
-                <div id="liveTime" class="text-[13px] font-medium text-emerald-100"></div>
-                <div id="appVersionLabel" class="text-[10px] font-medium text-emerald-200/70 leading-tight"></div>
+                <div id="liveTime" class="text-[13px] font-medium text-slate-600"></div>
+                <div id="appVersionLabel" class="text-[10px] font-medium text-slate-400 leading-tight"></div>
             </div>
-            <button onclick="confirmReload()" class="bg-emerald-800 text-emerald-100 px-2.5 py-1.5 rounded-lg text-sm border border-emerald-600" title="Reload app (use the 'Synced X min ago' bar on Home to sync)">
+            <button onclick="confirmReload()" class="bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-lg text-sm border border-slate-200" title="Reload app (use the 'Synced X min ago' bar on Home to sync)">
                 <i class="fa-solid fa-arrows-rotate"></i>
             </button>
         </div>
@@ -310,58 +331,60 @@
 
         <!-- ============ HOME ============ -->
         <div id="homeSection" class="space-y-4">
-            <div class="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
-                <div class="absolute -right-2 bottom-2 w-16 h-16 bg-white/10 rounded-full"></div>
-                <button onclick="openCatalogModal()" title="Settings" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 active:scale-[0.93] transition flex items-center justify-center text-white text-base z-10"><i class="fa-solid fa-gear"></i></button>
-                <button onclick="openNotificationsPanel()" title="Notifications" class="absolute top-[3.75rem] right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 active:scale-[0.93] transition flex items-center justify-center text-white text-base z-10">
-                    <i class="fa-solid fa-bell"></i>
-                    <span id="homeNotifBadge" class="hidden absolute -top-1 -right-1 bg-amber-400 text-indigo-900 text-[10px] font-extrabold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white">0</span>
-                </button>
-                <p class="text-sm text-indigo-100 font-semibold relative">Hello 👋</p>
-                <h2 class="text-xl font-bold mt-0.5 relative">Lalitha Naturals</h2>
-                <p class="text-[13px] text-indigo-100 mt-1 relative" id="homeDateLabel"></p>
+            <!-- Header -->
+            <div class="hm-hero hm-in rounded-2xl p-5 text-white relative overflow-hidden shadow-lg" style="--d:0s">
+                <div class="hm-float absolute -right-8 -top-10 w-36 h-36 rounded-full bg-white/[0.06]"></div>
+                <div class="relative flex items-start gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-semibold text-slate-300 tracking-wide" id="homeDateLabel"></p>
+                        <h2 class="text-xl font-bold mt-1 leading-tight"><span id="homeGreetWord">Hello</span></h2>
+                        <p class="text-sm text-slate-300 mt-0.5">Lalitha Naturals</p>
+                    </div>
+                    <button onclick="openNotificationsPanel()" title="Notifications" aria-label="Notifications" class="relative w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition flex items-center justify-center text-white">
+                        <i class="fa-solid fa-bell"></i>
+                        <span id="homeNotifBadge" class="hidden absolute -top-1 -right-1 bg-amber-400 text-slate-900 text-[10px] font-extrabold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-slate-800">0</span>
+                    </button>
+                    <button onclick="openCatalogModal()" title="Settings" aria-label="Settings" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition flex items-center justify-center text-white"><i class="fa-solid fa-gear"></i></button>
+                </div>
+                <div class="relative grid grid-cols-3 gap-2 mt-4">
+                    <div class="rounded-xl bg-white/10 px-3 py-2"><div class="text-xl font-bold leading-none" id="homeKpiDispatch">0</div><div class="text-[11px] text-slate-300 mt-1">To dispatch</div></div>
+                    <div class="rounded-xl bg-white/10 px-3 py-2"><div class="text-xl font-bold leading-none" id="homeKpiVendor">0</div><div class="text-[11px] text-slate-300 mt-1">In vendor cart</div></div>
+                    <div class="rounded-xl bg-white/10 px-3 py-2"><div class="text-xl font-bold leading-none" id="homeKpiBranches">0</div><div class="text-[11px] text-slate-300 mt-1">Branches</div></div>
+                </div>
             </div>
 
-            <!-- Today strip: quick at-a-glance sync/queue status, no need to open Ledger
-                 Sheets just to check whether anything's stuck. -->
-            <div id="homeSyncStrip" onclick="runManualSync()" class="flex items-center justify-between bg-white rounded-xl px-3.5 py-2 border border-slate-200 shadow-sm text-[13px] active:scale-[0.98] transition cursor-pointer" title="Tap to sync now">
-                <span class="font-semibold text-slate-500"><i id="homeSyncIcon" class="fa-solid fa-rotate text-slate-400 mr-1"></i><span id="homeLastSyncedText">Not synced yet</span></span>
+            <!-- Scan -->
+            <button onclick="openScannerModal('homeLookup')" class="hm-in w-full bg-white border border-slate-200 rounded-2xl px-4 py-3.5 flex items-center gap-3.5 shadow-sm active:scale-[0.98] transition text-left" style="--d:.08s">
+                <span class="hm-pulse w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0"><i class="fa-solid fa-barcode"></i></span>
+                <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Scan an item</span><span class="block text-[13px] text-slate-500">Check or count stock with the camera</span></span>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+            </button>
+
+            <div id="homeSyncStrip" onclick="runManualSync()" class="hm-in flex items-center justify-between px-1 text-[13px] cursor-pointer" style="--d:.12s" title="Tap to sync now">
+                <span class="font-medium text-slate-500"><i id="homeSyncIcon" class="fa-solid fa-rotate text-slate-400 mr-1.5"></i><span id="homeLastSyncedText">Not synced yet</span></span>
                 <button id="homePendingQueueBtn" onclick="event.stopPropagation(); showPackingRequirementSection(); switchMode('packing'); flushPendingQueue(true);" class="hidden font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-300">
                     <i class="fa-solid fa-triangle-exclamation mr-1"></i><span id="homePendingQueueCount">0</span> pending
                 </button>
-                <span id="homeSyncNowLabel" class="text-[11px] font-bold text-indigo-500 uppercase tracking-wide">Sync Now</span>
+                <span id="homeSyncNowLabel" class="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">Sync now</span>
             </div>
 
-            <p class="text-[13px] font-bold text-slate-500 uppercase px-1">Select your branch — Packing Request</p>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">Packing request</p>
+            <div id="homeBranchTiles" class="space-y-2.5"></div>
 
-            <div id="homeBranchTiles" class="space-y-3"></div>
-
-            <button onclick="showVendorRequirementSection()" class="relative w-full bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
-                <span id="homeVendorCartBadge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-400 text-cyan-900 text-[12px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow">0</span>
-                <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-cart-shopping"></i></div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold">Vendor Request</p>
-                    <p class="text-[13px] text-cyan-50 mt-0.5">Build a per-vendor order cart from the full catalog & send on WhatsApp</p>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1 pt-1">Orders and documents</p>
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm divide-y divide-slate-100 overflow-hidden hm-in" style="--d:.3s">
+                <button onclick="showVendorRequirementSection()" class="relative w-full px-4 py-3.5 flex items-center gap-3.5 text-left active:bg-slate-50 transition">
+                    <span class="w-11 h-11 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-cart-shopping"></i></span>
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Vendor request</span><span class="block text-[13px] text-slate-500">Build vendor orders, send on WhatsApp</span></span>
+                    <span id="homeVendorCartBadge" class="hidden bg-slate-900 text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">0</span>
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                </button>
+                <div class="w-full px-4 py-3.5 flex items-center gap-3.5">
+                    <span class="w-11 h-11 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></span>
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Packing sheet</span><span class="block text-[13px] text-slate-500">Printable A4 list for staff</span></span>
+                    <button onclick="packDownloadPdf()" class="pack-pdf-btn px-4 h-10 rounded-xl bg-slate-900 text-white font-bold text-sm active:scale-95 transition shrink-0"><i class="fa-solid fa-download mr-1.5"></i>PDF</button>
                 </div>
-                <i class="fa-solid fa-chevron-right text-white/70"></i>
-            </button>
-
-            <!-- Packing Sheet quick access: one tap downloads the printable A4 PDF; the pencil opens the editor. -->
-            <div class="w-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 text-white shadow-lg flex items-center gap-3.5">
-                <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-file-pdf"></i></div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold">Packing Sheet</p>
-                    <p class="text-[13px] text-amber-50 mt-0.5">Printable A4 list for staff</p>
-                </div>
-                <button onclick="packDownloadPdf()" class="pack-pdf-btn px-4 h-11 rounded-xl bg-white text-orange-700 font-extrabold text-sm active:scale-[0.95] transition shrink-0"><i class="fa-solid fa-download mr-1.5"></i>PDF</button>
             </div>
-
-            <!-- The old tile(s) here — "Settings" and, before that, a duplicate "Ledger
-                 Sheets" shortcut into Packing's own Ledger Sheets tab — are gone, per
-                 explicit request to simplify this screen. Settings now lives as the gear
-                 icon in the top-right corner of the purple greeting card above; Packing
-                 Request > Ledger Sheets tab is still exactly where it always was. -->
         </div>
 
         <!-- ============ PACKING REQUIREMENT (in-store, Lalitha Naturals) ============ -->
@@ -1160,6 +1183,9 @@
         </div>
     </div>
 
+    <div id="scanResultModal" class="fixed inset-0 z-[60] hidden flex items-end justify-center bg-slate-900/60 backdrop-blur-sm" onclick="if(event.target===this)closeScanResult()">
+        <div class="sr-card w-full max-w-md bg-white rounded-t-3xl p-5 pb-8 shadow-2xl"><div class="w-10 h-1.5 bg-slate-300 rounded-full mx-auto mb-3"></div><div id="scanResultBody"></div></div>
+    </div>
     <!-- Barcode Scanner Modal -->
     <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden p-4 space-y-3 text-center">
@@ -1310,7 +1336,7 @@
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v65";
+        const APP_VERSION = "v68";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5275,6 +5301,7 @@
 
             const modalCloseMap = [
                 ['scannerModal', closeScannerModal],
+                ['scanResultModal', closeScanResult],
                 ['thermalModal', closeThermalPreview],
                 ['insightsModal', closeInsightsModal],
                 ['receiveCheckModal', closeReceiveCheckModal],
@@ -5380,6 +5407,7 @@
             setHeaderTitle('Branch Transfer', true);
             renderHomeCartBadges();
             renderHomeBranchTiles();
+            homeGreet_();
         }
 
         // Home screen shows one tile per branch instead of a single "Packing Request"
@@ -5394,21 +5422,21 @@
                 container.innerHTML = `<div class="text-center text-slate-400 text-sm font-semibold bg-white rounded-xl border border-slate-200 py-4">No branches yet — add one in Settings → Branches.</div>`;
                 return;
             }
-            container.innerHTML = branchList.map(b => `
-                <button onclick="showPackingRequirementSection('${esc(b)}')" class="relative w-full bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-left text-white shadow-lg flex items-center gap-3.5 active:scale-[0.98] transition">
-                    <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-box-open"></i></div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold">${esc(b)}</p>
-                        <p class="text-[13px] text-emerald-50 mt-0.5">Packing request — shelf counts & dispatch</p>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-white/70"></i>
+            container.innerHTML = branchList.map((b, idx) => `
+                <button style="--d:${0.16 + idx * 0.07}s" onclick="showPackingRequirementSection('${esc(b)}')" class="hm-in hm-branch w-full rounded-2xl px-4 py-3.5 text-left shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition">
+                    <span class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-box-open"></i></span>
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">${esc(b)}</span><span class="block text-[13px] text-slate-500">Shelf counts and dispatch</span></span>
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                 </button>
             `).join('');
+            const kb = document.getElementById('homeKpiBranches'); if (kb) kb.textContent = branchList.length;
         }
 
         // Pending-item badges on the Home cards — how many items are waiting in each
         // cart/dispatch list right now, so it's visible before opening either page.
         function renderHomeCartBadges() {
+            { const kd = document.getElementById('homeKpiDispatch'); if (kd) kd.textContent = dispatchList.length;
+              const kv = document.getElementById('homeKpiVendor'); if (kv) kv.textContent = Object.values(vendorCartLists).reduce((n, c) => n + (c ? c.length : 0), 0); }
             const packingBadge = document.getElementById('homePackingCartBadge');
             if (packingBadge) {
                 packingBadge.textContent = dispatchList.length;
@@ -7831,7 +7859,7 @@
         }
         function packAddPanelHtml(sec) {
             return `<div class="bg-slate-50 border border-slate-200 rounded-xl p-2 space-y-1.5">
-                <input id="packAddSearch" type="text" placeholder="Search catalog by name or code" oninput="packRenderMatches()" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                <div class="flex gap-1.5"><input id="packAddSearch" type="text" placeholder="Search catalog by name or code" oninput="packRenderMatches()" class="flex-1 min-w-0 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white"><button onclick="openScannerModal('packAdd')" class="bg-indigo-600 text-white px-3.5 rounded-lg text-sm" aria-label="Scan"><i class="fa-solid fa-barcode"></i></button></div>
                 <div id="packAddResults" class="space-y-1">${packMatchesHtml('')}</div>
                 <button onclick="packAddCustom()" class="w-full py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-700">Add a blank row (type it yourself)</button>
             </div>`;
@@ -8081,6 +8109,43 @@
             window.addEventListener('afterprint', cleanup);
             setTimeout(() => { window.print(); setTimeout(cleanup, 1000); }, 50);
         }
+
+
+        function homeGreet_() {
+            const h = new Date().getHours();
+            const e = document.getElementById('homeGreetWord');
+            if (e) e.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+            document.querySelectorAll('#homeSection .hm-in').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+        }
+        let scanResId = null;
+        function scanResultShow_(code) {
+            const m = Object.values(inventoryData).flat().find(i => i.code === code);
+            if (!m) {
+                scanResId = null;
+                document.getElementById('scanResultBody').innerHTML = `<div class="text-center py-3"><div class="text-4xl mb-2">&#128269;</div><p class="font-extrabold text-slate-800">No item with this code</p><p class="text-sm text-slate-500 mt-1">${esc(code)}</p></div>
+                    <button onclick="closeScanResult(); openCatalogModal(); switchSettingsView('addItem')" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm">Add it as a new item</button>`;
+            } else { scanResId = m.id; scanResRender_(); }
+            document.getElementById('scanResultModal').classList.remove('hidden');
+        }
+        function scanResRender_() {
+            const m = findCatalogItemById(scanResId); if (!m) return;
+            const cur = shelfStock[m.id] !== undefined ? shelfStock[m.id] : 0;
+            const q = JSON.stringify(String(m.code || m.name || '')).replace(/"/g, '&quot;');
+            document.getElementById('scanResultBody').innerHTML = `
+                <p class="text-[12px] font-bold text-indigo-600 uppercase tracking-wide">Scanned</p>
+                <h3 class="text-xl font-extrabold text-slate-900 leading-tight">${esc(m.name)}</h3>
+                <p class="text-sm text-slate-500">${esc(m.uom || '')} &middot; ${esc(m.code || '')}${m.min != null ? ' &middot; min ' + esc(m.min) : ''}</p>
+                <div class="flex items-center justify-center gap-5 my-4">
+                    <button onclick="updateStock(${m.id}, -1); scanResRender_(); hapticTap()" class="w-14 h-14 rounded-2xl bg-slate-100 text-2xl font-bold active:scale-90 transition" aria-label="Less">&minus;</button>
+                    <div class="text-center"><div class="text-4xl font-extrabold text-slate-900">${cur}</div><div class="text-xs text-slate-500 font-semibold">on shelf</div></div>
+                    <button onclick="updateStock(${m.id}, 1); scanResRender_(); hapticTap()" class="w-14 h-14 rounded-2xl bg-indigo-600 text-white text-2xl font-bold active:scale-90 transition" aria-label="More">+</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="closeScanResult(); openCatalogModal(); switchSettingsView('existing'); setTimeout(()=>{const e=document.getElementById('catalogSearch'); if(e){e.value=${q}; e.dispatchEvent(new Event('input',{bubbles:true}));}},80)" class="py-3 bg-slate-100 text-slate-800 font-bold rounded-xl text-sm">Edit item</button>
+                    <button onclick="closeScanResult(); openScannerModal('homeLookup')" class="py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm"><i class="fa-solid fa-barcode mr-1"></i>Scan next</button>
+                </div>`;
+        }
+        function closeScanResult() { document.getElementById('scanResultModal').classList.add('hidden'); }
 
         function filterSettingsMenu() {
             const q = (document.getElementById('settingsMenuSearch').value || '').trim().toLowerCase();
@@ -8839,7 +8904,14 @@
             closeScannerModal();
             hapticTap();
 
-            if (scannerTargetMode === 'newItem') {
+            if (scannerTargetMode === 'homeLookup') {
+                scanResultShow_(scannedCode);
+            } else if (scannerTargetMode === 'packAdd') {
+                const el = document.getElementById('packAddSearch');
+                if (el) { el.value = scannedCode; packRenderMatches(); }
+                const mm = Object.values(inventoryData).flat().find(i => i.code === scannedCode);
+                showToast(mm ? `Scanned: ${mm.name}` : `Scanned: ${scannedCode} — no match found`);
+            } else if (scannerTargetMode === 'newItem') {
                 const el = document.getElementById('newItemCode');
                 if (el) { el.value = scannedCode; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
                 showToast(`Scanned: ${scannedCode}`);
