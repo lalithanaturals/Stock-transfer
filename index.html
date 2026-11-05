@@ -473,13 +473,12 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
         <!-- ============ HOME ============ -->
         <div id="homeSection" class="space-y-4">
             <!-- Header -->
-            <div class="hm-hero hm-in rounded-2xl p-5 text-white relative overflow-hidden shadow-lg" style="--d:0s">
+            <div class="hm-hero hm-in rounded-2xl px-5 py-4 text-white relative overflow-hidden shadow-lg" style="--d:0s">
                 <div class="hm-float absolute -right-8 -top-10 w-36 h-36 rounded-full bg-white/[0.06]"></div>
                 <div class="relative flex items-start gap-2">
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-semibold text-slate-300 tracking-wide" id="homeDateLabel"></p>
                         <h2 class="text-xl font-bold mt-1 leading-tight"><span id="homeGreetWord">Hello</span></h2>
-                        <p class="text-sm text-slate-300 mt-0.5">Lalitha Naturals</p>
                     </div>
                     <button onclick="openNotificationsPanel()" title="Notifications" aria-label="Notifications" class="relative w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition flex items-center justify-center text-white">
                         <i class="fa-solid fa-bell"></i>
@@ -487,17 +486,12 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                     </button>
                     <button onclick="openCatalogModal()" title="Settings" aria-label="Settings" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition flex items-center justify-center text-white"><i class="fa-solid fa-gear"></i></button>
                 </div>
-                <div class="relative grid grid-cols-3 gap-2 mt-4">
-                    <div class="rounded-xl bg-white/10 px-3 py-2"><div class="text-xl font-bold leading-none" id="homeKpiDispatch">0</div><div class="text-[11px] text-slate-300 mt-1">To dispatch</div></div>
-                    <div class="rounded-xl bg-white/10 px-3 py-2"><div class="text-xl font-bold leading-none" id="homeKpiVendor">0</div><div class="text-[11px] text-slate-300 mt-1">In vendor cart</div></div>
-                    <div class="rounded-xl bg-white/10 px-3 py-2"><div class="text-xl font-bold leading-none" id="homeKpiBranches">0</div><div class="text-[11px] text-slate-300 mt-1">Branches</div></div>
-                </div>
             </div>
 
             <!-- Scan -->
             <button onclick="openScannerModal('homeLookup')" class="hm-in w-full bg-white border border-slate-200 rounded-2xl px-4 py-3.5 flex items-center gap-3.5 shadow-sm active:scale-[0.98] transition text-left" style="--d:.08s">
                 <span class="hm-pulse w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0"><i class="fa-solid fa-barcode"></i></span>
-                <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Scan an item</span><span class="block text-[13px] text-slate-500">Check or count stock with the camera</span></span>
+                <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Scan an item</span></span>
                 <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
             </button>
 
@@ -509,20 +503,18 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                 <span id="homeSyncNowLabel" class="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">Sync now</span>
             </div>
 
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">Packing request</p>
-            <div id="homeBranchTiles" class="space-y-2.5"></div>
+                        <div id="homeBranchTiles" class="space-y-2.5"></div>
 
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1 pt-1">Orders and documents</p>
-            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm divide-y divide-slate-100 overflow-hidden hm-in" style="--d:.3s">
+                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm divide-y divide-slate-100 overflow-hidden hm-in" style="--d:.3s">
                 <button onclick="showVendorRequirementSection()" class="relative w-full px-4 py-3.5 flex items-center gap-3.5 text-left active:bg-slate-50 transition">
                     <span class="w-11 h-11 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-cart-shopping"></i></span>
-                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Vendor request</span><span class="block text-[13px] text-slate-500">Build vendor orders, send on WhatsApp</span></span>
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Vendor request</span></span>
                     <span id="homeVendorCartBadge" class="hidden bg-slate-900 text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">0</span>
                     <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                 </button>
                 <div class="w-full px-4 py-3.5 flex items-center gap-3.5">
                     <span class="w-11 h-11 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-pdf"></i></span>
-                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Packing sheet</span><span class="block text-[13px] text-slate-500">Printable A4 list for staff</span></span>
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">Packing sheet</span></span>
                     <button onclick="packDownloadPdf()" class="pack-pdf-btn px-4 h-10 rounded-xl bg-slate-900 text-white font-bold text-sm active:scale-95 transition shrink-0"><i class="fa-solid fa-download mr-1.5"></i>PDF</button>
                 </div>
             </div>
@@ -590,7 +582,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                     <div class="relative">
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Staff Name <span class="text-red-500">*</span></label>
                         <div class="relative flex items-center">
-                            <input type="text" id="staffNameInput" placeholder="Required..." onclick="event.stopPropagation(); toggleStaffDropdown(true)" onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none capitalize-first">
+                            <input type="text" id="staffNameInput" placeholder="" onclick="event.stopPropagation(); toggleStaffDropdown(true)" onfocus="toggleStaffDropdown(true)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-bold outline-none capitalize-first">
                             <button onclick="toggleStaffDropdown(event)" class="absolute right-2.5 text-slate-400 text-sm"><i class="fa-solid fa-chevron-down"></i></button>
                         </div>
                         <!-- Staff Name Dropdown List -->
@@ -610,7 +602,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
                          own full-width row below — saves a row of vertical space. -->
                     <div>
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Notes</label>
-                        <input type="text" id="transitNotesInput" placeholder="Add specific dispatch info or remarks..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
+                        <input type="text" id="transitNotesInput" placeholder="" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-semibold outline-none">
                     </div>
                     <div>
                         <label class="block text-[13px] font-bold uppercase text-slate-400 mb-1">Audit Mode</label>
@@ -1477,7 +1469,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
         // small text under the clock (top-right of the header) on every phone, so you can
         // glance at any device and instantly tell whether it's actually running the latest
         // file or still showing an old cached copy — no more guessing after a GitHub push.
-        const APP_VERSION = "v75";
+        const APP_VERSION = "v78";
 
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJtOWSdsDof1YfRwOvP4VT9hjScai1Mtiqd6nrgZULowRBXxRvNVWWulxpXOvC-oiCTA/exec";
 
@@ -5566,7 +5558,7 @@ input:focus,select:focus,textarea:focus{outline-color:#10b981}
             container.innerHTML = branchList.map((b, idx) => `
                 <button style="--d:${0.16 + idx * 0.07}s" onclick="showPackingRequirementSection('${esc(b)}')" class="hm-in hm-branch w-full rounded-2xl px-4 py-3.5 text-left shadow-sm flex items-center gap-3.5 active:scale-[0.98] transition">
                     <span class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-box-open"></i></span>
-                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">${esc(b)}</span><span class="block text-[13px] text-slate-500">Shelf counts and dispatch</span></span>
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-bold text-slate-900">${esc(b)}</span></span>
                     <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
                 </button>
             `).join('');
